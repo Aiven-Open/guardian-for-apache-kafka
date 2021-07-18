@@ -1,0 +1,1 @@
+# Guardian for Apache Kafka
