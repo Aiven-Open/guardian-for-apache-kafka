@@ -1,6 +1,6 @@
 package aiven.io.guardian.kafka.compaction
 
-import aiven.io.guardian.kafka.models.KafkaRow
+import aiven.io.guardian.kafka.models.ReducedConsumerRecord
 import akka.NotUsed
 import akka.stream.javadsl.Flow
 import akka.stream.scaladsl.Source
@@ -15,7 +15,7 @@ trait DatabaseInterface {
     * @param encodeKafkaRowToByteString
     * @return Number of rows updated
     */
-  def streamInsert(kafkaStorageSource: Source[KafkaRow, NotUsed],
-                   encodeKafkaRowToByteString: Flow[KafkaRow, ByteString, NotUsed]
+  def streamInsert(kafkaStorageSource: Source[ReducedConsumerRecord, NotUsed],
+                   encodeKafkaRowToByteString: Flow[ReducedConsumerRecord, ByteString, NotUsed]
   ): Future[Long]
 }

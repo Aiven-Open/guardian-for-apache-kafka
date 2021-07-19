@@ -2,7 +2,7 @@ package aiven.io.guardian.kafka.compaction.s3
 
 import aiven.io.guardian.kafka.compaction.StorageInterface
 import aiven.io.guardian.kafka.compaction.s3.models.StorageConfig
-import aiven.io.guardian.kafka.models.KafkaRow
+import aiven.io.guardian.kafka.models.ReducedConsumerRecord
 import aiven.io.guardian.kafka.s3.errors.S3Errors
 import akka.NotUsed
 import akka.stream.alpakka.s3.scaladsl.S3
@@ -20,7 +20,7 @@ class StorageClient(bucketName: String, prefix: Option[String], s3Headers: S3Hea
     * @return
     */
   @throws(classOf[S3Errors.ExpectedObjectToExist])
-  override def retrieveKafkaData: Source[KafkaRow, NotUsed] = {
+  override def retrieveKafkaData: Source[ReducedConsumerRecord, NotUsed] = {
     // TODO filter the correct buckets to retrieve
     val byteStringSource = S3
       .listBucket(bucketName, prefix, s3Headers)
