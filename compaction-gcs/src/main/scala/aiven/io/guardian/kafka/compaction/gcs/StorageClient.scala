@@ -3,7 +3,7 @@ package aiven.io.guardian.kafka.compaction.gcs
 import aiven.io.guardian.kafka.compaction.StorageInterface
 import aiven.io.guardian.kafka.compaction.gcs.models.StorageConfig
 import aiven.io.guardian.kafka.gcs.errors.GCSErrors
-import aiven.io.guardian.kafka.models.KafkaRow
+import aiven.io.guardian.kafka.models.ReducedConsumerRecord
 import akka.NotUsed
 import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
 import akka.stream.scaladsl.Source
@@ -18,7 +18,7 @@ class StorageClient(bucketName: String, maybePrefix: Option[String])(implicit st
     * @return
     */
   @throws(classOf[GCSErrors.ExpectedObjectToExist])
-  override def retrieveKafkaData: Source[KafkaRow, NotUsed] = {
+  override def retrieveKafkaData: Source[ReducedConsumerRecord, NotUsed] = {
 
     // TODO filter the correct buckets to retrieve
     val byteStringSource = GCStorage

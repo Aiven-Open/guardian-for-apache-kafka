@@ -129,7 +129,7 @@ lazy val coreCompaction = project
     librarySettings,
     name := s"$baseName-core-compaction",
     libraryDependencies ++= Seq(
-      "org.postgresql" % "postgresql"       % postgresqlJdbcVersion
+      "org.postgresql" % "postgresql" % postgresqlJdbcVersion
     )
   )
   .dependsOn(core)

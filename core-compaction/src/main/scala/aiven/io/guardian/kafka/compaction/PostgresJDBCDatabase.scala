@@ -1,6 +1,6 @@
 package aiven.io.guardian.kafka.compaction
 
-import aiven.io.guardian.kafka.models.KafkaRow
+import aiven.io.guardian.kafka.models.ReducedConsumerRecord
 import akka.NotUsed
 import akka.stream.javadsl.Flow
 import akka.stream.scaladsl.{Source, StreamConverters}
@@ -32,8 +32,8 @@ class PostgresJDBCDatabase()(implicit executionContext: ExecutionContext, materi
     *
     * @return Number of rows updated
     */
-  override def streamInsert(kafkaStorageSource: Source[KafkaRow, NotUsed],
-                            encodeKafkaRowToByteString: Flow[KafkaRow, ByteString, NotUsed]
+  override def streamInsert(kafkaStorageSource: Source[ReducedConsumerRecord, NotUsed],
+                            encodeKafkaRowToByteString: Flow[ReducedConsumerRecord, ByteString, NotUsed]
   ): Future[Long] = {
     // TODO implement SQL query
     val sql = """"""
