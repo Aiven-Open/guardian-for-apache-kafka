@@ -17,6 +17,8 @@ import java.util.Base64
   * @param kafkaClusterConfig Additional cluster configuration that is needed
   */
 class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster) extends KafkaClientInterface {
+  override type Context = ConsumerMessage.CommittableOffset
+  override type Mat     = Consumer.Control
 
   private[kafka] val consumerSettings =
     ConsumerSettings(system, new ByteArrayDeserializer, new ByteArrayDeserializer)
