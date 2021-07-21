@@ -16,6 +16,7 @@ val declineVersion             = "2.1.0"
 val pureConfigVersion          = "0.16.0"
 val scalaTestVersion           = "3.2.9"
 val scalaTestScalaCheckVersion = "3.2.9.0"
+val akkaStreamsJson            = "0.8.0"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -69,6 +70,7 @@ lazy val core = project
       "com.typesafe.scala-logging" %% "scala-logging"     % scalaLoggingVersion,
       "com.github.pureconfig"      %% "pureconfig"        % pureConfigVersion,
       "ch.qos.logback"              % "logback-classic"   % logbackClassicVersion,
+      "org.mdedetrich"             %% "akka-stream-circe" % akkaStreamsJson,
       "org.scalatest"              %% "scalatest"         % scalaTestVersion           % Test,
       "org.scalatestplus"          %% "scalacheck-1-15"   % scalaTestScalaCheckVersion % Test
     )
