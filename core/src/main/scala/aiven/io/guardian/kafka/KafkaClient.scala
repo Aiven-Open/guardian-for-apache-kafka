@@ -6,6 +6,7 @@ import akka.actor.ActorSystem
 import akka.kafka.scaladsl.Consumer
 import akka.kafka.{ConsumerMessage, ConsumerSettings, Subscriptions}
 import akka.stream.scaladsl.SourceWithContext
+import com.typesafe.scalalogging.StrictLogging
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 import java.util.Base64
@@ -16,9 +17,14 @@ import java.util.Base64
   * @param system A classic `ActorSystem`
   * @param kafkaClusterConfig Additional cluster configuration that is needed
   */
-class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster) extends KafkaClientInterface {
+class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster)
+    extends KafkaClientInterface
+    with StrictLogging {
   override type Context = ConsumerMessage.CommittableOffset
   override type Mat     = Consumer.Control
+
+  if (kafkaClusterConfig.topics.isEmpty)
+    logger.warn("Kafka Cluster configuration has no topics set")
 
   private[kafka] val consumerSettings =
     ConsumerSettings(system, new ByteArrayDeserializer, new ByteArrayDeserializer)

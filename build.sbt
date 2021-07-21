@@ -5,16 +5,17 @@ ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
-val akkaVersion           = "2.6.15"
-val alpakkaKafkaVersion   = "2.1.0"
-val alpakkaVersion        = "3.0.1"
-val quillJdbcMonixVersion = "3.7.2"
-val postgresqlJdbcVersion = "42.2.23"
-val scalaLoggingVersion   = "3.9.4"
-val logbackClassicVersion = "1.2.3"
-val declineVersion        = "2.1.0"
-val pureConfigVersion     = "0.16.0"
-val scalaTestVersion      = "3.2.9"
+val akkaVersion                = "2.6.15"
+val alpakkaKafkaVersion        = "2.1.0"
+val alpakkaVersion             = "3.0.1"
+val quillJdbcMonixVersion      = "3.7.2"
+val postgresqlJdbcVersion      = "42.2.23"
+val scalaLoggingVersion        = "3.9.4"
+val logbackClassicVersion      = "1.2.3"
+val declineVersion             = "2.1.0"
+val pureConfigVersion          = "0.16.0"
+val scalaTestVersion           = "3.2.9"
+val scalaTestScalaCheckVersion = "3.2.9.0"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -67,7 +68,9 @@ lazy val core = project
       "com.typesafe.akka"          %% "akka-stream-kafka" % alpakkaKafkaVersion,
       "com.typesafe.scala-logging" %% "scala-logging"     % scalaLoggingVersion,
       "com.github.pureconfig"      %% "pureconfig"        % pureConfigVersion,
-      "ch.qos.logback"              % "logback-classic"   % logbackClassicVersion
+      "ch.qos.logback"              % "logback-classic"   % logbackClassicVersion,
+      "org.scalatest"              %% "scalatest"         % scalaTestVersion           % Test,
+      "org.scalatestplus"          %% "scalacheck-1-15"   % scalaTestScalaCheckVersion % Test
     )
   )
 
@@ -78,8 +81,8 @@ lazy val coreAws = project
     name := s"$baseName-s3",
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
-      "org.scalatest"      %% "scalatest"              % "3.2.9"   % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"        % "3.2.9.0" % Test
+      "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
+      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test
     )
   )
   .dependsOn(core)
