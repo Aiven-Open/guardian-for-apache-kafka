@@ -1,8 +1,6 @@
 package aiven.io.guardian.kafka
 
 import aiven.io.guardian.kafka.models.ReducedConsumerRecord
-import akka.kafka.ConsumerMessage
-import akka.kafka.scaladsl.Consumer
 import akka.stream.scaladsl.SourceWithContext
 
 trait KafkaClientInterface {
@@ -12,11 +10,11 @@ trait KafkaClientInterface {
     */
   type Context
 
-  /** A materializer that defines how to commit the cursor stored in `Context`
+  /** The type that represents how to control the given stream, i.e. if you want to shut it down or add metrics
     */
-  type Mat
+  type Control
 
   /** @return A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
-  def getSource: SourceWithContext[ReducedConsumerRecord, Context, Mat]
+  def getSource: SourceWithContext[ReducedConsumerRecord, Context, Control]
 }

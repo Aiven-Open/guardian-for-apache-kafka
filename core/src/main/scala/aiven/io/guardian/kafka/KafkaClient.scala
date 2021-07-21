@@ -5,7 +5,7 @@ import aiven.io.guardian.kafka.models.ReducedConsumerRecord
 import akka.actor.ActorSystem
 import akka.kafka.scaladsl.Consumer
 import akka.kafka.{ConsumerMessage, ConsumerSettings, Subscriptions}
-import akka.stream.scaladsl.SourceWithContext
+import akka.stream.scaladsl.{Source, SourceWithContext}
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
@@ -21,7 +21,7 @@ class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaClust
     extends KafkaClientInterface
     with StrictLogging {
   override type Context = ConsumerMessage.CommittableOffset
-  override type Mat     = Consumer.Control
+  override type Control = Consumer.Control
 
   if (kafkaClusterConfig.topics.isEmpty)
     logger.warn("Kafka Cluster configuration has no topics set")
@@ -29,17 +29,20 @@ class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaClust
   private[kafka] val consumerSettings =
     ConsumerSettings(system, new ByteArrayDeserializer, new ByteArrayDeserializer)
 
+  private[kafka] val subscriptions = Subscriptions.topics(kafkaClusterConfig.topics)
+
   /** @return A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
   override val getSource
       : SourceWithContext[ReducedConsumerRecord, ConsumerMessage.CommittableOffset, Consumer.Control] =
     Consumer
-      .sourceWithOffsetContext(consumerSettings, Subscriptions.topics(kafkaClusterConfig.topics))
+      .sourceWithOffsetContext(consumerSettings, subscriptions)
       .map(consumerRecord =>
         ReducedConsumerRecord(
           consumerRecord.topic(),
+          consumerRecord.offset(),
           Base64.getEncoder.encodeToString(consumerRecord.key()),
-          consumerRecord.value(),
+          Base64.getEncoder.encodeToString(consumerRecord.value()),
           consumerRecord.timestamp(),
           consumerRecord.timestampType()
         )
