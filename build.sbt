@@ -100,13 +100,21 @@ lazy val coreGcs = project
   )
   .dependsOn(core)
 
+lazy val coreBackup = project
+  .in(file("core-backup"))
+  .settings(
+    librarySettings,
+    name := s"$baseName-core-backup"
+  )
+  .dependsOn(coreAws)
+
 lazy val backupS3 = project
   .in(file("backup-s3"))
   .settings(
     librarySettings,
     name := s"$baseName-backup-s3"
   )
-  .dependsOn(coreAws)
+  .dependsOn(coreAws, coreBackup)
 
 lazy val backupGcs = project
   .in(file("backup-gcs"))
@@ -114,7 +122,7 @@ lazy val backupGcs = project
     librarySettings,
     name := s"$baseName-backup-gcs"
   )
-  .dependsOn(coreGcs)
+  .dependsOn(coreGcs, coreBackup)
 
 lazy val cliBackup = project
   .in(file("cli-backup"))
