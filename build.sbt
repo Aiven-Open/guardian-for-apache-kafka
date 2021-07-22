@@ -84,7 +84,8 @@ lazy val coreAws = project
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
       "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test
+      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
+      "com.adobe.testing"   % "s3mock"                 % "2.1.36"                   % Test
     )
   )
   .dependsOn(core)
