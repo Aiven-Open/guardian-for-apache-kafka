@@ -20,9 +20,9 @@ Guardian for Apache Kafka is developed on the latest stable branch of OpenJDK. F
 using [AdoptOpenJDK][adopt-openjdk-link] to download the latest installer. For Linux its recommended installing
 OpenJDK through your distribution (but you can also use [AdoptOpenJDK][adopt-openjdk-link] as a last resort)
 
-## Scala and SBT
-Once you have installed JDK having [Scala](https://www.scala-lang.org) and [SBT][sbt-link] installed is recommended. 
-Although some IDE's (such as Intellij) automatically handle Scala and SBT installation for you, it's still recommended
+## Scala and sbt
+Once you have installed JDK having [Scala](https://www.scala-lang.org) and [sbt][sbt-link] installed is recommended. 
+Although some IDE's (such as Intellij) automatically handle Scala and sbt installation for you, it's still recommended
 having a standalone version so you can compile/test/run the project without an IDE/Editor. The Scala installation also
 comes with its own REPL which can aid in development.
 
@@ -36,7 +36,7 @@ Sclaa is a strongly typed language using a well supported editor is beneficial.
 ### Intellij IDEA
 
 [Intellij IDEA](https://www.jetbrains.com/idea/) is one of the most used editors for Scala development. Upon installing
-of IDEA you need to install the [scala plugin](https://plugins.jetbrains.com/plugin/1347-scala) so it can recognize SBT
+of IDEA you need to install the [scala plugin](https://plugins.jetbrains.com/plugin/1347-scala) so it can recognize sbt
 projects. After installation of the plugin you can simply open the cloned `guardian-for-apache-kafka` and it should
 setup everything for you.
 
@@ -58,7 +58,7 @@ The codebase is formatted with [scalafmt](https://scalameta.org/scalafmt/), as s
 before submitting a PR.
 
 Various runners for Scalafmt exist, such as
-* A [SBT scalafmt plugin](https://github.com/scalameta/sbt-scalafmt) that lets you run scalafmt directly within sbt using
+* A [sbt scalafmt plugin](https://github.com/scalameta/sbt-scalafmt) that lets you run scalafmt directly within sbt using
   * `scalafmt` to format base scala sources
   * `test:scalafmt` to format test scala sources
   * `scalafmtSbt` to format the `build.sbt` file
@@ -70,9 +70,9 @@ the [scalafmt installation guide][scalafmt-installation-link] for more details
 Note that a github action exists which will check that your PR is formatted when you create it. The check runs
 separately ad in parallel to the main build/tests
 
-## SBT - Compiling, Building and Testing
+## sbt - Compiling, Building and Testing
 
-We use [SBT][sbt-link] as the primary build tool for the project. When you run [SBT][sbt-link] by itself
+We use [sbt][sbt-link] as the primary build tool for the project. When you run [sbt][sbt-link] by itself
 it will start a REPL session where you can type in commands, i.e.
 
 * `compile` will compile the entire project
