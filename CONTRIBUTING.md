@@ -12,7 +12,7 @@ feature to clear indicate that a PR is still being worked on.
 ## Setting up development environment
 
 If you haven't already done so, before you get started you need to set up your machine for development. Guardian for
-Apache Kafka is written in [Scala](https://www.scala-lang.org/) so a few steps are needed
+Apache Kafka is written in [Scala](https://www.scala-lang.org/) so a few steps are needed.
 
 ## JDK
 
@@ -21,10 +21,10 @@ using [AdoptOpenJDK][adopt-openjdk-link] to download the latest installer. For L
 OpenJDK through your distribution (but you can also use [AdoptOpenJDK][adopt-openjdk-link] as a last resort)
 
 ## Scala and SBT
-Once you have installed JDK having Scala and SBT installed is recommended. Although some IDE's (such as Intellij)
-automatically handle Scala and SBT installation for you, it's still recommended having a standalone version so you can 
-compile/test/run the project without an IDE/Editor. The Scala installation also comes with its own REPL which can aid in
-development.
+Once you have installed JDK having [Scala](https://www.scala-lang.org) and [SBT][sbt-link] installed is recommended. 
+Although some IDE's (such as Intellij) automatically handle Scala and SBT installation for you, it's still recommended
+having a standalone version so you can compile/test/run the project without an IDE/Editor. The Scala installation also
+comes with its own REPL which can aid in development.
 
 We recommend following the official [Scala2 documentation](https://www.scala-lang.org/download/scala2.html) on how to
 install Scala
@@ -37,8 +37,8 @@ Sclaa is a strongly typed language using a well supported editor is beneficial.
 
 [Intellij IDEA](https://www.jetbrains.com/idea/) is one of the most used editors for Scala development. Upon installing
 of IDEA you need to install the [scala plugin](https://plugins.jetbrains.com/plugin/1347-scala) so it can recognize SBT
-projects. After installation of the plugin you can simply open the cloned `guardian-for-apache-kafka` and it should setup
-everything for you.
+projects. After installation of the plugin you can simply open the cloned `guardian-for-apache-kafka` and it should
+setup everything for you.
 
 ### Metals
 
@@ -54,8 +54,10 @@ Note that other editors can also be used with metals, documentation can be found
 
 ## Formatting
 
-The codebase is formatted with [scalafmt](https://scalameta.org/scalafmt/). Various runners for Scalafmt exist, such as
+The codebase is formatted with [scalafmt](https://scalameta.org/scalafmt/), as such the codebase needs to be formatted
+before submitting a PR.
 
+Various runners for Scalafmt exist, such as
 * A [SBT scalafmt plugin](https://github.com/scalameta/sbt-scalafmt) that lets you run scalafmt directly within sbt using
   * `scalafmt` to format base scala sources
   * `test:scalafmt` to format test scala sources
