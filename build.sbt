@@ -6,7 +6,7 @@ ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
 val akkaVersion                = "2.6.15"
-val alpakkaKafkaVersion        = "2.1.0"
+val alpakkaKafkaVersion        = "2.1.1"
 val alpakkaVersion             = "3.0.2"
 val quillJdbcMonixVersion      = "3.7.2"
 val postgresqlJdbcVersion      = "42.2.23"
