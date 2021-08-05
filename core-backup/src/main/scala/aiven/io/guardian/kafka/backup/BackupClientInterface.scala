@@ -82,6 +82,46 @@ trait BackupClientInterface {
     sink.map { case (_, context) => context }
   }
 
+  @nowarn("msg=not.*?exhaustive")
+  private[backup] def calculateBackupStreamPositions(
+      sourceWithPeriods: SourceWithContext[(ReducedConsumerRecord, Long),
+                                           kafkaClientInterface.CursorContext,
+                                           kafkaClientInterface.Control
+      ]
+  ): SourceWithContext[(ReducedConsumerRecord, BackupStreamPosition),
+                       kafkaClientInterface.CursorContext,
+                       kafkaClientInterface.Control
+  ] = sourceWithPeriods
+    .sliding(2)
+    .map { case Seq((beforeReducedConsumerRecord, beforeDivisions), (_, afterDivisions)) =>
+      val backupStreamPosition = splitAtBoundaryCondition(beforeDivisions, afterDivisions)
+
+      (beforeReducedConsumerRecord, backupStreamPosition)
+    }
+    .mapContext { case Seq(cursorContext, _) => cursorContext }
+
+  private[backup] val sourceWithPeriods: SourceWithContext[(ReducedConsumerRecord, Long),
+                                                           kafkaClientInterface.CursorContext,
+                                                           kafkaClientInterface.Control
+  ] =
+    SourceWithContext.fromTuples(
+      kafkaClientInterface.getSource.asSource.prefixAndTail(1).flatMapConcat { case (head, _) =>
+        head.headOption match {
+          case Some((firstReducedConsumerRecord, _)) =>
+            kafkaClientInterface.getSource.map { reducedConsumerRecord =>
+              val period =
+                calculateNumberOfPeriodsFromTimestamp(firstReducedConsumerRecord.toOffsetDateTime,
+                                                      backupConfig.periodSlice,
+                                                      reducedConsumerRecord
+                )
+              (reducedConsumerRecord, period)
+            }
+
+          case None => throw new IllegalAccessException("")
+        }
+      }
+    )
+
   /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into
     * a data source.
     * @return The `CursorContext` which can be used for logging/debugging along with the `kafkaClientInterface.Control`
@@ -92,23 +132,7 @@ trait BackupClientInterface {
     // and https://stackoverflow.com/questions/53764876/resume-s3-multipart-upload-partetag to find any in progress
     // multiupload to resume from previous termination. Looks like we will have to do this manually since its not in
     // Alpakka yet
-    val withPeriods = kafkaClientInterface.getSource.map { reducedConsumerRecord =>
-      val period = calculateNumberOfPeriodsFromTimestamp(reducedConsumerRecord.toOffsetDateTime,
-                                                         backupConfig.periodSlice,
-                                                         reducedConsumerRecord
-      )
-      (reducedConsumerRecord, period)
-    }
-
-    @nowarn("msg=not.*?exhaustive")
-    val withBackupStreamPositions = withPeriods
-      .sliding(2)
-      .map { case Seq((beforeReducedConsumerRecord, beforeDivisions), (_, afterDivisions)) =>
-        val backupStreamPosition = splitAtBoundaryCondition(beforeDivisions, afterDivisions)
-
-        (beforeReducedConsumerRecord, backupStreamPosition)
-      }
-      .mapContext { case Seq(cursorContext, _) => cursorContext }
+    val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods)
 
     val split = withBackupStreamPositions.asSource.splitAfter { case ((_, backupStreamPosition), _) =>
       backupStreamPosition == BackupStreamPosition.Boundary
@@ -204,5 +228,5 @@ object BackupClientInterface {
                                                       reducedConsumerRecord: ReducedConsumerRecord
   ): Long =
     // TODO handle overflow?
-    ChronoUnit.MICROS.between(reducedConsumerRecord.toOffsetDateTime, initialTime) / period.toMicros
+    ChronoUnit.MICROS.between(initialTime, reducedConsumerRecord.toOffsetDateTime) / period.toMicros
 }

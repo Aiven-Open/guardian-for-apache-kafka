@@ -88,7 +88,7 @@ lazy val coreAws = project
       "com.adobe.testing"   % "s3mock"                 % "2.1.36"                   % Test
     )
   )
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val coreGcs = project
   .in(file("core-gcs"))
@@ -105,9 +105,13 @@ lazy val coreBackup = project
   .in(file("core-backup"))
   .settings(
     librarySettings,
-    name := s"$baseName-core-backup"
+    name := s"$baseName-core-backup",
+    libraryDependencies ++= Seq(
+      "org.scalatest"     %% "scalatest"       % scalaTestVersion           % Test,
+      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestScalaCheckVersion % Test
+    )
   )
-  .dependsOn(coreAws)
+  .dependsOn(coreAws % "compile->compile;test->test")
 
 lazy val backupS3 = project
   .in(file("backup-s3"))
