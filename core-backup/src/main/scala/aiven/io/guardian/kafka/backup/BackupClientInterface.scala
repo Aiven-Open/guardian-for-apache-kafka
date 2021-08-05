@@ -1,9 +1,9 @@
 package aiven.io.guardian.kafka.backup
 
-import aiven.io.guardian.kafka.KafkaClientInterface
 import aiven.io.guardian.kafka.backup.configs.Backup
 import aiven.io.guardian.kafka.codecs.Circe._
 import aiven.io.guardian.kafka.models.ReducedConsumerRecord
+import aiven.io.guardian.kafka.{Errors, KafkaClientInterface}
 import akka.Done
 import akka.stream.FlowShape
 import akka.stream.scaladsl._
@@ -117,7 +117,7 @@ trait BackupClientInterface {
               (reducedConsumerRecord, period)
             }
 
-          case None => throw new IllegalAccessException("")
+          case None => throw Errors.ExpectedStartOfSource
         }
       }
     )
@@ -165,10 +165,7 @@ trait BackupClientInterface {
             }
 
             transformed.via(backupAndCommitFlow(key))
-          case None =>
-            // TODO Is it possible to hit this branch? I assume if the Stream is started its impossible for
-            // head to be empty
-            ???
+          case None => throw Errors.ExpectedStartOfSource
         }
       }
       .mergeSubstreams
