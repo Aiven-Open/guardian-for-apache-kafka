@@ -1,9 +1,8 @@
 package aiven.io.guardian.kafka.backup
 
-import aiven.io.guardian.kafka.Generators
+import aiven.io.guardian.kafka.{Generators, ScalaTestConstants}
 import aiven.io.guardian.kafka.models.ReducedConsumerRecord
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Keep, Sink}
 import org.scalacheck.Gen
 import org.scalatest.Inspectors
 import org.scalatest.matchers.must.Matchers
@@ -20,7 +19,11 @@ final case class Periods(periodsBefore: Long, periodsAfter: Long)
 
 final case class KafkaDataWithTimePeriod(data: List[ReducedConsumerRecord], periodSlice: FiniteDuration)
 
-class BackupClientInterfaceSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks {
+class BackupClientInterfaceSpec
+    extends AnyWordSpec
+    with Matchers
+    with ScalaCheckPropertyChecks
+    with ScalaTestConstants {
 
   implicit val system: ActorSystem = ActorSystem()
 
@@ -58,31 +61,35 @@ class BackupClientInterfaceSpec extends AnyWordSpec with Matchers with ScalaChec
     }
 
     "calculateBackupStreamPositions" should {
-      "calculateBackupStreamPositions happy case" in {
+
+      "must always have at least one BackupStreamPosition.Boundary" in {
         forAll(kafkaDataWithTimePeriodsGen) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
           val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
                                                                         kafkaDataWithTimePeriod.periodSlice
           )
 
-          val calculatedFuture = mock
-            .calculateBackupStreamPositions(mock.sourceWithPeriods)
-            .asSource
-            .map { case (data, _) =>
-              data
-            }
-            .toMat(Sink.collection)(Keep.right)
-            .run()
+          val calculatedFuture = mock.materializeBackupStreamPositions()
 
-          val result = Await.result(calculatedFuture, 10 minutes).toList
+          val result = Await.result(calculatedFuture, AwaitTimeout).toList
           val backupStreamPositions = result.map { case (_, backupStreamPosition) =>
             backupStreamPosition
           }
 
           // We must always have at least one Boundary, a single Middle makes no sense
           Inspectors.forAtLeast(1, backupStreamPositions)(_ mustEqual BackupStreamPosition.Boundary)
+        }
+      }
 
-          // If you look for each event after a BackupStreamPosition.Boundary then it must always be in the next
-          // consecutive time period from beginning of the stream
+      "Every ReducedConsumerRecord after a BackupStreamPosition.Boundary must be in the next consecutive time period" in {
+        forAll(kafkaDataWithTimePeriodsGen) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
+          val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
+                                                                        kafkaDataWithTimePeriod.periodSlice
+          )
+
+          val calculatedFuture = mock.materializeBackupStreamPositions()
+
+          val result = Await.result(calculatedFuture, AwaitTimeout).toList
+
           val allBoundariesWithoutMiddles = result
             .sliding(2)
             .collect { case Seq((_, _: BackupStreamPosition.Boundary.type), (afterRecord, _)) =>
@@ -104,6 +111,18 @@ class BackupClientInterfaceSpec extends AnyWordSpec with Matchers with ScalaChec
               )
             }
           }
+        }
+      }
+
+      "The time difference between two consecutive BackupStreamPosition.Middle has to be less then the time period" in {
+        forAll(kafkaDataWithTimePeriodsGen) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
+          val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
+                                                                        kafkaDataWithTimePeriod.periodSlice
+          )
+
+          val calculatedFuture = mock.materializeBackupStreamPositions()
+
+          val result = Await.result(calculatedFuture, AwaitTimeout).toList
 
           val allCoupledMiddles = result
             .sliding(2)
@@ -115,8 +134,6 @@ class BackupClientInterfaceSpec extends AnyWordSpec with Matchers with ScalaChec
             }
             .toList
 
-          // If you have 2 BackupStreamPosition.Middle next to eachother than the time between them always
-          // has to be less then the period
           Inspectors.forEvery(allCoupledMiddles) { case (before, after) =>
             ChronoUnit.MICROS.between(before.toOffsetDateTime,
                                       after.toOffsetDateTime
@@ -124,6 +141,7 @@ class BackupClientInterfaceSpec extends AnyWordSpec with Matchers with ScalaChec
           }
         }
       }
+
     }
   }
 }

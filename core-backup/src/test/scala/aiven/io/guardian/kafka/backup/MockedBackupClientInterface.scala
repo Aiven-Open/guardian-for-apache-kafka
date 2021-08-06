@@ -4,10 +4,12 @@ import aiven.io.guardian.kafka.MockedKafkaClientInterface
 import aiven.io.guardian.kafka.backup.configs.Backup
 import aiven.io.guardian.kafka.models.ReducedConsumerRecord
 import akka.Done
-import akka.stream.scaladsl.Sink
+import akka.actor.ActorSystem
+import akka.stream.scaladsl.{Keep, Sink}
 import akka.util.ByteString
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters._
@@ -44,6 +46,17 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
       case None        => Some(byteString)
     }
   }
+
+  def materializeBackupStreamPositions()(implicit
+      system: ActorSystem
+  ): Future[immutable.Iterable[(ReducedConsumerRecord, BackupStreamPosition)]] = this
+    .calculateBackupStreamPositions(this.sourceWithPeriods)
+    .asSource
+    .map { case (data, _) =>
+      data
+    }
+    .toMat(Sink.collection)(Keep.right)
+    .run()
 }
 
 /** A `MockedBackupClientInterface` that also uses a mocked `KafkaClientInterface`
