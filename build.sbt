@@ -84,10 +84,11 @@ lazy val coreAws = project
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
       "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test
+      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
+      "com.adobe.testing"   % "s3mock"                 % "2.1.36"                   % Test
     )
   )
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val coreGcs = project
   .in(file("core-gcs"))
@@ -100,13 +101,25 @@ lazy val coreGcs = project
   )
   .dependsOn(core)
 
+lazy val coreBackup = project
+  .in(file("core-backup"))
+  .settings(
+    librarySettings,
+    name := s"$baseName-core-backup",
+    libraryDependencies ++= Seq(
+      "org.scalatest"     %% "scalatest"       % scalaTestVersion           % Test,
+      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestScalaCheckVersion % Test
+    )
+  )
+  .dependsOn(coreAws % "compile->compile;test->test")
+
 lazy val backupS3 = project
   .in(file("backup-s3"))
   .settings(
     librarySettings,
     name := s"$baseName-backup-s3"
   )
-  .dependsOn(coreAws)
+  .dependsOn(coreAws, coreBackup)
 
 lazy val backupGcs = project
   .in(file("backup-gcs"))
@@ -114,7 +127,7 @@ lazy val backupGcs = project
     librarySettings,
     name := s"$baseName-backup-gcs"
   )
-  .dependsOn(coreGcs)
+  .dependsOn(coreGcs, coreBackup)
 
 lazy val cliBackup = project
   .in(file("cli-backup"))

@@ -1,9 +1,10 @@
 package aiven.io.guardian.kafka.s3.errors
 
+import aiven.io.guardian.kafka.Errors
 import akka.http.scaladsl.model.headers.ByteRange
 import akka.stream.alpakka.s3.S3Headers
 
-sealed abstract class S3Errors extends Exception
+sealed abstract class S3Errors extends Errors
 
 object S3Errors {
   final case class ExpectedObjectToExist(bucket: String,

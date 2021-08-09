@@ -2,9 +2,12 @@ package aiven.io.guardian.kafka.models
 
 import org.apache.kafka.common.record.TimestampType
 
+import java.time.{Instant, OffsetDateTime, ZoneId}
+
 /** A `ConsumerRecord` that only contains the necessary data for guardian
   *
   * @param topic The kafka topic (same as `ConsumerRecord` `topic`)
+  * @param offset The kafka offset (same as `ConsumerRecord` `offset`)
   * @param key Base64 encoded version of the original ConsumerRecord key as a byte array
   * @param value Base64 encoded version of the original ConsumerRecord value as a byte array
   * @param timestamp The timestamp value (same as `ConsumerRecord` `timestamp`)
@@ -16,4 +19,7 @@ final case class ReducedConsumerRecord(topic: String,
                                        value: String,
                                        timestamp: Long,
                                        timestampType: TimestampType
-)
+) {
+  def toOffsetDateTime: OffsetDateTime =
+    Instant.ofEpochMilli(this.timestamp).atZone(ZoneId.of("UTC")).toOffsetDateTime
+}
