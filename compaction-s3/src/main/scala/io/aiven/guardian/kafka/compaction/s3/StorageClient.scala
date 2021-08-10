@@ -9,6 +9,7 @@ import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.alpakka.s3.{BucketAccess, S3Headers}
 import akka.stream.scaladsl.Source
 import com.typesafe.scalalogging.StrictLogging
+import scala.annotation.nowarn
 
 class StorageClient(bucketName: String, prefix: Option[String], s3Headers: S3Headers)(implicit
     storageConfig: StorageConfig
@@ -22,6 +23,7 @@ class StorageClient(bucketName: String, prefix: Option[String], s3Headers: S3Hea
   @throws(classOf[S3Errors.ExpectedObjectToExist])
   override def retrieveKafkaData: Source[ReducedConsumerRecord, NotUsed] = {
     // TODO filter the correct buckets to retrieve
+    @nowarn("msg=is never used")
     val byteStringSource = S3
       .listBucket(bucketName, prefix, s3Headers)
       .flatMapMerge(
