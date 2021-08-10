@@ -31,7 +31,9 @@ val flagsFor12 = Seq(
 val flagsFor13 = Seq(
   "-Xlint:_",
   "-opt-inline-from:<sources>",
-  "-opt:l:method"
+  "-opt:l:method",
+  "-Xfatal-warnings",
+  "-Ywarn-unused:imports"
 )
 
 val librarySettings = Seq(

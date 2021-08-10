@@ -8,6 +8,7 @@ import akka.NotUsed
 import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
 import akka.stream.scaladsl.Source
 import com.typesafe.scalalogging.StrictLogging
+import scala.annotation.nowarn
 
 class StorageClient(bucketName: String, maybePrefix: Option[String])(implicit storageConfig: StorageConfig)
     extends StorageInterface
@@ -20,6 +21,7 @@ class StorageClient(bucketName: String, maybePrefix: Option[String])(implicit st
   @throws(classOf[GCSErrors.ExpectedObjectToExist])
   override def retrieveKafkaData: Source[ReducedConsumerRecord, NotUsed] = {
 
+    @nowarn("msg=is never used")
     // TODO filter the correct buckets to retrieve
     val byteStringSource = GCStorage
       .listBucket(bucketName, maybePrefix, versions = false)
