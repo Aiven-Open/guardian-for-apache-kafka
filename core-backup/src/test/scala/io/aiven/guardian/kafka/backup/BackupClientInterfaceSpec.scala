@@ -13,7 +13,6 @@ import java.time.temporal.ChronoUnit
 import scala.annotation.nowarn
 import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, _}
-import scala.language.postfixOps
 
 final case class Periods(periodsBefore: Long, periodsAfter: Long)
 
