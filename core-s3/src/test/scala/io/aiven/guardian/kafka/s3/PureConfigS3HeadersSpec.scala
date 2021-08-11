@@ -5,11 +5,11 @@ import akka.stream.alpakka.s3.{MetaHeaders, S3Headers}
 import akka.stream.alpakka.s3.headers.{AES256, CannedAcl, CustomerKeys, KMS, ServerSideEncryption, StorageClass}
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.propspec.AnyPropSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pureconfig.ConfigSource
 
-class PureConfigS3HeadersSpec extends AnyWordSpec with Matchers with ScalaCheckPropertyChecks {
+class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckPropertyChecks {
   implicit val cannedAclArb = Arbitrary(
     Gen.oneOf(
       List(
@@ -122,56 +122,54 @@ class PureConfigS3HeadersSpec extends AnyWordSpec with Matchers with ScalaCheckP
            |""".stripMargin
     }
 
-  "S3 Headers ConfigReader should" can {
-    "Read CannedAcl correctly" in {
-      forAll { (cannedAcl: CannedAcl) =>
-        ConfigSource.string(s"test=${configCannedAcl(cannedAcl)}").at("test").load[CannedAcl] must be(
-          Right(cannedAcl)
-        )
-      }
+  property("Valid CannedAcl configs should parse correctly") {
+    forAll { (cannedAcl: CannedAcl) =>
+      ConfigSource.string(s"test=${configCannedAcl(cannedAcl)}").at("test").load[CannedAcl] must be(
+        Right(cannedAcl)
+      )
     }
+  }
 
-    "Read MetaHeaders correctly" in {
-      forAll { (metaHeaders: MetaHeaders) =>
-        // Equals method for MetaHeaders is broken, see https://github.com/akka/alpakka/pull/2704
-        ConfigSource.string(configMetaHeaders(metaHeaders)).load[MetaHeaders].map(_.metaHeaders) must be(
-          Right(metaHeaders.metaHeaders)
-        )
-      }
+  property("Valid MetaHeaders configs should parse correctly") {
+    forAll { (metaHeaders: MetaHeaders) =>
+      // Equals method for MetaHeaders is broken, see https://github.com/akka/alpakka/pull/2704
+      ConfigSource.string(configMetaHeaders(metaHeaders)).load[MetaHeaders].map(_.metaHeaders) must be(
+        Right(metaHeaders.metaHeaders)
+      )
     }
+  }
 
-    "Read StorageClass correctly" in {
-      forAll { (storageClass: StorageClass) =>
-        ConfigSource.string(s"test=${configStorageClass(storageClass)}").at("test").load[StorageClass] must be(
-          Right(storageClass)
-        )
-      }
+  property("Valid StorageClass configs should parse correctly") {
+    forAll { (storageClass: StorageClass) =>
+      ConfigSource.string(s"test=${configStorageClass(storageClass)}").at("test").load[StorageClass] must be(
+        Right(storageClass)
+      )
     }
+  }
 
-    "Read ServerSideEncryption correctly" in {
-      forAll { (serverSideEncryption: ServerSideEncryption) =>
-        ConfigSource.string(configServerSideEncryption(serverSideEncryption)).load[ServerSideEncryption] must be(
-          Right(serverSideEncryption)
-        )
-      }
+  property("Valid ServerSideEncryption configs should parse correctly") {
+    forAll { (serverSideEncryption: ServerSideEncryption) =>
+      ConfigSource.string(configServerSideEncryption(serverSideEncryption)).load[ServerSideEncryption] must be(
+        Right(serverSideEncryption)
+      )
     }
+  }
 
-    "Read S3Headers correctly" in {
-      forAll { (s3Headers: S3Headers) =>
-        val string = s"""
+  property("Valid S3Headers configs should parse correctly") {
+    forAll { (s3Headers: S3Headers) =>
+      val string = s"""
           |${s3Headers.cannedAcl.fold("")(cannedAcl => s"canned-acl=${configCannedAcl(cannedAcl)}")}
           |${s3Headers.metaHeaders.fold("")(metaHeaders => s"meta-headers={\n${configMetaHeaders(metaHeaders)}\n}")}
           |${s3Headers.storageClass.fold("")(storageClass => s"storage-class=${configStorageClass(storageClass)}")}
           |${if (s3Headers.customHeaders.isEmpty) ""
-        else s"custom-headers={\n${configCustomHeaders(s3Headers.customHeaders)}\n}"}
+      else s"custom-headers={\n${configCustomHeaders(s3Headers.customHeaders)}\n}"}
           |${s3Headers.serverSideEncryption.fold("")(serverSideEncryption =>
-          s"server-side-encryption={\n${configServerSideEncryption(serverSideEncryption)}\n}"
-        )}
+        s"server-side-encryption={\n${configServerSideEncryption(serverSideEncryption)}\n}"
+      )}
           |""".stripMargin
-        ConfigSource.string(string).load[S3Headers] must be(
-          Right(s3Headers)
-        )
-      }
+      ConfigSource.string(string).load[S3Headers] must be(
+        Right(s3Headers)
+      )
     }
   }
 }
