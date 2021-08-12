@@ -53,7 +53,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
 
   implicit val serverSideEncryptionArb = Arbitrary(
     Gen.frequency(
-//      (1, aes256serverSideEncryptionArb), This is disabled due to https://github.com/akka/alpakka/pull/2704
+      (1, aes256serverSideEncryptionArb),
       (1, kmsServerSideEncryptionArb),
       (1, customerKeysServerSideEncryptionArb)
     )
@@ -77,17 +77,16 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
 
   implicit val s3HeadersArb = Arbitrary(
     for {
-      cannedAcl <- Gen.option(cannedAclArb.arbitrary)
-      // TODO MetaHeaders is disabled due to broken equals https://github.com/akka/alpakka/pull/2704
-//      metaHeaders          <- Gen.option(metaHeadersArb.arbitrary)
+      cannedAcl            <- Gen.option(cannedAclArb.arbitrary)
+      metaHeaders          <- Gen.option(metaHeadersArb.arbitrary)
       storageClass         <- Gen.option(storageClassArb.arbitrary)
       customHeaders        <- Gen.option(headersMapGen)
       serverSideEncryption <- Gen.option(serverSideEncryptionArb.arbitrary)
     } yield {
       val base  = S3Headers()
       val base2 = cannedAcl.fold(base)(base.withCannedAcl)
-//      val base3 = metaHeaders.fold(base2)(base2.withMetaHeaders)
-      val base4 = storageClass.fold(base2)(base2.withStorageClass)
+      val base3 = metaHeaders.fold(base2)(base2.withMetaHeaders)
+      val base4 = storageClass.fold(base3)(base3.withStorageClass)
       val base5 = customHeaders.fold(base4)(base4.withCustomHeaders)
       serverSideEncryption.fold(base5)(base5.withServerSideEncryption)
     }
@@ -132,9 +131,8 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
 
   property("Valid MetaHeaders configs should parse correctly") {
     forAll { (metaHeaders: MetaHeaders) =>
-      // Equals method for MetaHeaders is broken, see https://github.com/akka/alpakka/pull/2704
-      ConfigSource.string(configMetaHeaders(metaHeaders)).load[MetaHeaders].map(_.metaHeaders) must be(
-        Right(metaHeaders.metaHeaders)
+      ConfigSource.string(configMetaHeaders(metaHeaders)).load[MetaHeaders] must be(
+        Right(metaHeaders)
       )
     }
   }
