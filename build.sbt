@@ -213,6 +213,8 @@ lazy val cliRestore = project
 // This is currently causing problems, see https://github.com/djspiewak/sbt-github-actions/issues/74
 ThisBuild / githubWorkflowUseSbtThinClient := false
 
+ThisBuild / githubWorkflowTargetBranches := Seq("main") // Once we have branches per version, add the pattern here
+
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 
 import ReleaseTransformations._
