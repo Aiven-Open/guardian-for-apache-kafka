@@ -111,7 +111,7 @@ lazy val coreBackup = project
     librarySettings,
     name := s"$baseName-core-backup"
   )
-  .dependsOn(coreAws % "compile->compile;test->test")
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val backupS3 = project
   .in(file("backup-s3"))
@@ -119,7 +119,7 @@ lazy val backupS3 = project
     librarySettings,
     name := s"$baseName-backup-s3"
   )
-  .dependsOn(coreAws, coreBackup)
+  .dependsOn(coreAws % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
 
 lazy val backupGcs = project
   .in(file("backup-gcs"))

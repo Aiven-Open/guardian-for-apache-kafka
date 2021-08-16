@@ -1,13 +1,11 @@
 package io.aiven.guardian.kafka.backup
 
+import akka.stream.scaladsl._
+import akka.util.ByteString
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.{Errors, KafkaClientInterface}
-import akka.Done
-import akka.stream.FlowShape
-import akka.stream.scaladsl._
-import akka.util.ByteString
 import io.circe.syntax._
 
 import java.time._
@@ -38,8 +36,8 @@ object BackupStreamPosition {
 
 /** An interface for a template on how to backup a Kafka Stream into some data storage
   */
-trait BackupClientInterface {
-  implicit val kafkaClientInterface: KafkaClientInterface
+trait BackupClientInterface[T <: KafkaClientInterface] {
+  implicit val kafkaClientInterface: T
   implicit val backupConfig: Backup
 
   /** Override this type to define the result of backing up data to a datasource
@@ -54,33 +52,13 @@ trait BackupClientInterface {
     */
   def backupToStorageSink(key: String): Sink[ByteString, Future[BackupResult]]
 
-  /** A Flow that both backs up the `ByteString` data to a data source and then
-    * commits the Kafka `CursorContext` using `kafkaClientInterface.commitCursor`.
-    * @param key They object key or filename for what is being backed up
-    * @return The `CursorContext` which can be used for logging/debugging
+  /** Override this method to define a zero vale that covers the case that occurs
+    * immediately when substream has been split after a Boundary. If you have
+    * difficulties defining an empty value for `BackupResult` then you can wrap it
+    * in an `Option` and just use `None` empty case
+    * @return An "empty" value that is used when a substream has just started
     */
-  def backupAndCommitFlow(
-      key: String
-  ): Flow[(ByteString, kafkaClientInterface.CursorContext), kafkaClientInterface.CursorContext, Future[Done]] = {
-    val sink = Flow.fromGraph(
-      GraphDSL.create(
-        backupToStorageSink(key),
-        kafkaClientInterface.commitCursor
-      )((_, cursorCommitted) => cursorCommitted)(implicit builder =>
-        (backupSink, commitCursor) => {
-          import GraphDSL.Implicits._
-
-          val b = builder.add(Concat[(ByteString, kafkaClientInterface.CursorContext)]())
-
-          b.out.map(_._1) ~> backupSink
-          b.out.map(_._2) ~> commitCursor
-
-          new FlowShape(b.in(0), b.out)
-        }
-      )
-    )
-    sink.map { case (_, context) => context }
-  }
+  def empty: () => Future[BackupResult]
 
   @nowarn("msg=not.*?exhaustive")
   private[backup] def calculateBackupStreamPositions(
@@ -100,45 +78,53 @@ trait BackupClientInterface {
     }
     .mapContext { case Seq(cursorContext, _) => cursorContext }
 
-  private[backup] val sourceWithPeriods: SourceWithContext[(ReducedConsumerRecord, Long),
-                                                           kafkaClientInterface.CursorContext,
-                                                           kafkaClientInterface.Control
-  ] =
-    SourceWithContext.fromTuples(
-      kafkaClientInterface.getSource.asSource.prefixAndTail(1).flatMapConcat { case (head, _) =>
-        head.headOption match {
-          case Some((firstReducedConsumerRecord, _)) =>
-            kafkaClientInterface.getSource.map { reducedConsumerRecord =>
-              val period =
-                calculateNumberOfPeriodsFromTimestamp(firstReducedConsumerRecord.toOffsetDateTime,
-                                                      backupConfig.periodSlice,
-                                                      reducedConsumerRecord
-                )
-              (reducedConsumerRecord, period)
-            }
+  private[backup] def sourceWithPeriods(
+      source: Source[(OffsetDateTime, (ReducedConsumerRecord, kafkaClientInterface.CursorContext)),
+                     kafkaClientInterface.Control
+      ]
+  ): SourceWithContext[(ReducedConsumerRecord, Long),
+                       kafkaClientInterface.CursorContext,
+                       kafkaClientInterface.Control
+  ] = SourceWithContext.fromTuples(source.map { case (firstTimestamp, (record, context)) =>
+    val period = calculateNumberOfPeriodsFromTimestamp(firstTimestamp, backupConfig.periodSlice, record)
+    ((record, period), context)
+  })
 
-          case None => throw Errors.ExpectedStartOfSource
-        }
+  private[backup] def sourceWithFirstRecord
+      : Source[(OffsetDateTime, (ReducedConsumerRecord, kafkaClientInterface.CursorContext)),
+               kafkaClientInterface.Control
+      ] =
+    kafkaClientInterface.getSource.asSource.prefixAndTail(1).flatMapConcat { case (head, rest) =>
+      head.headOption match {
+        case Some((firstReducedConsumerRecord, firstCursorContext)) =>
+          val firstTimestamp = firstReducedConsumerRecord.toOffsetDateTime
+
+          Source.combine(
+            Source.single((firstTimestamp, (firstReducedConsumerRecord, firstCursorContext))),
+            rest.map { case (reducedConsumerRecord, context) => (firstTimestamp, (reducedConsumerRecord, context)) }
+          )(Concat(_))
+        case None => throw Errors.ExpectedStartOfSource
       }
-    )
+    }
 
   /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into
     * a data source.
     * @return The `CursorContext` which can be used for logging/debugging along with the `kafkaClientInterface.Control`
     *         which can be used to control the Stream
     */
-  protected def backup: Source[kafkaClientInterface.CursorContext, kafkaClientInterface.Control] = {
+  def backup: RunnableGraph[kafkaClientInterface.Control] = {
     // TODO use https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3api/list-multipart-uploads.html
     // and https://stackoverflow.com/questions/53764876/resume-s3-multipart-upload-partetag to find any in progress
     // multiupload to resume from previous termination. Looks like we will have to do this manually since its not in
     // Alpakka yet
-    val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods)
+
+    val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
 
     val split = withBackupStreamPositions.asSource.splitAfter { case ((_, backupStreamPosition), _) =>
       backupStreamPosition == BackupStreamPosition.Boundary
     }
 
-    split
+    val substreams = split
       .prefixAndTail(1)
       .flatMapConcat { case (head, restOfReducedConsumerRecords) =>
         head.headOption match {
@@ -164,11 +150,32 @@ trait BackupClientInterface {
               (transform, context)
             }
 
-            transformed.via(backupAndCommitFlow(key))
-          case None => throw Errors.ExpectedStartOfSource
+            transformed.map(data => (data, key))
+          case None => Source.empty
         }
       }
-      .mergeSubstreams
+
+    // Note that .alsoTo triggers after .to, see https://stackoverflow.com/questions/47895991/multiple-sinks-in-the-same-stream#comment93028098_47896071
+    @nowarn("msg=method lazyInit in object Sink is deprecated")
+    val subFlowSink = substreams
+      .alsoTo(kafkaClientInterface.commitCursor.contramap[((ByteString, kafkaClientInterface.CursorContext), String)] {
+        case ((_, context), _) => context
+      })
+      .to(
+        // See https://stackoverflow.com/questions/68774425/combine-prefixandtail1-with-sink-lazysink-for-subflow-created-by-splitafter/68776660?noredirect=1#comment121558518_68776660
+        Sink.lazyInit(
+          { case (_, key) =>
+            Future.successful(
+              backupToStorageSink(key).contramap[((ByteString, kafkaClientInterface.CursorContext), String)] {
+                case ((byteString, _), _) => byteString
+              }
+            )
+          },
+          empty
+        )
+      )
+
+    subFlowSink
   }
 }
 

@@ -11,3 +11,7 @@ final case class S3(dataBucket: String,
                     compactionBucket: String,
                     compactionBucketPrefix: Option[String]
 )
+
+object S3 {
+  def apply(dataBucket: String, compactionBucket: String): S3 = S3(dataBucket, None, compactionBucket, None)
+}

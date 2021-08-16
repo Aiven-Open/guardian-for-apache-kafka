@@ -1,10 +1,13 @@
 package io.aiven.guardian.kafka.backup
 
 import akka.actor.ActorSystem
+import akka.stream.scaladsl.{Keep, Sink, Source}
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
+import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.{Generators, ScalaTestConstants}
+import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalacheck.Gen
 import org.scalatest.Inspectors
 import org.scalatest.matchers.must.Matchers
@@ -13,8 +16,9 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import java.time.temporal.ChronoUnit
 import scala.annotation.nowarn
-import scala.concurrent.Await
 import scala.concurrent.duration.{FiniteDuration, _}
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.language.postfixOps
 
 final case class Periods(periodsBefore: Long, periodsAfter: Long)
 
@@ -123,6 +127,38 @@ class BackupClientInterfaceSpec
         ChronoUnit.MICROS.between(before.toOffsetDateTime,
                                   after.toOffsetDateTime
         ) must be < kafkaDataWithTimePeriod.periodSlice.toMicros
+      }
+    }
+  }
+
+  property("backup method completes flow correctly for all valid Kafka events") {
+    forAll(kafkaDataWithTimePeriodsGen) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
+      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
+                                                                    kafkaDataWithTimePeriod.periodSlice
+      )
+
+      implicit val ec = ExecutionContext.parasitic
+      val calculatedFuture = for {
+        _ <- mock.backup.run()
+        _ <- akka.pattern.after(100 millis)(Future.successful(()))
+        processedRecords = mock.mergeBackupData
+        asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
+                       Source
+                         .single(byteString)
+                         .via(CirceStreamSupport.decode[List[ReducedConsumerRecord]])
+                         .toMat(Sink.collection)(Keep.right)
+                         .run()
+                         .map(records => (key, records.flatten))
+                     })
+      } yield asRecords
+
+      val result = Await.result(calculatedFuture, AwaitTimeout)
+
+      val observed = result.flatMap { case (_, values) => values }
+
+      kafkaDataWithTimePeriod.data.containsSlice(observed) mustEqual true
+      if (observed.nonEmpty) {
+        observed.head must matchTo(kafkaDataWithTimePeriod.data.head)
       }
     }
   }
