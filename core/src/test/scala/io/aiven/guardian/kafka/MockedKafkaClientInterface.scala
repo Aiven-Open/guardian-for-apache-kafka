@@ -24,14 +24,16 @@ class MockedKafkaClientInterface(kafkaData: List[ReducedConsumerRecord]) extends
 
   /** The type that represents how to control the given stream, i.e. if you want to shut it down or add metrics
     */
-  override type Control = NotUsed
+  override type Control = Future[NotUsed]
 
   /** @return A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
-  override def getSource: SourceWithContext[ReducedConsumerRecord, Long, NotUsed] =
-    SourceWithContext.fromTuples(Source(kafkaData.map { reducedConsumerRecord =>
-      (reducedConsumerRecord, reducedConsumerRecord.offset)
-    }))
+  override def getSource: SourceWithContext[ReducedConsumerRecord, Long, Future[NotUsed]] =
+    SourceWithContext
+      .fromTuples(Source(kafkaData.map { reducedConsumerRecord =>
+        (reducedConsumerRecord, reducedConsumerRecord.offset)
+      }))
+      .mapMaterializedValue(Future.successful)
 
   /** @return A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
     */
