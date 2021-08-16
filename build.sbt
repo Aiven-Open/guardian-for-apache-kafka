@@ -17,6 +17,7 @@ val pureConfigVersion          = "0.16.0"
 val scalaTestVersion           = "3.2.9"
 val scalaTestScalaCheckVersion = "3.2.9.0"
 val akkaStreamsJson            = "0.8.0"
+val diffxVersion               = "0.5.6"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -74,7 +75,8 @@ lazy val core = project
       "ch.qos.logback"              % "logback-classic"   % logbackClassicVersion,
       "org.mdedetrich"             %% "akka-stream-circe" % akkaStreamsJson,
       "org.scalatest"              %% "scalatest"         % scalaTestVersion           % Test,
-      "org.scalatestplus"          %% "scalacheck-1-15"   % scalaTestScalaCheckVersion % Test
+      "org.scalatestplus"          %% "scalacheck-1-15"   % scalaTestScalaCheckVersion % Test,
+      "com.softwaremill.diffx"     %% "diffx-scalatest"   % diffxVersion               % Test
     )
   )
 
@@ -107,11 +109,7 @@ lazy val coreBackup = project
   .in(file("core-backup"))
   .settings(
     librarySettings,
-    name := s"$baseName-core-backup",
-    libraryDependencies ++= Seq(
-      "org.scalatest"     %% "scalatest"       % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestScalaCheckVersion % Test
-    )
+    name := s"$baseName-core-backup"
   )
   .dependsOn(coreAws % "compile->compile;test->test")
 

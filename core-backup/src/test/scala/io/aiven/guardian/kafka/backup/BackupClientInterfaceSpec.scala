@@ -1,6 +1,8 @@
 package io.aiven.guardian.kafka.backup
 
 import akka.actor.ActorSystem
+import com.softwaremill.diffx.generic.auto._
+import com.softwaremill.diffx.scalatest.DiffMatcher._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.{Generators, ScalaTestConstants}
 import org.scalacheck.Gen
@@ -53,7 +55,9 @@ class BackupClientInterfaceSpec
         backupStreamPosition
       }
 
-      Inspectors.forAtLeast(1, backupStreamPositions)(_ mustEqual BackupStreamPosition.Boundary)
+      Inspectors.forAtLeast(1, backupStreamPositions)(
+        _ must matchTo(BackupStreamPosition.Boundary: BackupStreamPosition)
+      )
     }
   }
 
