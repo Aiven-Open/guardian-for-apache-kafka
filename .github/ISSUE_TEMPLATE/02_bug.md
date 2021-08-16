@@ -13,4 +13,4 @@ about: Spotted a problem? Let us know
 
 # What else do we need to know?
 
-<!-- Include your platform, version, and any other information that seems relevant. -->
+<!-- Include your platform, version of Guardian for Apache Kafka and Kafka itself, and any other information that seems relevant like which storage mechanism is it in use. -->
