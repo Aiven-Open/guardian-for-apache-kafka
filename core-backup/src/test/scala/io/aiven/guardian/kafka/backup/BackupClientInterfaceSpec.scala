@@ -141,7 +141,7 @@ class BackupClientInterfaceSpec
       val calculatedFuture = for {
         _ <- mock.backup.run()
         _ <- akka.pattern.after(100 millis)(Future.successful(()))
-        processedRecords = mock.mergeBackupData
+        processedRecords = mock.mergeBackedUpData
         asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                        Source
                          .single(byteString)

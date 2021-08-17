@@ -35,6 +35,7 @@ object BackupStreamPosition {
 }
 
 /** An interface for a template on how to backup a Kafka Stream into some data storage
+  * @tparam T The underlying `kafkaClientInterface` type
   */
 trait BackupClientInterface[T <: KafkaClientInterface] {
   implicit val kafkaClientInterface: T
@@ -53,10 +54,10 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
   def backupToStorageSink(key: String): Sink[ByteString, Future[BackupResult]]
 
   /** Override this method to define a zero vale that covers the case that occurs
-    * immediately when substream has been split after a Boundary. If you have
-    * difficulties defining an empty value for `BackupResult` then you can wrap it
-    * in an `Option` and just use `None` empty case
-    * @return An "empty" value that is used when a substream has just started
+    * immediately when `SubFlow` has been split at `BackupStreamPosition.Start`. If
+    * you have difficulties defining an empty value for `BackupResult` then you
+    * can wrap it in an `Option` and just use `None` for the empty case
+    * @return An "empty" value that is used when a split `SubFlow` has just started
     */
   def empty: () => Future[BackupResult]
 
@@ -109,8 +110,8 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
 
   /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into
     * a data source.
-    * @return The `CursorContext` which can be used for logging/debugging along with the `kafkaClientInterface.Control`
-    *         which can be used to control the Stream
+    * @return The `KafkaClientInterface.Control` which depends on the implementation of `T`
+    *         (typically this is used to control the underlying stream).
     */
   def backup: RunnableGraph[kafkaClientInterface.Control] = {
     // TODO use https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3api/list-multipart-uploads.html
