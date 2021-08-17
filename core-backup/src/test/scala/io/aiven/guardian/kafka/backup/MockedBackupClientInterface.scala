@@ -22,12 +22,16 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
                                   periodSlice: FiniteDuration
 ) extends BackupClientInterface[MockedKafkaClientInterface] {
 
-  /** A Map where the key object key/filename and the value is the contents of the currently streamed
-    * `KafkaReducedRecord` data
+  /** The collection that receives the data as its being submitted where each value is the key
+    * along with the `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more
+    * convenient data structure once you have finished writing to it
     */
   val backedUpData: Iterable[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)]().asScala
 
-  def mergeBackupData: List[(String, ByteString)] = backedUpData
+  /** This method is intended to be called after you have written to it during a test.
+    * @return `backupData` with all of the `ByteString` data merged for each unique key
+    */
+  def mergeBackedUpData: List[(String, ByteString)] = backedUpData
     .groupBy { case (key, _) =>
       key
     }
