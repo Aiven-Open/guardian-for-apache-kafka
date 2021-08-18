@@ -137,7 +137,7 @@ class BackupClientInterfaceSpec
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 
-      implicit val ec = ExecutionContext.parasitic
+      implicit val ec = ExecutionContext.global
       val calculatedFuture = for {
         _ <- mock.backup.run()
         _ <- akka.pattern.after(100 millis)(Future.successful(()))
