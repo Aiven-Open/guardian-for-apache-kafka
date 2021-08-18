@@ -18,6 +18,7 @@ val scalaTestVersion           = "3.2.9"
 val scalaTestScalaCheckVersion = "3.2.9.0"
 val akkaStreamsJson            = "0.8.0"
 val diffxVersion               = "0.5.6"
+val s3MockVersion              = "2.2.1"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -89,7 +90,7 @@ lazy val coreS3 = project
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
       "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
       "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
-      "com.adobe.testing"   % "s3mock"                 % "2.1.36"                   % Test
+      "com.adobe.testing"   % "s3mock"                 % s3MockVersion              % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
