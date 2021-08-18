@@ -80,7 +80,7 @@ lazy val core = project
     )
   )
 
-lazy val coreAws = project
+lazy val coreS3 = project
   .in(file("core-s3"))
   .settings(
     librarySettings,
@@ -119,7 +119,7 @@ lazy val backupS3 = project
     librarySettings,
     name := s"$baseName-backup-s3"
   )
-  .dependsOn(coreAws % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
+  .dependsOn(coreS3 % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
 
 lazy val backupGcs = project
   .in(file("backup-gcs"))
@@ -158,7 +158,7 @@ lazy val compactionS3 = project
     librarySettings,
     name := s"$baseName-compaction-s3"
   )
-  .dependsOn(coreAws, coreCompaction)
+  .dependsOn(coreS3, coreCompaction)
 
 lazy val compactionGcs = project
   .in(file("compaction-gcs"))
