@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
+import io.aiven.guardian.akka.{AnyPropTestKit, AkkaStreamTestKit}
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.{Generators, ScalaTestConstants}
@@ -11,7 +12,6 @@ import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalacheck.Gen
 import org.scalatest.Inspectors
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.propspec.AnyPropSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import java.time.temporal.ChronoUnit
@@ -25,12 +25,11 @@ final case class Periods(periodsBefore: Long, periodsAfter: Long)
 final case class KafkaDataWithTimePeriod(data: List[ReducedConsumerRecord], periodSlice: FiniteDuration)
 
 class BackupClientInterfaceSpec
-    extends AnyPropSpec
+    extends AnyPropTestKit(ActorSystem("BackupClientInterfaceSpec"))
+    with AkkaStreamTestKit
     with Matchers
     with ScalaCheckPropertyChecks
     with ScalaTestConstants {
-
-  implicit val system: ActorSystem = ActorSystem()
 
   val periodGen = for {
     before <- Gen.long

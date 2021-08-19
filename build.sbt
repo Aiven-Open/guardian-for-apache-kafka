@@ -6,6 +6,7 @@ ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
 val akkaVersion                = "2.6.15"
+val akkaHttpVersion            = "10.2.6"
 val alpakkaKafkaVersion        = "2.1.1"
 val alpakkaVersion             = "3.0.3"
 val quillJdbcMonixVersion      = "3.7.2"
@@ -69,15 +70,17 @@ lazy val core = project
     librarySettings,
     name := s"$baseName-core",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka"          %% "akka-stream"       % akkaVersion,
-      "com.typesafe.akka"          %% "akka-stream-kafka" % alpakkaKafkaVersion,
-      "com.typesafe.scala-logging" %% "scala-logging"     % scalaLoggingVersion,
-      "com.github.pureconfig"      %% "pureconfig"        % pureConfigVersion,
-      "ch.qos.logback"              % "logback-classic"   % logbackClassicVersion,
-      "org.mdedetrich"             %% "akka-stream-circe" % akkaStreamsJson,
-      "org.scalatest"              %% "scalatest"         % scalaTestVersion           % Test,
-      "org.scalatestplus"          %% "scalacheck-1-15"   % scalaTestScalaCheckVersion % Test,
-      "com.softwaremill.diffx"     %% "diffx-scalatest"   % diffxVersion               % Test
+      "com.typesafe.akka"          %% "akka-stream"         % akkaVersion,
+      "com.typesafe.akka"          %% "akka-stream-kafka"   % alpakkaKafkaVersion,
+      "com.typesafe.scala-logging" %% "scala-logging"       % scalaLoggingVersion,
+      "com.github.pureconfig"      %% "pureconfig"          % pureConfigVersion,
+      "ch.qos.logback"              % "logback-classic"     % logbackClassicVersion,
+      "org.mdedetrich"             %% "akka-stream-circe"   % akkaStreamsJson,
+      "org.scalatest"              %% "scalatest"           % scalaTestVersion           % Test,
+      "org.scalatestplus"          %% "scalacheck-1-15"     % scalaTestScalaCheckVersion % Test,
+      "com.softwaremill.diffx"     %% "diffx-scalatest"     % diffxVersion               % Test,
+      "com.typesafe.akka"          %% "akka-stream-testkit" % akkaVersion                % Test,
+      "com.typesafe.akka"          %% "akka-http-testkit"   % akkaHttpVersion            % Test
     )
   )
 
@@ -90,7 +93,8 @@ lazy val coreS3 = project
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
       "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
       "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
-      "com.adobe.testing"   % "s3mock"                 % s3MockVersion              % Test
+      "com.adobe.testing"   % "s3mock"                 % s3MockVersion              % Test,
+      "com.typesafe.akka"  %% "akka-http-xml"          % akkaHttpVersion            % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")

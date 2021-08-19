@@ -8,6 +8,7 @@ import akka.stream.scaladsl.{Keep, Sink}
 import com.adobe.testing.s3mock.S3MockApplication
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher.matchTo
+import io.aiven.guardian.akka.{AnyPropTestKit, AkkaHttpTestKit}
 import io.aiven.guardian.kafka.backup.{KafkaDataWithTimePeriod, Periods}
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
@@ -20,7 +21,6 @@ import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalacheck.Gen
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.propspec.AnyPropSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.regions.Region
@@ -34,7 +34,8 @@ import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 
 class BackupClientSpec
-    extends AnyPropSpec
+    extends AnyPropTestKit(ActorSystem("S3BackupClientSpec"))
+    with AkkaHttpTestKit
     with Matchers
     with ScalaCheckPropertyChecks
     with ScalaTestConstants
@@ -43,8 +44,6 @@ class BackupClientSpec
 
   val s3MockApplication = new AtomicReference[S3MockApplication]()
   val s3Settings        = new AtomicReference[S3Settings]()
-
-  implicit val system: ActorSystem = ActorSystem()
 
   override def beforeAll(): Unit = {
     val mock = S3MockApplication.start(
@@ -65,10 +64,13 @@ class BackupClientSpec
       .withAccessStyle(AccessStyle.PathAccessStyle)
     s3MockApplication.set(mock)
     s3Settings.set(settings)
+    super.beforeAll()
   }
 
-  override def afterAll(): Unit =
+  override def afterAll(): Unit = {
     s3MockApplication.get().stop()
+    super.afterAll()
+  }
 
   val periodGen = for {
     before <- Gen.long
