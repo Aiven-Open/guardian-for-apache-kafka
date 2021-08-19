@@ -9,7 +9,8 @@ import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 
 /** A mocked `KafkaClientInterface` that returns a specific data as its source
-  * @param kafkaData The data which the mock will output
+  * @param kafkaData
+  *   The data which the mock will output
   */
 class MockedKafkaClientInterface(kafkaData: List[ReducedConsumerRecord]) extends KafkaClientInterface {
 
@@ -26,7 +27,8 @@ class MockedKafkaClientInterface(kafkaData: List[ReducedConsumerRecord]) extends
     */
   override type Control = Future[NotUsed]
 
-  /** @return A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
+  /** @return
+    *   A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
   override def getSource: SourceWithContext[ReducedConsumerRecord, Long, Future[NotUsed]] =
     SourceWithContext
@@ -35,7 +37,8 @@ class MockedKafkaClientInterface(kafkaData: List[ReducedConsumerRecord]) extends
       }))
       .mapMaterializedValue(Future.successful)
 
-  /** @return A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
+  /** @return
+    *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
     */
   override def commitCursor: Sink[Long, Future[Done]] = Sink.foreach(cursor => committedOffsets ++ Iterable(cursor))
 

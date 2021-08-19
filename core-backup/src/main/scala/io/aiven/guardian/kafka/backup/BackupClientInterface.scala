@@ -35,7 +35,8 @@ object BackupStreamPosition {
 }
 
 /** An interface for a template on how to backup a Kafka Stream into some data storage
-  * @tparam T The underlying `kafkaClientInterface` type
+  * @tparam T
+  *   The underlying `kafkaClientInterface` type
   */
 trait BackupClientInterface[T <: KafkaClientInterface] {
   implicit val kafkaClientInterface: T
@@ -48,16 +49,18 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
   import BackupClientInterface._
 
   /** Override this method to define how to backup a `ByteString` to a `DataSource`
-    * @param key The object key or filename for what is being backed up
-    * @return A Sink that also provides a `BackupResult`
+    * @param key
+    *   The object key or filename for what is being backed up
+    * @return
+    *   A Sink that also provides a `BackupResult`
     */
   def backupToStorageSink(key: String): Sink[ByteString, Future[BackupResult]]
 
-  /** Override this method to define a zero vale that covers the case that occurs
-    * immediately when `SubFlow` has been split at `BackupStreamPosition.Start`. If
-    * you have difficulties defining an empty value for `BackupResult` then you
-    * can wrap it in an `Option` and just use `None` for the empty case
-    * @return An "empty" value that is used when a split `SubFlow` has just started
+  /** Override this method to define a zero vale that covers the case that occurs immediately when `SubFlow` has been
+    * split at `BackupStreamPosition.Start`. If you have difficulties defining an empty value for `BackupResult` then
+    * you can wrap it in an `Option` and just use `None` for the empty case
+    * @return
+    *   An "empty" value that is used when a split `SubFlow` has just started
     */
   def empty: () => Future[BackupResult]
 
@@ -108,10 +111,11 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
       }
     }
 
-  /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into
-    * a data source.
-    * @return The `KafkaClientInterface.Control` which depends on the implementation of `T`
-    *         (typically this is used to control the underlying stream).
+  /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into a
+    * data source.
+    * @return
+    *   The `KafkaClientInterface.Control` which depends on the implementation of `T` (typically this is used to control
+    *   the underlying stream).
     */
   def backup: RunnableGraph[kafkaClientInterface.Control] = {
     // TODO use https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3api/list-multipart-uploads.html
@@ -188,17 +192,22 @@ object BackupClientInterface {
     offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
   /** Calculate an object storage key or filename for a ReducedConsumerRecord
-    * @param offsetDateTime A given time
-    * @return A `String` that can be used either as some object key or a filename
+    * @param offsetDateTime
+    *   A given time
+    * @return
+    *   A `String` that can be used either as some object key or a filename
     */
   def calculateKey(offsetDateTime: OffsetDateTime): String =
     s"${BackupClientInterface.formatOffsetDateTime(offsetDateTime)}.json"
 
   /** Calculates the current position in 2 element sliding of a Stream.
-    * @param dividedPeriodsBefore The number of divided periods in the first element of the slide. -1 is used as a
-    *                             sentinel value to indicate the start of the stream
-    * @param dividedPeriodsAfter The number of divided periods in the second element of the slide
-    * @return The position of the Stream
+    * @param dividedPeriodsBefore
+    *   The number of divided periods in the first element of the slide. -1 is used as a sentinel value to indicate the
+    *   start of the stream
+    * @param dividedPeriodsAfter
+    *   The number of divided periods in the second element of the slide
+    * @return
+    *   The position of the Stream
     */
   def splitAtBoundaryCondition(dividedPeriodsBefore: Long, dividedPeriodsAfter: Long): BackupStreamPosition =
     (dividedPeriodsBefore, dividedPeriodsAfter) match {
@@ -209,10 +218,12 @@ object BackupClientInterface {
     }
 
   /** Transforms a `ReducedConsumer` record into a ByteString so that it can be persisted into the data storage
-    * @param reducedConsumerRecord The ReducedConsumerRecord to persist
-    * @param backupStreamPosition The position of the record relative in the stream (so it knows if its at the start,
-    *                             middle or end)
-    * @return a `ByteString` ready to be persisted
+    * @param reducedConsumerRecord
+    *   The ReducedConsumerRecord to persist
+    * @param backupStreamPosition
+    *   The position of the record relative in the stream (so it knows if its at the start, middle or end)
+    * @return
+    *   a `ByteString` ready to be persisted
     */
   def transformReducedConsumerRecords(reducedConsumerRecord: ReducedConsumerRecord,
                                       backupStreamPosition: BackupStreamPosition

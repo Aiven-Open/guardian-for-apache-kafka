@@ -22,14 +22,15 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
                                   periodSlice: FiniteDuration
 ) extends BackupClientInterface[MockedKafkaClientInterface] {
 
-  /** The collection that receives the data as its being submitted where each value is the key
-    * along with the `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more
-    * convenient data structure once you have finished writing to it
+  /** The collection that receives the data as its being submitted where each value is the key along with the
+    * `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
+    * have finished writing to it
     */
   val backedUpData: Iterable[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)]().asScala
 
   /** This method is intended to be called after you have written to it during a test.
-    * @return `backupData` with all of the `ByteString` data merged for each unique key
+    * @return
+    *   `backupData` with all of the `ByteString` data merged for each unique key
     */
   def mergeBackedUpData: List[(String, ByteString)] = backedUpData
     .groupBy { case (key, _) =>
@@ -53,8 +54,10 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
 
   /** Override this method to define how to backup a `ByteString` to a `DataSource`
     *
-    * @param key The object key or filename for what is being backed up
-    * @return A Sink that also provides a `BackupResult`
+    * @param key
+    *   The object key or filename for what is being backed up
+    * @return
+    *   A Sink that also provides a `BackupResult`
     */
   override def backupToStorageSink(key: String): Sink[ByteString, Future[Done]] = Sink.foreach { byteString =>
     backedUpData ++ Iterable((key, byteString))

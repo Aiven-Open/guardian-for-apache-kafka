@@ -13,7 +13,8 @@ trait DatabaseInterface {
   /** Given a source of storage where Kafka messages are contained, stream it into a database.
     * @param kafkaStorageSource
     * @param encodeKafkaRowToByteString
-    * @return Number of rows updated
+    * @return
+    *   Number of rows updated
     */
   def streamInsert(kafkaStorageSource: Source[ReducedConsumerRecord, NotUsed],
                    encodeKafkaRowToByteString: Flow[ReducedConsumerRecord, ByteString, NotUsed]
