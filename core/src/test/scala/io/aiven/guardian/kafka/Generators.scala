@@ -39,14 +39,19 @@ object Generators {
   }
 
   /** A generator that allows you to generator an arbitrary collection of Kafka `ReducedConsumerRecord` used for
-    * mocking. The generator will create a random distribution of keys (with each key having its own specific record
-    * of offsets) allowing you to mock multi partition Kafka scenarios.
-    * @param topic The name of the kafka topic
-    * @param min The minimum number of `ReducedConsumerRecord`'s to generate
-    * @param max The maximum number of `ReducedConsumerRecord`'s to generate
-    * @param padTimestampsMillis The amount of padding (in milliseconds) between consecutive timestamps. If set to 0
-    *                            then all timestamps will differ by a single millisecond
-    * @return A list of generated `ReducedConsumerRecord`
+    * mocking. The generator will create a random distribution of keys (with each key having its own specific record of
+    * offsets) allowing you to mock multi partition Kafka scenarios.
+    * @param topic
+    *   The name of the kafka topic
+    * @param min
+    *   The minimum number of `ReducedConsumerRecord`'s to generate
+    * @param max
+    *   The maximum number of `ReducedConsumerRecord`'s to generate
+    * @param padTimestampsMillis
+    *   The amount of padding (in milliseconds) between consecutive timestamps. If set to 0 then all timestamps will
+    *   differ by a single millisecond
+    * @return
+    *   A list of generated `ReducedConsumerRecord`
     */
   def kafkaReducedConsumerRecordsGen(topic: String,
                                      min: Int,
@@ -56,8 +61,8 @@ object Generators {
     t                           <- Gen.const(topic)
     numberOfTotalReducedRecords <- Gen.chooseNum[Int](min, max)
     numberOfKeys                <- Gen.chooseNum[Int](1, numberOfTotalReducedRecords)
-    keys                        <- Gen.listOfN(numberOfKeys, Gen.alphaStr.map(string => Base64.getEncoder.encodeToString(string.getBytes)))
-    keyDistribution             <- Gen.listOfN(numberOfTotalReducedRecords, Gen.oneOf(keys))
+    keys <- Gen.listOfN(numberOfKeys, Gen.alphaStr.map(string => Base64.getEncoder.encodeToString(string.getBytes)))
+    keyDistribution <- Gen.listOfN(numberOfTotalReducedRecords, Gen.oneOf(keys))
     keysWithOffSets = keyDistribution.groupMap(identity)(createOffsetsByKey)
     reducedConsumerRecordsWithoutTimestamp = keysWithOffSets
                                                .map { case (key, offsets) =>

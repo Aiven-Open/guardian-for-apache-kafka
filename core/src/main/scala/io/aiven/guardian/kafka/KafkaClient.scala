@@ -14,11 +14,13 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import java.util.Base64
 import scala.concurrent.Future
 
-/** A Kafka Client that uses Alpakka Kafka Consumer under the hood to create a stream of events from a Kafka cluster.
-  * To configure the Alpakka Kafka Consumer use the standard typesafe configuration i.e. akka.kafka.consumer (note
-  * that the `keySerializer` and `valueSerializer` are hardcoded so you cannot override this).
-  * @param system A classic `ActorSystem`
-  * @param kafkaClusterConfig Additional cluster configuration that is needed
+/** A Kafka Client that uses Alpakka Kafka Consumer under the hood to create a stream of events from a Kafka cluster. To
+  * configure the Alpakka Kafka Consumer use the standard typesafe configuration i.e. akka.kafka.consumer (note that the
+  * `keySerializer` and `valueSerializer` are hardcoded so you cannot override this).
+  * @param system
+  *   A classic `ActorSystem`
+  * @param kafkaClusterConfig
+  *   Additional cluster configuration that is needed
   */
 class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster)
     extends KafkaClientInterface
@@ -34,7 +36,8 @@ class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaClust
 
   private[kafka] val subscriptions = Subscriptions.topics(kafkaClusterConfig.topics)
 
-  /** @return A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
+  /** @return
+    *   A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
   override val getSource: SourceWithContext[ReducedConsumerRecord, CommittableOffset, Consumer.Control] =
     Consumer
@@ -52,7 +55,8 @@ class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaClust
 
   private[kafka] val committerSettings: CommitterSettings = CommitterSettings(system)
 
-  /** @return A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
+  /** @return
+    *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
     */
   override val commitCursor: Sink[Committable, Future[Done]] = Committer.sink(committerSettings)
 }

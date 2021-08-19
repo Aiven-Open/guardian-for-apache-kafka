@@ -17,11 +17,13 @@ trait KafkaClientInterface {
     */
   type Control
 
-  /** @return A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
+  /** @return
+    *   A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
   def getSource: SourceWithContext[ReducedConsumerRecord, CursorContext, Control]
 
-  /** @return A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
+  /** @return
+    *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
     */
   def commitCursor: Sink[CursorContext, Future[Done]]
 }
