@@ -39,8 +39,10 @@ class BackupClientSpec
     with ForAllTestContainer
     with Config {
 
-  val DummyAccessKey = "DUMMY_ACCESS_KEY"
-  val DummySecretKey = "DUMMY_SECRET_KEY"
+  val DummyAccessKey   = "DUMMY_ACCESS_KEY"
+  val DummySecretKey   = "DUMMY_SECRET_KEY"
+  val ThrottleElements = 100
+  val ThrottleAmount   = 1 millis
 
   lazy val s3Settings = S3Settings()
     .withEndpointUrl(s"http://${container.getHostAddress}")
@@ -79,16 +81,23 @@ class BackupClientSpec
         val backupClient = new MockedS3BackupClientInterface(kafkaDataWithTimePeriod.data,
                                                              kafkaDataWithTimePeriod.periodSlice,
                                                              s3Config,
-                                                             Some(s3Settings)
+                                                             Some(s3Settings),
+                                                             Some(_.throttle(ThrottleElements, ThrottleAmount))
         )
 
         implicit val ec: ExecutionContext = ExecutionContext.global
         implicit val s3Attrs: Attributes  = S3Attributes.settings(s3Settings)
 
+        val delay =
+          (ThrottleAmount * (kafkaDataWithTimePeriod.data.size / ThrottleElements) * 1.2) + (10 millis) match {
+            case fd: FiniteDuration   => fd
+            case _: Duration.Infinite => throw new Exception("Expected Finite Duration")
+          }
+
         val calculatedFuture = for {
           _ <- S3.makeBucket(s3Config.dataBucket)
           _ <- backupClient.backup.run()
-          _ <- akka.pattern.after(1 second)(Future.successful(()))
+          _ <- akka.pattern.after(delay)(Future.successful(()))
           bucketContents <-
             S3.listBucket(s3Config.dataBucket, None, s3Headers)
               .withAttributes(s3Attrs)
