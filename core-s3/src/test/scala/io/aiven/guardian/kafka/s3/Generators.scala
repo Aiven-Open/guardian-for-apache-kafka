@@ -14,7 +14,7 @@ object Generators {
   )
 
   lazy val bucketAllCharGen: Gen[Char] = Gen.frequency(
-    (6, Gen.alphaLowerChar),
+    (10, Gen.alphaLowerChar),
     (1, Gen.const('.')),
     (1, Gen.const('-')),
     (1, Gen.numChar)
@@ -23,7 +23,7 @@ object Generators {
   @nowarn("msg=not.*?exhaustive")
   private def checkInvalidDuplicateChars(chars: List[Char]): Boolean =
     chars.sliding(2).forall { case Seq(before, after) =>
-      !(before == '-' && after == '-' || before == '.' && after == '.')
+      !(before == '.' && after == '.' || before == '-' && after == '.' || before == '.' && after == '-')
     }
 
   lazy val bucketNameGen: Gen[String] = {
