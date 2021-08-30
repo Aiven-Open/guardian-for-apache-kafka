@@ -19,7 +19,7 @@ val scalaTestVersion           = "3.2.9"
 val scalaTestScalaCheckVersion = "3.2.9.0"
 val akkaStreamsJson            = "0.8.0"
 val diffxVersion               = "0.5.6"
-val s3MockVersion              = "2.2.1"
+val testContainersVersion      = "0.39.6"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -70,17 +70,18 @@ lazy val core = project
     librarySettings,
     name := s"$baseName-core",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka"          %% "akka-stream"         % akkaVersion,
-      "com.typesafe.akka"          %% "akka-stream-kafka"   % alpakkaKafkaVersion,
-      "com.typesafe.scala-logging" %% "scala-logging"       % scalaLoggingVersion,
-      "com.github.pureconfig"      %% "pureconfig"          % pureConfigVersion,
-      "ch.qos.logback"              % "logback-classic"     % logbackClassicVersion,
-      "org.mdedetrich"             %% "akka-stream-circe"   % akkaStreamsJson,
-      "org.scalatest"              %% "scalatest"           % scalaTestVersion           % Test,
-      "org.scalatestplus"          %% "scalacheck-1-15"     % scalaTestScalaCheckVersion % Test,
-      "com.softwaremill.diffx"     %% "diffx-scalatest"     % diffxVersion               % Test,
-      "com.typesafe.akka"          %% "akka-stream-testkit" % akkaVersion                % Test,
-      "com.typesafe.akka"          %% "akka-http-testkit"   % akkaHttpVersion            % Test
+      "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion,
+      "com.typesafe.akka"          %% "akka-stream-kafka"              % alpakkaKafkaVersion,
+      "com.typesafe.scala-logging" %% "scala-logging"                  % scalaLoggingVersion,
+      "com.github.pureconfig"      %% "pureconfig"                     % pureConfigVersion,
+      "ch.qos.logback"              % "logback-classic"                % logbackClassicVersion,
+      "org.mdedetrich"             %% "akka-stream-circe"              % akkaStreamsJson,
+      "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
+      "org.scalatestplus"          %% "scalacheck-1-15"                % scalaTestScalaCheckVersion % Test,
+      "com.softwaremill.diffx"     %% "diffx-scalatest"                % diffxVersion               % Test,
+      "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
+      "com.typesafe.akka"          %% "akka-http-testkit"              % akkaHttpVersion            % Test,
+      "com.dimafeng"               %% "testcontainers-scala-scalatest" % testContainersVersion      % Test
     )
   )
 
@@ -93,7 +94,6 @@ lazy val coreS3 = project
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
       "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
       "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
-      "com.adobe.testing"   % "s3mock"                 % s3MockVersion              % Test,
       "com.typesafe.akka"  %% "akka-http-xml"          % akkaHttpVersion            % Test
     )
   )
@@ -122,7 +122,8 @@ lazy val backupS3 = project
   .in(file("backup-s3"))
   .settings(
     librarySettings,
-    name := s"$baseName-backup-s3"
+    Test / fork := true,
+    name        := s"$baseName-backup-s3"
   )
   .dependsOn(coreS3 % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
 
