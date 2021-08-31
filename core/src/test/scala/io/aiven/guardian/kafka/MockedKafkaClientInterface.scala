@@ -13,7 +13,7 @@ import scala.jdk.CollectionConverters._
   *   The data which the mock will output
   * @param sourceTransform
   *   A function that allows you to transform the source in some way. Convenient for cases such as throttling. By
-  *   default this is `None` so no changes are done.
+  *   default this is `None` so it just preserves the original source.
   */
 class MockedKafkaClientInterface(
     kafkaData: List[ReducedConsumerRecord],
