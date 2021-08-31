@@ -1,5 +1,6 @@
 package io.aiven.guardian.kafka.s3
 
+import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.scalacheck.Gen
 
 import scala.annotation.nowarn
@@ -45,4 +46,10 @@ object Generators {
                     }
     } yield bucketName
   }
+
+  val s3ConfigGen = (for {
+    dataBucket       <- bucketNameGen
+    compactionBucket <- bucketNameGen
+  } yield S3Config(dataBucket, compactionBucket)).filter(config => config.dataBucket != config.compactionBucket)
+
 }

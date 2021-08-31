@@ -8,6 +8,7 @@ import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
 import scala.jdk.CollectionConverters._
 
 object Generators {
@@ -90,5 +91,28 @@ object Generators {
         .map(_.asScala.toList)
 
   } yield reducedConsumerRecords
+
+  final case class KafkaDataWithTimePeriod(data: List[ReducedConsumerRecord], periodSlice: FiniteDuration)
+
+  /** Creates a generated dataset of Kafka events along with a time slice period using sensible values
+    * @param min
+    *   The minimum number of `ReducedConsumerRecord`'s to generate. Defaults to 2.
+    * @param max
+    *   The maximum number of `ReducedConsumerRecord`'s to generate. Defaults to 100.
+    * @param padTimestampsMillis
+    *   The amount of padding (in milliseconds) between consecutive timestamps. If set to 0 then all timestamps will
+    *   differ by a single millisecond. Defaults to 10 millis.
+    */
+  def kafkaDataWithTimePeriodsGen(min: Int = 2,
+                                  max: Int = 100,
+                                  padTimestampsMillis: Int = 10
+  ): Gen[KafkaDataWithTimePeriod] = for {
+    topic   <- Gen.alphaStr
+    records <- Generators.kafkaReducedConsumerRecordsGen(topic, min, max, padTimestampsMillis)
+    head = records.head
+    last = records.last
+
+    duration <- Gen.choose[Long](head.timestamp, last.timestamp - 1).map(millis => FiniteDuration(millis, MILLISECONDS))
+  } yield KafkaDataWithTimePeriod(records, duration)
 
 }
