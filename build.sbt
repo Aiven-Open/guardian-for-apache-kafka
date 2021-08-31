@@ -108,7 +108,7 @@ lazy val coreGcs = project
       "com.lightbend.akka" %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion
     )
   )
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val coreBackup = project
   .in(file("core-backup"))
