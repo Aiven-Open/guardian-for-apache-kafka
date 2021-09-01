@@ -28,7 +28,7 @@ class MockedKafkaClientInterface(
 
   /** A collection that keeps track of whenever a cursor is committed
     */
-  val committedOffsets = new ConcurrentLinkedQueue[Long]().asScala
+  val committedOffsets: Iterable[Long] = new ConcurrentLinkedQueue[Long]().asScala
 
   /** The type of the context to pass around. In context of a Kafka consumer, this typically holds offset data to be
     * automatically committed

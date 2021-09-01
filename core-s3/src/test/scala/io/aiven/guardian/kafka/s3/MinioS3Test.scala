@@ -11,10 +11,10 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.regions.providers.AwsRegionProvider
 
 trait MinioS3Test extends ForAllTestContainer with TestKitBase { this: Suite =>
-  val S3DummyAccessKey = "DUMMY_ACCESS_KEY"
-  val S3DummySecretKey = "DUMMY_SECRET_KEY"
+  private val S3DummyAccessKey = "DUMMY_ACCESS_KEY"
+  private val S3DummySecretKey = "DUMMY_SECRET_KEY"
 
-  lazy val s3Settings = S3Settings()
+  lazy val s3Settings: S3Settings = S3Settings()
     .withEndpointUrl(s"http://${container.getHostAddress}")
     .withCredentialsProvider(
       StaticCredentialsProvider.create(AwsBasicCredentials.create(S3DummyAccessKey, S3DummySecretKey))

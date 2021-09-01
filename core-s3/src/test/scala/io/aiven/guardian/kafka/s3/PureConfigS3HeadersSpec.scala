@@ -15,7 +15,7 @@ import pureconfig.ConfigReader.Result
 import pureconfig.ConfigSource
 
 class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckPropertyChecks {
-  implicit val cannedAclArb = Arbitrary(
+  implicit val cannedAclArb: Arbitrary[CannedAcl] = Arbitrary(
     Gen.oneOf(
       List(
         CannedAcl.AuthenticatedRead,
@@ -29,7 +29,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
     )
   )
 
-  implicit val storageClassArb = Arbitrary(
+  implicit val storageClassArb: Arbitrary[StorageClass] = Arbitrary(
     Gen.oneOf(
       List(
         StorageClass.Standard,
@@ -40,15 +40,15 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
     )
   )
 
-  implicit val aes256serverSideEncryptionArb = Gen.const(ServerSideEncryption.aes256())
-  implicit val kmsServerSideEncryptionArb = for {
+  implicit val aes256serverSideEncryptionArb: Gen[AES256] = Gen.const(ServerSideEncryption.aes256())
+  implicit val kmsServerSideEncryptionArb: Gen[KMS] = for {
     keyId   <- Gen.alphaStr.filter(_.nonEmpty)
     context <- Gen.option(Gen.alphaStr.filter(_.nonEmpty))
   } yield {
     val base = ServerSideEncryption.kms(keyId)
     context.fold(base)(base.withContext)
   }
-  implicit val customerKeysServerSideEncryptionArb = for {
+  implicit val customerKeysServerSideEncryptionArb: Gen[CustomerKeys] = for {
     key <- Gen.alphaStr.filter(_.nonEmpty)
     md5 <- Gen.option(Gen.alphaStr.filter(_.nonEmpty))
   } yield {
@@ -56,7 +56,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
     md5.fold(base)(base.withMd5)
   }
 
-  implicit val serverSideEncryptionArb = Arbitrary(
+  implicit val serverSideEncryptionArb: Arbitrary[ServerSideEncryption] = Arbitrary(
     Gen.frequency(
       (1, aes256serverSideEncryptionArb),
       (1, kmsServerSideEncryptionArb),
@@ -68,7 +68,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
   // we should be dealing with ASCII chars however that would involve us
   // having to manually escape certain characters (at which point we are
   // just testing PureConfig is just parsing things correctly).
-  val headersMapGen = Gen
+  val headersMapGen: Gen[Map[String,String]] = Gen
     .listOf(for {
       key   <- Gen.alphaStr.filter(_.nonEmpty)
       value <- Gen.alphaStr.filter(_.nonEmpty)
@@ -76,11 +76,11 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
     .map(_.toMap)
     .filter(_.nonEmpty)
 
-  implicit val metaHeadersArb = Arbitrary(
+  implicit val metaHeadersArb: Arbitrary[MetaHeaders] = Arbitrary(
     headersMapGen.map(MetaHeaders.apply)
   )
 
-  implicit val s3HeadersArb = Arbitrary(
+  implicit val s3HeadersArb: Arbitrary[S3Headers] = Arbitrary(
     for {
       cannedAcl            <- Gen.option(cannedAclArb.arbitrary)
       metaHeaders          <- Gen.option(metaHeadersArb.arbitrary)
