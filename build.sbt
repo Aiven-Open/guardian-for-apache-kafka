@@ -223,6 +223,10 @@ ThisBuild / githubWorkflowTargetBranches := Seq("main") // Once we have branches
 
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 
+ThisBuild / githubWorkflowBuildPreamble := Seq(
+  WorkflowStep.Sbt(List("scalafixAll --check"), name = Some("Linter: Scalafix checks"))
+)
+
 // Configuration needed for Scalafix
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
 
