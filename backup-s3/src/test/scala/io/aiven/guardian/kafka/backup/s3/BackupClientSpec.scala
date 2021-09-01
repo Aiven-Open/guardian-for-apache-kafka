@@ -40,8 +40,8 @@ class BackupClientSpec
     with MinioS3Test
     with Config {
 
-  val ThrottleElements: Int = 100
-  val ThrottleAmount: FiniteDuration   = 1 millis
+  val ThrottleElements: Int          = 100
+  val ThrottleAmount: FiniteDuration = 1 millis
 
   property("backup method completes flow correctly for all valid Kafka events") {
     forAll(kafkaDataWithTimePeriodsGen(), s3ConfigGen) {
