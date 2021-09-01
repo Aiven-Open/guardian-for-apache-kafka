@@ -1,8 +1,6 @@
 package io.aiven.guardian.kafka
 package s3
 
-import scala.annotation.nowarn
-
 import akka.stream.alpakka.s3.MetaHeaders
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.headers.CannedAcl
@@ -14,6 +12,8 @@ import pureconfig.ConfigCursor
 import pureconfig.ConfigReader
 import pureconfig.ConfigReader._
 import pureconfig.ConfigSource
+
+import scala.annotation.nowarn
 
 trait Config {
 

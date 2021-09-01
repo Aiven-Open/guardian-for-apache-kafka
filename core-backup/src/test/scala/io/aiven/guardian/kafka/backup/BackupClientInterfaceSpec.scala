@@ -1,14 +1,5 @@
 package io.aiven.guardian.kafka.backup
 
-import java.time.temporal.ChronoUnit
-
-import scala.annotation.nowarn
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.language.postfixOps
-
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
@@ -26,6 +17,15 @@ import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.Inspectors
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+
+import scala.annotation.nowarn
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
+import java.time.temporal.ChronoUnit
 
 final case class Periods(periodsBefore: Long, periodsAfter: Long)
 

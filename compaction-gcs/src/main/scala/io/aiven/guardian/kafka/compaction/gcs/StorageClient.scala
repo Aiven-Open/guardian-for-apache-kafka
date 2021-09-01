@@ -1,7 +1,5 @@
 package io.aiven.guardian.kafka.compaction.gcs
 
-import scala.annotation.nowarn
-
 import akka.NotUsed
 import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
 import akka.stream.scaladsl.Source
@@ -10,6 +8,8 @@ import io.aiven.guardian.kafka.compaction.StorageInterface
 import io.aiven.guardian.kafka.compaction.gcs.models.StorageConfig
 import io.aiven.guardian.kafka.gcs.errors.GCSErrors
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+
+import scala.annotation.nowarn
 
 class StorageClient(bucketName: String, maybePrefix: Option[String])(implicit storageConfig: StorageConfig)
     extends StorageInterface

@@ -1,12 +1,5 @@
 package io.aiven.guardian.kafka.backup
 
-import java.util.concurrent.ConcurrentLinkedQueue
-
-import scala.collection.immutable
-import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
-import scala.jdk.CollectionConverters._
-
 import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Keep
@@ -15,6 +8,13 @@ import akka.util.ByteString
 import io.aiven.guardian.kafka.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+
+import scala.collection.immutable
+import scala.concurrent.Future
+import scala.concurrent.duration.FiniteDuration
+import scala.jdk.CollectionConverters._
+
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /** A mocked `BackupClientInterface` which given a `kafkaClientInterface` allows you to
   * @param kafkaClientInterface

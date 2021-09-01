@@ -1,8 +1,5 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-
 import akka.stream.alpakka.s3.MultipartUploadResult
 import akka.stream.alpakka.s3.S3Attributes
 import akka.stream.alpakka.s3.S3Headers
@@ -14,6 +11,9 @@ import io.aiven.guardian.kafka.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.BackupClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings])(implicit
     override val kafkaClientInterface: T,

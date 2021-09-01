@@ -1,8 +1,5 @@
 package io.aiven.guardian.kafka.backup.gcs
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-
 import akka.http.scaladsl.model.ContentTypes
 import akka.stream.alpakka.google.GoogleAttributes
 import akka.stream.alpakka.google.GoogleSettings
@@ -14,6 +11,9 @@ import io.aiven.guardian.kafka.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.BackupClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.gcs.configs.{GCS => GCSConfig}
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[GoogleSettings])(implicit
     override val kafkaClientInterface: T,

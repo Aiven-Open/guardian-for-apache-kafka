@@ -1,16 +1,16 @@
 package io.aiven.guardian.kafka
 
-import java.util.concurrent.ConcurrentLinkedQueue
-
-import scala.concurrent.Future
-import scala.jdk.CollectionConverters._
-
 import akka.Done
 import akka.NotUsed
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.SourceWithContext
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+
+import scala.concurrent.Future
+import scala.jdk.CollectionConverters._
+
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /** A mocked `KafkaClientInterface` that returns a specific data as its source
   * @param kafkaData

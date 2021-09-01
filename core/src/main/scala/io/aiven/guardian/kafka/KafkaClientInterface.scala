@@ -1,11 +1,11 @@
 package io.aiven.guardian.kafka
 
-import scala.concurrent.Future
-
 import akka.Done
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.SourceWithContext
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+
+import scala.concurrent.Future
 
 trait KafkaClientInterface {
 
