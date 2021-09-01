@@ -1,8 +1,10 @@
 package io.aiven.guardian.kafka.models
 
-import org.apache.kafka.common.record.TimestampType
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
-import java.time.{Instant, OffsetDateTime, ZoneId}
+import org.apache.kafka.common.record.TimestampType
 
 /** A `ConsumerRecord` that only contains the necessary data for guardian
   *

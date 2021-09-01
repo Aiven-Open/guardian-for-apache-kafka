@@ -1,15 +1,17 @@
 package io.aiven.guardian.kafka
 
-import io.aiven.guardian.kafka.models.ReducedConsumerRecord
-import org.apache.kafka.common.record.TimestampType
-import org.scalacheck.Gen
-
 import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.duration.{FiniteDuration, MILLISECONDS}
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.MILLISECONDS
 import scala.jdk.CollectionConverters._
+
+import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.kafka.common.record.TimestampType
+import org.scalacheck.Gen
 
 object Generators {
   def baseReducedConsumerRecordGen(topic: String,

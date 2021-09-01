@@ -1,10 +1,12 @@
 package io.aiven.guardian.kafka.s3
 
-import akka.stream.alpakka.s3.{AccessStyle, S3Settings}
+import akka.stream.alpakka.s3.AccessStyle
+import akka.stream.alpakka.s3.S3Settings
 import akka.testkit.TestKitBase
 import com.dimafeng.testcontainers.ForAllTestContainer
 import org.scalatest.Suite
-import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.regions.providers.AwsRegionProvider
 

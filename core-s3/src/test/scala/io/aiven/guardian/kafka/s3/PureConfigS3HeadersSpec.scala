@@ -1,11 +1,13 @@
 package io.aiven.guardian.kafka.s3
 
+import akka.stream.alpakka.s3.MetaHeaders
+import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.headers._
-import akka.stream.alpakka.s3.{MetaHeaders, S3Headers}
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import io.aiven.guardian.kafka.s3.Config._
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.propspec.AnyPropSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks

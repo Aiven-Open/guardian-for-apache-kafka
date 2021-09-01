@@ -1,29 +1,35 @@
 package io.aiven.guardian.kafka.backup.s3
 
+import java.time.OffsetDateTime
+
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
 import akka.actor.ActorSystem
 import akka.stream.Attributes
 import akka.stream.alpakka.s3.S3Attributes
 import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.{Keep, Sink}
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.Sink
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher.matchTo
-import io.aiven.guardian.akka.{AkkaHttpTestKit, AnyPropTestKit}
+import io.aiven.guardian.akka.AkkaHttpTestKit
+import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.ScalaTestConstants
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import io.aiven.guardian.kafka.s3.Config
 import io.aiven.guardian.kafka.s3.Generators._
+import io.aiven.guardian.kafka.s3.MinioS3Test
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import io.aiven.guardian.kafka.s3.errors.S3Errors
-import io.aiven.guardian.kafka.s3.{Config, MinioS3Test}
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-
-import java.time.OffsetDateTime
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.language.postfixOps
 
 class BackupClientSpec
     extends AnyPropTestKit(ActorSystem("S3BackupClientSpec"))

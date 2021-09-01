@@ -1,11 +1,24 @@
 package io.aiven.guardian.kafka.backup
 
+import java.time.temporal.ChronoUnit
+
+import scala.annotation.nowarn
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher._
-import io.aiven.guardian.akka.{AkkaStreamTestKit, AnyPropTestKit}
-import io.aiven.guardian.kafka.Generators.{KafkaDataWithTimePeriod, kafkaDataWithTimePeriodsGen}
+import io.aiven.guardian.akka.AkkaStreamTestKit
+import io.aiven.guardian.akka.AnyPropTestKit
+import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
+import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
 import io.aiven.guardian.kafka.ScalaTestConstants
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
@@ -13,12 +26,6 @@ import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.Inspectors
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-
-import java.time.temporal.ChronoUnit
-import scala.annotation.nowarn
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.language.postfixOps
 
 final case class Periods(periodsBefore: Long, periodsAfter: Long)
 

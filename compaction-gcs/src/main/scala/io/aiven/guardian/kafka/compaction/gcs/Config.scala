@@ -1,10 +1,10 @@
 package io.aiven.guardian.kafka.compaction.gcs
 
-import io.aiven.guardian.kafka.compaction.gcs.models.StorageConfig
-import pureconfig.generic.auto._
-import pureconfig.ConfigSource
-
 import scala.annotation.nowarn
+
+import io.aiven.guardian.kafka.compaction.gcs.models.StorageConfig
+import pureconfig.ConfigSource
+import pureconfig.generic.auto._
 
 trait Config {
   @nowarn("cat=lint-byname-implicit")

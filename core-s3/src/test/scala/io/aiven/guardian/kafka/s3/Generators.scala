@@ -1,9 +1,9 @@
 package io.aiven.guardian.kafka.s3
 
+import scala.annotation.nowarn
+
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.scalacheck.Gen
-
-import scala.annotation.nowarn
 
 object Generators {
   // See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html for valid
