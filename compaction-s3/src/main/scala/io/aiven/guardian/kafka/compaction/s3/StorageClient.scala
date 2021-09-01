@@ -1,7 +1,5 @@
 package io.aiven.guardian.kafka.compaction.s3
 
-import scala.annotation.nowarn
-
 import akka.NotUsed
 import akka.stream.alpakka.s3.BucketAccess
 import akka.stream.alpakka.s3.S3Headers
@@ -12,6 +10,8 @@ import io.aiven.guardian.kafka.compaction.StorageInterface
 import io.aiven.guardian.kafka.compaction.s3.models.StorageConfig
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.errors.S3Errors
+
+import scala.annotation.nowarn
 
 class StorageClient(bucketName: String, prefix: Option[String], s3Headers: S3Headers)(implicit
     storageConfig: StorageConfig

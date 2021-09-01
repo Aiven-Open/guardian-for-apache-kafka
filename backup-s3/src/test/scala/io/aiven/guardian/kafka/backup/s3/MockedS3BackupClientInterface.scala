@@ -1,7 +1,5 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import scala.concurrent.duration.FiniteDuration
-
 import akka.NotUsed
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.S3Settings
@@ -10,6 +8,8 @@ import io.aiven.guardian.kafka.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
+
+import scala.concurrent.duration.FiniteDuration
 
 class MockedS3BackupClientInterface(
     kafkaData: List[ReducedConsumerRecord],

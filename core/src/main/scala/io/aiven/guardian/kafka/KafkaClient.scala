@@ -1,9 +1,5 @@
 package io.aiven.guardian.kafka
 
-import java.util.Base64
-
-import scala.concurrent.Future
-
 import akka.Done
 import akka.actor.ActorSystem
 import akka.kafka.CommitterSettings
@@ -19,6 +15,10 @@ import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
+
+import scala.concurrent.Future
+
+import java.util.Base64
 
 /** A Kafka Client that uses Alpakka Kafka Consumer under the hood to create a stream of events from a Kafka cluster. To
   * configure the Alpakka Kafka Consumer use the standard typesafe configuration i.e. akka.kafka.consumer (note that the

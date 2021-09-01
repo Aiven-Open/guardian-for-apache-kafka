@@ -1,13 +1,5 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import java.time.OffsetDateTime
-
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.language.postfixOps
-
 import akka.actor.ActorSystem
 import akka.stream.Attributes
 import akka.stream.alpakka.s3.S3Attributes
@@ -30,6 +22,14 @@ import io.aiven.guardian.kafka.s3.errors.S3Errors
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
+import java.time.OffsetDateTime
 
 class BackupClientSpec
     extends AnyPropTestKit(ActorSystem("S3BackupClientSpec"))
