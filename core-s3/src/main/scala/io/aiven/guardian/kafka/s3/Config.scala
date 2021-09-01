@@ -1,11 +1,14 @@
 package io.aiven.guardian.kafka
 package s3
 
-import io.aiven.guardian.kafka.PureConfigUtils._
 import akka.stream.alpakka.s3.headers.{CannedAcl, ServerSideEncryption, StorageClass}
 import akka.stream.alpakka.s3.{MetaHeaders, S3Headers}
+import io.aiven.guardian.kafka.PureConfigUtils._
+import io.aiven.guardian.kafka.s3.configs.S3
 import pureconfig.ConfigReader._
 import pureconfig.{ConfigCursor, ConfigReader, ConfigSource}
+
+import scala.annotation.nowarn
 
 trait Config {
 
@@ -78,6 +81,12 @@ trait Config {
     }
 
   implicit lazy val s3Headers: S3Headers = ConfigSource.default.at("s3-headers").loadOrThrow[S3Headers]
+
+  @nowarn("cat=lint-byname-implicit")
+  implicit lazy val s3Config: S3 = {
+    import pureconfig.generic.auto._
+    ConfigSource.default.at("s3-config").loadOrThrow[S3]
+  }
 }
 
 object Config extends Config
