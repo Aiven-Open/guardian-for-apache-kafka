@@ -68,7 +68,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
   // we should be dealing with ASCII chars however that would involve us
   // having to manually escape certain characters (at which point we are
   // just testing PureConfig is just parsing things correctly).
-  val headersMapGen: Gen[Map[String,String]] = Gen
+  val headersMapGen: Gen[Map[String, String]] = Gen
     .listOf(for {
       key   <- Gen.alphaStr.filter(_.nonEmpty)
       value <- Gen.alphaStr.filter(_.nonEmpty)
