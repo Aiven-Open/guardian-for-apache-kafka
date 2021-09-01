@@ -36,7 +36,6 @@ val flagsFor13 = Seq(
   "-opt-inline-from:<sources>",
   "-opt:l:method",
   "-Xfatal-warnings",
-  "-Ywarn-unused",
   "-Xlint:adapted-args",
   "-Wconf:cat=unused:info"
 )
