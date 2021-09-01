@@ -1,14 +1,19 @@
 package io.aiven.guardian.kafka
 package s3
 
-import akka.stream.alpakka.s3.headers.{CannedAcl, ServerSideEncryption, StorageClass}
-import akka.stream.alpakka.s3.{MetaHeaders, S3Headers}
+import scala.annotation.nowarn
+
+import akka.stream.alpakka.s3.MetaHeaders
+import akka.stream.alpakka.s3.S3Headers
+import akka.stream.alpakka.s3.headers.CannedAcl
+import akka.stream.alpakka.s3.headers.ServerSideEncryption
+import akka.stream.alpakka.s3.headers.StorageClass
 import io.aiven.guardian.kafka.PureConfigUtils._
 import io.aiven.guardian.kafka.s3.configs.S3
+import pureconfig.ConfigCursor
+import pureconfig.ConfigReader
 import pureconfig.ConfigReader._
-import pureconfig.{ConfigCursor, ConfigReader, ConfigSource}
-
-import scala.annotation.nowarn
+import pureconfig.ConfigSource
 
 trait Config {
 

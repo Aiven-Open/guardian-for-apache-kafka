@@ -1,19 +1,21 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.stream.scaladsl._
-import akka.util.ByteString
-import io.aiven.guardian.kafka.backup.configs.Backup
-import io.aiven.guardian.kafka.codecs.Circe._
-import io.aiven.guardian.kafka.models.ReducedConsumerRecord
-import io.aiven.guardian.kafka.{Errors, KafkaClientInterface}
-import io.circe.syntax._
-
 import java.time._
 import java.time.format.DateTimeFormatter
 import java.time.temporal._
+
 import scala.annotation.nowarn
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
+
+import akka.stream.scaladsl._
+import akka.util.ByteString
+import io.aiven.guardian.kafka.Errors
+import io.aiven.guardian.kafka.KafkaClientInterface
+import io.aiven.guardian.kafka.backup.configs.Backup
+import io.aiven.guardian.kafka.codecs.Circe._
+import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import io.circe.syntax._
 
 /** A marker used to indicate in which position the current backup stream is
   */

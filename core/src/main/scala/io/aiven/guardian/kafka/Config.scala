@@ -1,10 +1,10 @@
 package io.aiven.guardian.kafka
 
-import io.aiven.guardian.kafka.configs.KafkaCluster
-import pureconfig.generic.auto._
-import pureconfig.ConfigSource
-
 import scala.annotation.nowarn
+
+import io.aiven.guardian.kafka.configs.KafkaCluster
+import pureconfig.ConfigSource
+import pureconfig.generic.auto._
 
 trait Config {
 

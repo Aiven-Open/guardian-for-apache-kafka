@@ -1,12 +1,12 @@
 package io.aiven.guardian.kafka.compaction
 
-import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import scala.concurrent.Future
+
 import akka.NotUsed
 import akka.stream.javadsl.Flow
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-
-import scala.concurrent.Future
+import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
 trait DatabaseInterface {
 

@@ -1,18 +1,24 @@
 package io.aiven.guardian.kafka
 
-import io.aiven.guardian.kafka.configs.KafkaCluster
-import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import java.util.Base64
+
+import scala.concurrent.Future
+
 import akka.Done
 import akka.actor.ActorSystem
-import akka.kafka.ConsumerMessage.{Committable, CommittableOffset}
-import akka.kafka.scaladsl.{Committer, Consumer}
-import akka.kafka.{CommitterSettings, ConsumerSettings, Subscriptions}
-import akka.stream.scaladsl.{Sink, SourceWithContext}
+import akka.kafka.CommitterSettings
+import akka.kafka.ConsumerMessage.Committable
+import akka.kafka.ConsumerMessage.CommittableOffset
+import akka.kafka.ConsumerSettings
+import akka.kafka.Subscriptions
+import akka.kafka.scaladsl.Committer
+import akka.kafka.scaladsl.Consumer
+import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.SourceWithContext
 import com.typesafe.scalalogging.StrictLogging
+import io.aiven.guardian.kafka.configs.KafkaCluster
+import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
-
-import java.util.Base64
-import scala.concurrent.Future
 
 /** A Kafka Client that uses Alpakka Kafka Consumer under the hood to create a stream of events from a Kafka cluster. To
   * configure the Alpakka Kafka Consumer use the standard typesafe configuration i.e. akka.kafka.consumer (note that the

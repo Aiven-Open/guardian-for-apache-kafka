@@ -1,9 +1,9 @@
 package io.aiven.guardian.kafka.s3
 
+import java.time.Duration
+
 import com.dimafeng.testcontainers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
-
-import java.time.Duration
 
 class MinioContainer(accessKey: String, secretKey: String)
     extends GenericContainer(

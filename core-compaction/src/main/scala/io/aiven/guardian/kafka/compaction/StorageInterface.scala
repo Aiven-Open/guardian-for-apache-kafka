@@ -1,8 +1,8 @@
 package io.aiven.guardian.kafka.compaction
 
-import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import akka.NotUsed
 import akka.stream.scaladsl.Source
+import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
 trait StorageInterface {
 

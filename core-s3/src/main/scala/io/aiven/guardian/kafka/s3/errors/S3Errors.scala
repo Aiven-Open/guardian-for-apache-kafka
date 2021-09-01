@@ -1,8 +1,8 @@
 package io.aiven.guardian.kafka.s3.errors
 
-import io.aiven.guardian.kafka.Errors
 import akka.http.scaladsl.model.headers.ByteRange
 import akka.stream.alpakka.s3.S3Headers
+import io.aiven.guardian.kafka.Errors
 
 sealed abstract class S3Errors extends Errors
 
