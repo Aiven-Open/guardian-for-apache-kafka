@@ -14,7 +14,7 @@ trait Circe {
         .toRight(DecodingFailure(s"No TimestampType with $id", c.history))
     }
 
-  implicit val kafkaTimestampTypeEncoder = Encoder.instance[TimestampType](_.id.asJson)
+  implicit val kafkaTimestampTypeEncoder: Encoder[TimestampType] = Encoder.instance[TimestampType](_.id.asJson)
 
   implicit val reducedConsumerRecordDecoder: Decoder[ReducedConsumerRecord] = Decoder.forProduct6(
     "topic",

@@ -9,7 +9,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pureconfig.ConfigSource
 
 class ConfigSpec extends AnyPropSpec with Matchers with ScalaCheckPropertyChecks {
-  implicit val kafkaClusterArb = Arbitrary(
+  implicit val kafkaClusterArb: Arbitrary[KafkaCluster] = Arbitrary(
     Gen.containerOf[Set, String](Gen.alphaStr).map(topics => KafkaCluster(topics))
   )
 
@@ -18,7 +18,7 @@ class ConfigSpec extends AnyPropSpec with Matchers with ScalaCheckPropertyChecks
       val conf =
         s"""
         |kafka-cluster = {
-        |  topics = [${kafkaClusterConfig.topics.map(s => "\"s\"").mkString(",")}]
+        |  topics = [${kafkaClusterConfig.topics.map(topic => s""""$topic"""").mkString(",")}]
         |}
         |""".stripMargin
 

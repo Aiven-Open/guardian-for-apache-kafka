@@ -33,7 +33,7 @@ trait Config {
       case rest                                   => Left(failure(cur, rest, "CannedAcl"))
     }
 
-  implicit val metaHeadersConfigReader = mapReader[String].map(MetaHeaders.apply)
+  implicit val metaHeadersConfigReader: ConfigReader[MetaHeaders] = mapReader[String].map(MetaHeaders.apply)
 
   implicit val storageClassConfigReader: ConfigReader[StorageClass] = (cur: ConfigCursor) =>
     cur.asString.flatMap {

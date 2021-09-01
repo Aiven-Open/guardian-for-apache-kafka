@@ -47,7 +47,7 @@ object Generators {
     } yield bucketName
   }
 
-  val s3ConfigGen = (for {
+  val s3ConfigGen: Gen[S3Config] = (for {
     dataBucket       <- bucketNameGen
     compactionBucket <- bucketNameGen
   } yield S3Config(dataBucket, compactionBucket)).filter(config => config.dataBucket != config.compactionBucket)
