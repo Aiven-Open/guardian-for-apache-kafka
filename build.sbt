@@ -36,7 +36,9 @@ val flagsFor13 = Seq(
   "-opt-inline-from:<sources>",
   "-opt:l:method",
   "-Xfatal-warnings",
-  "-Ywarn-unused:imports"
+  "-Ywarn-unused",
+  "-Xlint:adapted-args",
+  "-Wconf:cat=unused:info"
 )
 
 val librarySettings = Seq(
@@ -220,6 +222,13 @@ ThisBuild / githubWorkflowUseSbtThinClient := false
 ThisBuild / githubWorkflowTargetBranches := Seq("main") // Once we have branches per version, add the pattern here
 
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+
+// Configuration needed for Scalafix
+ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
+
+ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value
+
+ThisBuild / semanticdbEnabled := true
 
 import ReleaseTransformations._
 
