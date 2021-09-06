@@ -33,7 +33,7 @@ class StorageClient(bucketName: String, maybePrefix: Option[String])(implicit st
             .download(bucketName, storageObject.name)
             .map(
               _.getOrElse(
-                throw GCSErrors.ExpectedObjectToExist(bucketName, maybePrefix)
+                throw GCSErrors.ExpectedObjectToExist(bucketName, storageObject.name, maybePrefix)
               )
             )
       )
