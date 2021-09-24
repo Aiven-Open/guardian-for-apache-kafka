@@ -31,7 +31,8 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
       .multipartUploadWithHeaders(
         s3Config.dataBucket,
         key,
-        s3Headers = s3Headers
+        s3Headers = s3Headers,
+        chunkingParallelism = 1 // Parallelism is pointless for this usecase since we are directly streaming from Kafka
       )
       .mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
     maybeS3Settings.fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
