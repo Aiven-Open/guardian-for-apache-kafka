@@ -4,7 +4,7 @@
 <!-- Provide a small sentence that summarizes the change. -->
 
 <!-- Provide the issue number below if it exists. -->
-References: #xxxxx
+Resolves: #xxxxx
 
 # Why this way
 
