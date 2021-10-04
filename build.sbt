@@ -5,10 +5,12 @@ ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
+ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
 val akkaVersion                = "2.6.15"
 val akkaHttpVersion            = "10.2.6"
 val alpakkaKafkaVersion        = "2.1.1"
-val alpakkaVersion             = "3.0.3"
+val alpakkaVersion             = "3.0.2+28-88f3fdf3+20211001-1529-SNAPSHOT"
 val quillJdbcMonixVersion      = "3.7.2"
 val postgresqlJdbcVersion      = "42.2.23"
 val scalaLoggingVersion        = "3.9.4"
@@ -93,10 +95,10 @@ lazy val coreS3 = project
     librarySettings,
     name := s"$baseName-s3",
     libraryDependencies ++= Seq(
-      "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
-      "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
-      "com.typesafe.akka"  %% "akka-http-xml"          % akkaHttpVersion            % Test
+      "org.mdedetrich"    %% "akka-stream-alpakka-s3" % alpakkaVersion,
+      "org.scalatest"     %% "scalatest"              % scalaTestVersion           % Test,
+      "org.scalatestplus" %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
+      "com.typesafe.akka" %% "akka-http-xml"          % akkaHttpVersion            % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -107,7 +109,10 @@ lazy val coreGcs = project
     librarySettings,
     name := s"$baseName-gcs",
     libraryDependencies ++= Seq(
-      "com.lightbend.akka" %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion
+      "org.mdedetrich"    %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion,
+      "org.scalatest"     %% "scalatest"                                % scalaTestVersion           % Test,
+      "org.scalatestplus" %% "scalacheck-1-15"                          % scalaTestScalaCheckVersion % Test,
+      "com.typesafe.akka" %% "akka-http-spray-json"                     % akkaHttpVersion            % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -129,13 +134,14 @@ lazy val backupS3 = project
   )
   .dependsOn(coreS3 % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
 
-lazy val backupGcs = project
+lazy val backupGCS = project
   .in(file("backup-gcs"))
   .settings(
     librarySettings,
-    name := s"$baseName-backup-gcs"
+    Test / fork := true,
+    name        := s"$baseName-backup-gcs"
   )
-  .dependsOn(coreGcs, coreBackup)
+  .dependsOn(coreGcs % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
 
 lazy val cliBackup = project
   .in(file("cli-backup"))
@@ -146,7 +152,7 @@ lazy val cliBackup = project
       "com.monovore" %% "decline" % declineVersion
     )
   )
-  .dependsOn(backupS3, backupGcs)
+  .dependsOn(backupS3, backupGCS)
   .enablePlugins(SbtNativePackager)
 
 lazy val coreCompaction = project
