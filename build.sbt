@@ -74,12 +74,15 @@ lazy val core = project
     librarySettings,
     name := s"$baseName-core",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion,
+      "com.typesafe.akka"          %% "akka-actor"                     % akkaVersion                % Provided,
+      "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Provided,
       "com.typesafe.akka"          %% "akka-stream-kafka"              % alpakkaKafkaVersion,
       "com.typesafe.scala-logging" %% "scala-logging"                  % scalaLoggingVersion,
       "com.github.pureconfig"      %% "pureconfig"                     % pureConfigVersion,
       "ch.qos.logback"              % "logback-classic"                % logbackClassicVersion,
       "org.mdedetrich"             %% "akka-stream-circe"              % akkaStreamsJson,
+      "com.typesafe.akka"          %% "akka-actor"                     % akkaVersion                % Test,
+      "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Test,
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
       "org.scalatestplus"          %% "scalacheck-1-15"                % scalaTestScalaCheckVersion % Test,
       "com.softwaremill.diffx"     %% "diffx-scalatest"                % diffxVersion               % Test,
@@ -149,7 +152,9 @@ lazy val cliBackup = project
     cliSettings,
     name := s"$baseName-cli-backup",
     libraryDependencies ++= Seq(
-      "com.monovore" %% "decline" % declineVersion
+      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.monovore"      %% "decline"     % declineVersion
     )
   )
   .dependsOn(backupS3, backupGCS)
@@ -188,7 +193,9 @@ lazy val cliCompaction = project
     cliSettings,
     name := s"$baseName-cli-compaction",
     libraryDependencies ++= Seq(
-      "com.monovore" %% "decline" % declineVersion
+      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.monovore"      %% "decline"     % declineVersion
     )
   )
   .dependsOn(compactionS3, compactionGCS)
@@ -216,7 +223,9 @@ lazy val cliRestore = project
     cliSettings,
     name := s"$baseName-cli-restore",
     libraryDependencies ++= Seq(
-      "com.monovore" %% "decline" % declineVersion
+      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.monovore"      %% "decline"     % declineVersion
     )
   )
   .dependsOn(restoreS3, restoreGCS)
