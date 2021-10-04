@@ -7,21 +7,21 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
 ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-val akkaVersion                = "2.6.15"
+val akkaVersion                = "2.6.16"
 val akkaHttpVersion            = "10.2.6"
 val alpakkaKafkaVersion        = "2.1.1"
 val alpakkaVersion             = "3.0.2+28-88f3fdf3+20211001-1529-SNAPSHOT"
 val quillJdbcMonixVersion      = "3.7.2"
-val postgresqlJdbcVersion      = "42.2.23"
+val postgresqlJdbcVersion      = "42.2.24"
 val scalaLoggingVersion        = "3.9.4"
-val logbackClassicVersion      = "1.2.5"
+val logbackClassicVersion      = "1.2.6"
 val declineVersion             = "2.2.0"
 val pureConfigVersion          = "0.16.0"
 val scalaTestVersion           = "3.2.9"
 val scalaTestScalaCheckVersion = "3.2.9.0"
 val akkaStreamsJson            = "0.8.0"
 val diffxVersion               = "0.5.6"
-val testContainersVersion      = "0.39.6"
+val testContainersVersion      = "0.39.8"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -103,7 +103,7 @@ lazy val coreS3 = project
   )
   .dependsOn(core % "compile->compile;test->test")
 
-lazy val coreGcs = project
+lazy val coreGCS = project
   .in(file("core-gcs"))
   .settings(
     librarySettings,
@@ -141,7 +141,7 @@ lazy val backupGCS = project
     Test / fork := true,
     name        := s"$baseName-backup-gcs"
   )
-  .dependsOn(coreGcs % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
+  .dependsOn(coreGCS % "compile->compile;test->test", coreBackup % "compile->compile;test->test")
 
 lazy val cliBackup = project
   .in(file("cli-backup"))
@@ -174,13 +174,13 @@ lazy val compactionS3 = project
   )
   .dependsOn(coreS3, coreCompaction)
 
-lazy val compactionGcs = project
+lazy val compactionGCS = project
   .in(file("compaction-gcs"))
   .settings(
     librarySettings,
     name := s"$baseName-compaction-gcs"
   )
-  .dependsOn(coreGcs, coreCompaction)
+  .dependsOn(coreGCS, coreCompaction)
 
 lazy val cliCompaction = project
   .in(file("cli-compaction"))
@@ -191,7 +191,7 @@ lazy val cliCompaction = project
       "com.monovore" %% "decline" % declineVersion
     )
   )
-  .dependsOn(compactionS3, compactionGcs)
+  .dependsOn(compactionS3, compactionGCS)
   .enablePlugins(SbtNativePackager)
 
 lazy val restoreS3 = project
@@ -202,13 +202,13 @@ lazy val restoreS3 = project
   )
   .dependsOn(compactionS3)
 
-lazy val restoreGcs = project
+lazy val restoreGCS = project
   .in(file("restore-gcs"))
   .settings(
     librarySettings,
     name := s"$baseName-restore-gcs"
   )
-  .dependsOn(compactionGcs)
+  .dependsOn(compactionGCS)
 
 lazy val cliRestore = project
   .in(file("cli-restore"))
@@ -219,7 +219,7 @@ lazy val cliRestore = project
       "com.monovore" %% "decline" % declineVersion
     )
   )
-  .dependsOn(restoreS3, restoreGcs)
+  .dependsOn(restoreS3, restoreGCS)
   .enablePlugins(SbtNativePackager)
 
 // This is currently causing problems, see https://github.com/djspiewak/sbt-github-actions/issues/74
