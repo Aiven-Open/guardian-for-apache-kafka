@@ -1,8 +1,6 @@
 package io.aiven.guardian.kafka.backup.configs
 
-import scala.concurrent.duration.FiniteDuration
-
-/** @param periodSlice
-  *   The time period for each given slice that stores all of the `ReducedConsumerRecord`
+/** @param timeConfiguration
+  *   Determines how the backed up objects/files are segregated depending on a time configuration
   */
-final case class Backup(periodSlice: FiniteDuration)
+final case class Backup(timeConfiguration: TimeConfiguration)

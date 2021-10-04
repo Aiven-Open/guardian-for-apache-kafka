@@ -1,7 +1,9 @@
 package io.aiven.guardian.kafka.backup.s3
 
+import akka.actor.Scheduler
 import akka.stream.Attributes
 import akka.stream.alpakka.s3.BucketAccess
+import akka.stream.alpakka.s3.ListBucketResultContents
 import akka.stream.alpakka.s3.S3Attributes
 import akka.stream.alpakka.s3.S3Settings
 import akka.stream.alpakka.s3.scaladsl.S3
@@ -14,6 +16,7 @@ import com.softwaremill.diffx.scalatest.DiffMatcher.matchTo
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.Generators._
+import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.Config
@@ -49,7 +52,9 @@ trait BackupClientSpec
     with StrictLogging {
 
   implicit val ec: ExecutionContext            = system.dispatcher
-  implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(5 minutes, 100 millis)
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(minSuccessful = 1, minSize = 1)
 
   val ThrottleElements: Int          = 100
   val ThrottleAmount: FiniteDuration = 1 millis
@@ -128,13 +133,41 @@ trait BackupClientSpec
       case None => ()
     }
 
+  /** @param dataBucket
+    *   Which S3 bucket the objects are being persisted into
+    * @param transformResult
+    *   A function that transforms the download result from S3 into the data `T` that you need. Note that you can also
+    *   throw an exception in this transform function to trigger a retry (i.e. using it as a an additional predicate)
+    * @param attempts
+    *   Total number of attempts
+    * @param delay
+    *   The delay between each attempt after the first
+    * @tparam T
+    *   Type of the final result transformed by `transformResult`
+    * @return
+    */
+  def waitForS3Download[T](dataBucket: String,
+                           transformResult: Seq[ListBucketResultContents] => T,
+                           attempts: Int = 10,
+                           delay: FiniteDuration = 1 second
+  ): Future[T] = {
+    implicit val scheduler: Scheduler = system.scheduler
+
+    val attempt = () =>
+      S3.listBucket(dataBucket, None).withAttributes(s3Attrs).runWith(Sink.seq).map {
+        transformResult
+      }
+
+    akka.pattern.retry(attempt, attempts, delay)
+  }
+
   property("backup method completes flow correctly for all valid Kafka events") {
     forAll(kafkaDataWithTimePeriodsGen(), s3ConfigGen(useVirtualDotHost, bucketPrefix)) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
         logger.info(s"Data bucket is ${s3Config.dataBucket}")
         val backupClient = new MockedS3BackupClientInterface(
           Source(kafkaDataWithTimePeriod.data).throttle(ThrottleElements, ThrottleAmount),
-          kafkaDataWithTimePeriod.periodSlice,
+          PeriodFromFirst(kafkaDataWithTimePeriod.periodSlice),
           s3Config,
           Some(s3Settings)
         )
@@ -171,7 +204,7 @@ trait BackupClientSpec
             })
           keysWithRecords <- Future.sequence(keysWithSource.map { case (key, source) =>
                                source
-                                 .via(CirceStreamSupport.decode[List[ReducedConsumerRecord]])
+                                 .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
                                  .toMat(Sink.collection)(Keep.right)
                                  .run()
                                  .map(list => (key, list.flatten))
@@ -181,7 +214,9 @@ trait BackupClientSpec
                      OffsetDateTime.parse(date).toEpochSecond
                    }(Ordering[Long].reverse)
           flattened = sorted.flatMap { case (_, records) => records }
-        } yield flattened
+        } yield flattened.collect { case Some(reducedConsumerRecord) =>
+          reducedConsumerRecord
+        }
         val observed = calculatedFuture.futureValue
 
         kafkaDataWithTimePeriod.data.containsSlice(observed) mustEqual true

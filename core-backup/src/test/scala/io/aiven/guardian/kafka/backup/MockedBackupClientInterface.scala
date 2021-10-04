@@ -10,11 +10,11 @@ import akka.util.ByteString
 import io.aiven.guardian.kafka.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.Utils._
 import io.aiven.guardian.kafka.backup.configs.Backup
+import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
 import scala.collection.immutable
 import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters._
 
 import java.time.OffsetDateTime
@@ -25,8 +25,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
   * @param periodSlice
   */
 class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafkaClientInterface,
-                                  periodSlice: FiniteDuration
-) extends BackupClientInterface[MockedKafkaClientInterface] {
+                                  timeConfiguration: TimeConfiguration
+)(implicit override val system: ActorSystem)
+    extends BackupClientInterface[MockedKafkaClientInterface] {
 
   /** The collection that receives the data as its being submitted where each value is the key along with the
     * `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
@@ -72,12 +73,16 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
   def clear(): Unit = backedUpData.clear()
 
   override implicit lazy val backupConfig: Backup = Backup(
-    periodSlice
+    timeConfiguration
   )
 
   /** Override this type to define the result of backing up data to a datasource
     */
   override type BackupResult = Done
+
+  override type CurrentState = Nothing
+
+  override def getCurrentUploadState(key: String): Future[Option[Nothing]] = Future.successful(None)
 
   override def empty: () => Future[Done] = () => Future.successful(Done)
 
@@ -88,9 +93,12 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     * @return
     *   A Sink that also provides a `BackupResult`
     */
-  override def backupToStorageSink(key: String): Sink[ByteString, Future[Done]] = Sink.foreach { byteString =>
-    backedUpData.add((key, byteString))
-  }
+  override def backupToStorageSink(key: String,
+                                   currentState: Option[Nothing]
+  ): Sink[(ByteString, kafkaClientInterface.CursorContext), Future[Done]] =
+    Sink.foreach { case (byteString, _) =>
+      backedUpData.add((key, byteString))
+    }
 
   def materializeBackupStreamPositions()(implicit
       system: ActorSystem
@@ -103,5 +111,6 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
 /** A `MockedBackupClientInterface` that also uses a mocked `KafkaClientInterface`
   */
 class MockedBackupClientInterfaceWithMockedKafkaData(kafkaData: Source[ReducedConsumerRecord, NotUsed],
-                                                     periodSlice: FiniteDuration
-) extends MockedBackupClientInterface(new MockedKafkaClientInterface(kafkaData), periodSlice)
+                                                     timeConfiguration: TimeConfiguration
+)(implicit override val system: ActorSystem)
+    extends MockedBackupClientInterface(new MockedKafkaClientInterface(kafkaData), timeConfiguration)

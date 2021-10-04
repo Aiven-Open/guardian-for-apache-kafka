@@ -96,6 +96,24 @@ object Generators {
 
   final case class KafkaDataWithTimePeriod(data: List[ReducedConsumerRecord], periodSlice: FiniteDuration)
 
+  def randomPeriodSliceBetweenMinMax(reducedConsumerRecords: List[ReducedConsumerRecord]): Gen[FiniteDuration] = {
+    val head = reducedConsumerRecords.head
+    val last = reducedConsumerRecords.last
+    Gen.choose[Long](head.timestamp, last.timestamp - 1).map(millis => FiniteDuration(millis, MILLISECONDS))
+  }
+
+  def kafkaDateGen(min: Int = 2,
+                   max: Int = 100,
+                   padTimestampsMillis: Int = 10,
+                   condition: Option[List[ReducedConsumerRecord] => Boolean] = None
+  ): Gen[List[ReducedConsumerRecord]] = for {
+    topic <- kafkaTopic
+    records <- {
+      val base = Generators.kafkaReducedConsumerRecordsGen(topic, min, max, padTimestampsMillis)
+      condition.fold(base)(c => Gen.listOfFillCond(c, base))
+    }
+  } yield records
+
   /** Creates a generated dataset of Kafka events along with a time slice period using sensible values
     * @param min
     *   The minimum number of `ReducedConsumerRecord`'s to generate. Defaults to 2.
@@ -107,15 +125,40 @@ object Generators {
     */
   def kafkaDataWithTimePeriodsGen(min: Int = 2,
                                   max: Int = 100,
-                                  padTimestampsMillis: Int = 10
+                                  padTimestampsMillis: Int = 10,
+                                  periodSliceFunction: List[ReducedConsumerRecord] => Gen[FiniteDuration] =
+                                    randomPeriodSliceBetweenMinMax,
+                                  condition: Option[List[ReducedConsumerRecord] => Boolean] = None
   ): Gen[KafkaDataWithTimePeriod] = for {
-    topic   <- kafkaTopic
-    records <- Generators.kafkaReducedConsumerRecordsGen(topic, min, max, padTimestampsMillis)
-    head = records.head
-    last = records.last
-
-    duration <- Gen.choose[Long](head.timestamp, last.timestamp - 1).map(millis => FiniteDuration(millis, MILLISECONDS))
+    records  <- kafkaDateGen(min, max, padTimestampsMillis, condition)
+    duration <- periodSliceFunction(records)
   } yield KafkaDataWithTimePeriod(records, duration)
+
+  def reducedConsumerRecordsUntilSize(size: Long, toBytesFunc: List[ReducedConsumerRecord] => Array[Byte])(
+      reducedConsumerRecords: List[ReducedConsumerRecord]
+  ): Boolean =
+    toBytesFunc(reducedConsumerRecords).length > size
+
+  def timePeriodAlwaysGreaterThanAllMessages(reducedConsumerRecords: List[ReducedConsumerRecord]): Gen[FiniteDuration] =
+    FiniteDuration(reducedConsumerRecords.last.timestamp + 1, MILLISECONDS)
+
+  final case class KafkaDataInChunksWithTimePeriod(data: List[List[ReducedConsumerRecord]], periodSlice: FiniteDuration)
+
+  /** @param size
+    *   The minimum number of bytes
+    * @return
+    *   A list of [[ReducedConsumerRecord]] that is at least as big as `size`.
+    */
+  def kafkaDataWithMinSizeGen(size: Long,
+                              amount: Int,
+                              toBytesFunc: List[ReducedConsumerRecord] => Array[Byte]
+  ): Gen[KafkaDataInChunksWithTimePeriod] = {
+    val single = kafkaDateGen(1000, 10000, 10, Some(reducedConsumerRecordsUntilSize(size, toBytesFunc)))
+    for {
+      recordsSplitBySize <- Gen.sequence(List.fill(amount)(single)).map(_.asScala.toList)
+      duration           <- timePeriodAlwaysGreaterThanAllMessages(recordsSplitBySize.flatten)
+    } yield KafkaDataInChunksWithTimePeriod(recordsSplitBySize, duration)
+  }
 
   /** Generator for a valid Kafka topic that can be used in actual Kafka clusters
     */

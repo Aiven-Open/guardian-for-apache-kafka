@@ -1,18 +1,23 @@
 package io.aiven.guardian.kafka.backup
 
 import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.stream.scaladsl._
 import akka.util.ByteString
 import io.aiven.guardian.kafka.Errors
 import io.aiven.guardian.kafka.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
+import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
+import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
+import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.circe.syntax._
 
 import scala.annotation.nowarn
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
+import scala.jdk.DurationConverters._
 
 import java.time._
 import java.time.format.DateTimeFormatter
@@ -25,6 +30,7 @@ import java.time.temporal._
 trait BackupClientInterface[T <: KafkaClientInterface] {
   implicit val kafkaClientInterface: T
   implicit val backupConfig: Backup
+  implicit val system: ActorSystem
 
   /** An element from the original record
     */
@@ -53,15 +59,33 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
     */
   type BackupResult
 
+  /** Override this type to define the result of calculating the previous state (if it exists)
+    */
+  type CurrentState
+
   import BackupClientInterface._
 
-  /** Override this method to define how to backup a `ByteString` to a `DataSource`
+  /** Override this method to define how to retrieve the current state of a backup.
     * @param key
     *   The object key or filename for what is being backed up
     * @return
+    *   An optional [[Future]] that contains the state if it found a previously aborted backup. Return [[None]] if if
+    *   its a brand new backup.
+    */
+  def getCurrentUploadState(key: String): Future[Option[CurrentState]]
+
+  /** Override this method to define how to backup a `ByteString` combined with Kafka
+    * `kafkaClientInterface.CursorContext` to a `DataSource`
+    * @param key
+    *   The object key or filename for what is being backed up
+    * @param currentState
+    *   The current state if it exists. This is used when resuming from a previously aborted backup
+    * @return
     *   A Sink that also provides a `BackupResult`
     */
-  def backupToStorageSink(key: String): Sink[ByteString, Future[BackupResult]]
+  def backupToStorageSink(key: String,
+                          currentState: Option[CurrentState]
+  ): Sink[(ByteString, kafkaClientInterface.CursorContext), Future[BackupResult]]
 
   /** Override this method to define a zero vale that covers the case that occurs immediately when `SubFlow` has been
     * split at `BackupStreamPosition.Start`. If you have difficulties defining an empty value for `BackupResult` then
@@ -134,7 +158,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
                        kafkaClientInterface.CursorContext,
                        kafkaClientInterface.Control
   ] = SourceWithContext.fromTuples(source.map { case (firstTimestamp, (record, context)) =>
-    val period = calculateNumberOfPeriodsFromTimestamp(firstTimestamp, backupConfig.periodSlice, record)
+    val period = calculateNumberOfPeriodsFromTimestamp(firstTimestamp, backupConfig.timeConfiguration, record)
     ((record, period), context)
   })
 
@@ -247,6 +271,30 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
     }
   }
 
+  /** Prepares the sink before it gets handed to `backupToStorageSink`
+    */
+  private[backup] def prepareStartOfStream(state: Option[CurrentState],
+                                           start: Start
+  ): Sink[ByteStringElement, Future[BackupResult]] =
+    if (state.isDefined)
+      Flow[ByteStringElement]
+        .flatMapPrefix(1) {
+          case Seq(byteStringElement: Start) =>
+            val withoutStartOfJsonArray = byteStringElement.data.drop(1)
+            Flow[ByteStringElement].prepend(
+              Source.single(byteStringElement.copy(data = withoutStartOfJsonArray))
+            )
+          case _ => throw Errors.ExpectedStartOfSource
+        }
+        .toMat(backupToStorageSink(start.key, state).contramap[ByteStringElement] { byteStringElement =>
+          (byteStringElement.data, byteStringElement.context)
+        })(Keep.right)
+    else
+      backupToStorageSink(start.key, state)
+        .contramap[ByteStringElement] { byteStringElement =>
+          (byteStringElement.data, byteStringElement.context)
+        }
+
   /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into a
     * data source.
     * @return
@@ -254,11 +302,6 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
     *   the underlying stream).
     */
   def backup: RunnableGraph[kafkaClientInterface.Control] = {
-    // TODO use https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3api/list-multipart-uploads.html
-    // and https://stackoverflow.com/questions/53764876/resume-s3-multipart-upload-partetag to find any in progress
-    // multiupload to resume from previous termination. Looks like we will have to do this manually since its not in
-    // Alpakka yet
-
     val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
 
     val split = withBackupStreamPositions
@@ -275,10 +318,10 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
         case (Seq(only: Element, End), _) =>
           // This case only occurs when you have a single element in a timeslice.
           // We have to terminate immediately to create a JSON array with a single element
-          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime)
+          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
           Source(transformFirstElement(only, key, terminate = true))
         case (Seq(first: Element, second: Element), restOfReducedConsumerRecords) =>
-          val key         = calculateKey(first.reducedConsumerRecord.toOffsetDateTime)
+          val key         = calculateKey(first.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
           val firstSource = transformFirstElement(first, key, terminate = false)
 
           val rest = Source.combine(
@@ -303,33 +346,27 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
           )(Concat(_))
         case (Seq(only: Element), _) =>
           // This case can also occur when user terminates the stream
-          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime)
+          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
           Source(transformFirstElement(only, key, terminate = false))
         case (rest, _) =>
           throw Errors.UnhandledStreamCase(rest)
       }
 
-    // Note that .alsoTo triggers after .to, see https://stackoverflow.com/questions/47895991/multiple-sinks-in-the-same-stream#comment93028098_47896071
     @nowarn("msg=method lazyInit in object Sink is deprecated")
-    val subFlowSink = substreams
-      .alsoTo(kafkaClientInterface.commitCursor.contramap[ByteStringElement] { byteStringElement =>
-        byteStringElement.context
-      })
-      .to(
-        // See https://stackoverflow.com/questions/68774425/combine-prefixandtail1-with-sink-lazysink-for-subflow-created-by-splitafter/68776660?noredirect=1#comment121558518_68776660
-        Sink.lazyInit(
-          {
-            case start: Start =>
-              Future.successful(
-                backupToStorageSink(start.key).contramap[ByteStringElement] { byteStringElement =>
-                  byteStringElement.data
-                }
-              )
-            case _ => throw Errors.ExpectedStartOfSource
-          },
-          empty
-        )
+    val subFlowSink = substreams.to(
+      // See https://stackoverflow.com/questions/68774425/combine-prefixandtail1-with-sink-lazysink-for-subflow-created-by-splitafter/68776660?noredirect=1#comment121558518_68776660
+      Sink.lazyInit(
+        {
+          case start: Start =>
+            implicit val ec: ExecutionContext = system.getDispatcher
+            for {
+              state <- getCurrentUploadState(start.key)
+            } yield prepareStartOfStream(state, start)
+          case _ => throw Errors.ExpectedStartOfSource
+        },
+        empty
       )
+    )
 
     subFlowSink
   }
@@ -348,8 +385,14 @@ object BackupClientInterface {
     * @return
     *   A `String` that can be used either as some object key or a filename
     */
-  def calculateKey(offsetDateTime: OffsetDateTime): String =
-    s"${BackupClientInterface.formatOffsetDateTime(offsetDateTime)}.json"
+  def calculateKey(offsetDateTime: OffsetDateTime, timeConfiguration: TimeConfiguration): String = {
+    val finalTime = timeConfiguration match {
+      case ChronoUnitSlice(chronoUnit) => offsetDateTime.truncatedTo(chronoUnit)
+      case _                           => offsetDateTime
+    }
+
+    s"${BackupClientInterface.formatOffsetDateTime(finalTime)}.json"
+  }
 
   /** Calculates whether we have rolled over a time period given number of divided periods.
     * @param dividedPeriodsBefore
@@ -369,9 +412,16 @@ object BackupClientInterface {
     }
 
   protected def calculateNumberOfPeriodsFromTimestamp(initialTime: OffsetDateTime,
-                                                      period: FiniteDuration,
+                                                      timeConfiguration: TimeConfiguration,
                                                       reducedConsumerRecord: ReducedConsumerRecord
-  ): Long =
+  ): Long = {
+    val (period, finalInitialTime) = timeConfiguration match {
+      case PeriodFromFirst(duration) => (duration, initialTime)
+      case ChronoUnitSlice(chronoUnit) =>
+        (chronoUnit.getDuration.toScala, initialTime.truncatedTo(chronoUnit))
+    }
+
     // TODO handle overflow?
-    ChronoUnit.MICROS.between(initialTime, reducedConsumerRecord.toOffsetDateTime) / period.toMicros
+    ChronoUnit.MICROS.between(finalInitialTime, reducedConsumerRecord.toOffsetDateTime) / period.toMicros
+  }
 }
