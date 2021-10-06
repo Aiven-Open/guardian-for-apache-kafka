@@ -13,7 +13,6 @@ import com.softwaremill.diffx.scalatest.DiffMatcher.matchTo
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.Generators._
-import io.aiven.guardian.kafka.ScalaTestConstants
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.Config
@@ -22,6 +21,7 @@ import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import io.aiven.guardian.kafka.s3.errors.S3Errors
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.propspec.AnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -42,12 +42,13 @@ trait BackupClientSpec
     with AkkaHttpTestKit
     with Matchers
     with ScalaCheckPropertyChecks
-    with ScalaTestConstants
+    with ScalaFutures
     with Config
     with BeforeAndAfterAll
     with StrictLogging {
 
-  implicit val ec: ExecutionContext = system.getDispatcher
+  implicit val ec: ExecutionContext            = system.dispatcher
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)
 
   val ThrottleElements: Int          = 100
   val ThrottleAmount: FiniteDuration = 1 millis
@@ -180,7 +181,7 @@ trait BackupClientSpec
                    }(Ordering[Long].reverse)
           flattened = sorted.flatMap { case (_, records) => records }
         } yield flattened
-        val observed = Await.result(calculatedFuture, AwaitTimeout)
+        val observed = calculatedFuture.futureValue
 
         kafkaDataWithTimePeriod.data.containsSlice(observed) mustEqual true
         if (observed.nonEmpty) {

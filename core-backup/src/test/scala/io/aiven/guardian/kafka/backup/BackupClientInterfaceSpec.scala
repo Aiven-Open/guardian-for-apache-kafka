@@ -10,16 +10,15 @@ import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
-import io.aiven.guardian.kafka.ScalaTestConstants
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.Inspectors
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import scala.annotation.nowarn
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -33,8 +32,11 @@ class BackupClientInterfaceSpec
     extends AnyPropTestKit(ActorSystem("BackupClientInterfaceSpec"))
     with AkkaStreamTestKit
     with Matchers
-    with ScalaCheckPropertyChecks
-    with ScalaTestConstants {
+    with ScalaFutures
+    with ScalaCheckPropertyChecks {
+
+  implicit val ec: ExecutionContext            = system.dispatcher
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)
 
   property("Ordered Kafka events should produce at least one BackupStreamPosition.Boundary") {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
@@ -44,7 +46,7 @@ class BackupClientInterfaceSpec
 
       val calculatedFuture = mock.materializeBackupStreamPositions()
 
-      val result = Await.result(calculatedFuture, AwaitTimeout).toList
+      val result = calculatedFuture.futureValue
       val backupStreamPositions = result.map { case (_, backupStreamPosition) =>
         backupStreamPosition
       }
@@ -63,9 +65,7 @@ class BackupClientInterfaceSpec
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 
-      val calculatedFuture = mock.materializeBackupStreamPositions()
-
-      val result = Await.result(calculatedFuture, AwaitTimeout).toList
+      val result = mock.materializeBackupStreamPositions().futureValue.toList
 
       val allBoundariesWithoutMiddles = result
         .sliding(2)
@@ -99,9 +99,7 @@ class BackupClientInterfaceSpec
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 
-      val calculatedFuture = mock.materializeBackupStreamPositions()
-
-      val result = Await.result(calculatedFuture, AwaitTimeout).toList
+      val result = mock.materializeBackupStreamPositions().futureValue.toList
 
       val allCoupledMiddles = result
         .sliding(2)
@@ -127,7 +125,6 @@ class BackupClientInterfaceSpec
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 
-      implicit val ec = ExecutionContext.global
       val calculatedFuture = for {
         _ <- mock.backup.run()
         _ <- akka.pattern.after(100 millis)(Future.successful(()))
@@ -142,7 +139,7 @@ class BackupClientInterfaceSpec
                      })
       } yield asRecords
 
-      val result = Await.result(calculatedFuture, AwaitTimeout)
+      val result = calculatedFuture.futureValue
 
       val observed = result.flatMap { case (_, values) => values }
 
