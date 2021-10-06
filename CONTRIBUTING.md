@@ -31,7 +31,7 @@ install Scala
 
 ## Editors/IDE's
 The following editors are recommended for development with Scala. Although It's possible to use other environments since
-Sclaa is a strongly typed language using a well supported editor is beneficial.
+Scala is a strongly typed language using a well supported editor is beneficial.
 
 ### Intellij IDEA
 
