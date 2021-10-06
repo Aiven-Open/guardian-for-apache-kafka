@@ -24,5 +24,5 @@ trait MinioS3Test extends ForAllTestContainer with TestKitBase { this: Suite =>
     })
     .withAccessStyle(AccessStyle.PathAccessStyle)
 
-  override val container: MinioContainer = new MinioContainer(S3DummyAccessKey, S3DummySecretKey)
+  override lazy val container: MinioContainer = new MinioContainer(S3DummyAccessKey, S3DummySecretKey)
 }

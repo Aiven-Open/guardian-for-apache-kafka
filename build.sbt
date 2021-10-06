@@ -10,7 +10,7 @@ ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/c
 val akkaVersion                = "2.6.16"
 val akkaHttpVersion            = "10.2.6"
 val alpakkaKafkaVersion        = "2.1.1"
-val alpakkaVersion             = "3.0.2+28-88f3fdf3+20211001-1529-SNAPSHOT"
+val alpakkaVersion             = "3.0.2+27-27fdecf1+20211006-1009-SNAPSHOT"
 val quillJdbcMonixVersion      = "3.7.2"
 val postgresqlJdbcVersion      = "42.2.24"
 val scalaLoggingVersion        = "3.9.4"
@@ -248,6 +248,14 @@ ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports"
 ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value
 
 ThisBuild / semanticdbEnabled := true
+
+ThisBuild / githubWorkflowEnv ++= Map(
+  "ALPAKKA_S3_REGION_PROVIDER"                   -> "static",
+  "ALPAKKA_S3_REGION_DEFAULT_REGION"             -> "us-west-2",
+  "ALPAKKA_S3_AWS_CREDENTIALS_PROVIDER"          -> "static",
+  "ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID"     -> "${{ secrets.AWS_ACCESS_KEY }}",
+  "ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY" -> "${{ secrets.AWS_SECRET_KEY }}"
+)
 
 import ReleaseTransformations._
 
