@@ -6,6 +6,8 @@ import org.scalacheck.Gen
 import scala.annotation.nowarn
 
 object Generators {
+  val MaxBucketLength: Int = 63
+
   // See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html for valid
   // bucketnames
 
@@ -14,12 +16,17 @@ object Generators {
     (1, Gen.alphaLowerChar)
   )
 
-  lazy val bucketAllCharGen: Gen[Char] = Gen.frequency(
-    (10, Gen.alphaLowerChar),
-    (1, Gen.const('.')),
-    (1, Gen.const('-')),
-    (1, Gen.numChar)
-  )
+  def bucketAllCharGen(useVirtualDotHost: Boolean): Gen[Char] = {
+    val base = List(
+      (10, Gen.alphaLowerChar),
+      (1, Gen.const('-')),
+      (1, Gen.numChar)
+    )
+
+    val frequency = if (useVirtualDotHost) (1, Gen.const('.')) +: base else base
+
+    Gen.frequency(frequency: _*)
+  }
 
   @nowarn("msg=not.*?exhaustive")
   private def checkInvalidDuplicateChars(chars: List[Char]): Boolean =
@@ -27,29 +34,83 @@ object Generators {
       !(before == '.' && after == '.' || before == '-' && after == '.' || before == '.' && after == '-')
     }
 
-  lazy val bucketNameGen: Gen[String] = {
+  private def checkAlphaChar(c: Char): Boolean =
+    c >= 'a' && c <= 'z'
+
+  private def allCharCheck(useVirtualDotHost: Boolean, string: String): Boolean =
+    if (useVirtualDotHost) {
+      string.forall(char => Character.isDigit(char) || checkAlphaChar(char) || char == '-' || char == '.') &&
+      checkInvalidDuplicateChars(string.toList)
+    } else
+      string.forall(char => Character.isDigit(char) || checkAlphaChar(char) || char == '-')
+
+  def validatePrefix(useVirtualDotHost: Boolean, prefix: Option[String]): Option[String] = {
+    val withoutWhitespace = prefix match {
+      case Some(value) if value.trim == "" => None
+      case Some(value)                     => Some(value)
+      case None                            => None
+    }
+
+    withoutWhitespace match {
+      case Some(value) if !(Character.isDigit(value.head) || checkAlphaChar(value.head)) =>
+        throw new IllegalArgumentException(
+          s"Invalid starting digit for prefix $value, ${value.head} needs to be an alpha char or digit"
+        )
+      case Some(value) if value.length > 1 =>
+        if (!allCharCheck(useVirtualDotHost, value.drop(1)))
+          throw new IllegalArgumentException(
+            s"Prefix $value contains invalid characters"
+          )
+      case Some(value) if value.length > MaxBucketLength - 1 =>
+        throw new IllegalArgumentException(
+          s"Prefix is too long, it has size ${value.length} where as the max bucket size is $MaxBucketLength"
+        )
+      case _ => ()
+    }
+
+    withoutWhitespace
+  }
+
+  def bucketNameGen(useVirtualDotHost: Boolean, prefix: Option[String] = None): Gen[String] = {
+    val finalPrefix = validatePrefix(useVirtualDotHost, prefix)
+
     for {
-      range <- Gen.choose(3, 63)
+      range <- {
+        val maxLength = finalPrefix match {
+          case Some(p) => MaxBucketLength - p.length
+          case None    => MaxBucketLength
+        }
+
+        if (maxLength > 3)
+          Gen.choose(3, maxLength)
+        else
+          Gen.const(maxLength)
+      }
+      startString = finalPrefix.getOrElse("")
+
       bucketName <- range match {
                       case 3 =>
                         for {
                           first  <- bucketLetterOrNumberCharGen
-                          second <- bucketAllCharGen
+                          second <- bucketAllCharGen(useVirtualDotHost)
                           third  <- bucketLetterOrNumberCharGen
-                        } yield List(first, second, third).mkString
+                        } yield startString ++ List(first, second, third).mkString
                       case _ =>
                         for {
-                          first  <- bucketLetterOrNumberCharGen
-                          last   <- bucketLetterOrNumberCharGen
-                          middle <- Gen.listOfN(range - 2, bucketAllCharGen).filter(checkInvalidDuplicateChars)
-                        } yield first.toString ++ middle.mkString ++ last.toString
+                          first <- bucketLetterOrNumberCharGen
+                          last  <- bucketLetterOrNumberCharGen
+                          middle <- {
+                            val gen = Gen.listOfN(range - 2, bucketAllCharGen(useVirtualDotHost))
+                            if (useVirtualDotHost) gen.filter(checkInvalidDuplicateChars) else gen
+                          }
+                        } yield startString ++ first.toString ++ middle.mkString ++ last.toString
                     }
     } yield bucketName
   }
 
-  val s3ConfigGen: Gen[S3Config] = (for {
-    dataBucket       <- bucketNameGen
-    compactionBucket <- bucketNameGen
+  def s3ConfigGen(useVirtualDotHost: Boolean, prefix: Option[String] = None): Gen[S3Config] = (for {
+    dataBucket       <- bucketNameGen(useVirtualDotHost, prefix)
+    compactionBucket <- bucketNameGen(useVirtualDotHost, prefix)
   } yield S3Config(dataBucket, compactionBucket)).filter(config => config.dataBucket != config.compactionBucket)
 
 }
