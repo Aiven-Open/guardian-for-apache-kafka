@@ -82,7 +82,7 @@ trait BackupClientSpec
 
   /** The MaxTimeout when cleaning up all of the buckets during `afterAll`
     */
-  lazy val MaxCleanupTimeout: FiniteDuration = 10 minutes
+  lazy val maxCleanupTimeout: FiniteDuration = 10 minutes
 
   private def cleanBucket(bucket: String): Future[Unit] = (for {
     check <- S3.checkIfBucketExists(bucket)
@@ -123,7 +123,7 @@ trait BackupClientSpec
           Future.sequence(futures)
         }
 
-        Await.result(akka.pattern.after(initialDelay)(cleanAllBuckets), MaxCleanupTimeout)
+        Await.result(akka.pattern.after(initialDelay)(cleanAllBuckets), maxCleanupTimeout)
       case None => ()
     }
 
