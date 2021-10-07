@@ -3,6 +3,8 @@ package io.aiven.guardian.kafka.backup.gcs
 import akka.http.scaladsl.model.ContentTypes
 import akka.stream.alpakka.google.GoogleAttributes
 import akka.stream.alpakka.google.GoogleSettings
+import akka.stream.alpakka.googlecloud.storage.GCSAttributes
+import akka.stream.alpakka.googlecloud.storage.GCSSettings
 import akka.stream.alpakka.googlecloud.storage.StorageObject
 import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
 import akka.stream.scaladsl.Sink
@@ -15,7 +17,9 @@ import io.aiven.guardian.kafka.gcs.configs.{GCS => GCSConfig}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[GoogleSettings])(implicit
+class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[GoogleSettings],
+                                              maybeGCSSettings: Option[GCSSettings]
+)(implicit
     override val kafkaClientInterface: T,
     override val backupConfig: Backup,
     gcsConfig: GCSConfig
@@ -30,7 +34,11 @@ class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[Google
       .resumableUpload(gcsConfig.dataBucket, key, ContentTypes.`application/json`)
       .mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
 
-    maybeGoogleSettings.fold(base)(googleSettings => base.withAttributes(GoogleAttributes.settings(googleSettings)))
+    val baseWithGoogleSettings =
+      maybeGoogleSettings.fold(base)(googleSettings => base.withAttributes(GoogleAttributes.settings(googleSettings)))
+    maybeGCSSettings.fold(baseWithGoogleSettings)(gcsSettings =>
+      baseWithGoogleSettings.withAttributes(GCSAttributes.settings(gcsSettings))
+    )
   }
 
 }
