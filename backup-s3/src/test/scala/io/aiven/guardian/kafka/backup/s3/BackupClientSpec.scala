@@ -96,7 +96,7 @@ trait BackupClientSpec
            case BucketAccess.AccessGranted =>
              logger.info(s"Cleaning up bucket: $bucket")
              for {
-               _          <- S3.deleteBucketContents(bucket).runWith(Sink.ignore)
+               _          <- S3.deleteBucketContents(bucket, deleteAllVersions = true).runWith(Sink.ignore)
                multiParts <- S3.listMultipartUpload(bucket, None).runWith(Sink.seq)
                _ <- Future.sequence(multiParts.map { part =>
                       for {
