@@ -1,9 +1,11 @@
 package io.aiven.guardian.kafka.backup
 
 import akka.Done
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import io.aiven.guardian.kafka.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
@@ -78,6 +80,6 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
 
 /** A `MockedBackupClientInterface` that also uses a mocked `KafkaClientInterface`
   */
-class MockedBackupClientInterfaceWithMockedKafkaData(kafkaData: List[ReducedConsumerRecord],
+class MockedBackupClientInterfaceWithMockedKafkaData(kafkaData: Source[ReducedConsumerRecord, NotUsed],
                                                      periodSlice: FiniteDuration
 ) extends MockedBackupClientInterface(new MockedKafkaClientInterface(kafkaData), periodSlice)
