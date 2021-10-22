@@ -109,7 +109,7 @@ object Generators {
                                   max: Int = 100,
                                   padTimestampsMillis: Int = 10
   ): Gen[KafkaDataWithTimePeriod] = for {
-    topic   <- Gen.alphaStr
+    topic   <- kafkaTopic
     records <- Generators.kafkaReducedConsumerRecordsGen(topic, min, max, padTimestampsMillis)
     head = records.head
     last = records.last
@@ -117,4 +117,10 @@ object Generators {
     duration <- Gen.choose[Long](head.timestamp, last.timestamp - 1).map(millis => FiniteDuration(millis, MILLISECONDS))
   } yield KafkaDataWithTimePeriod(records, duration)
 
+  /** Generator for a valid Kafka topic that can be used in actual Kafka clusters
+    */
+  lazy val kafkaTopic: Gen[String] = for {
+    size  <- Gen.choose(1, 249)
+    topic <- Gen.listOfN(size, Gen.oneOf(Gen.alphaChar, Gen.numChar, Gen.const('-'), Gen.const('.'), Gen.const('_')))
+  } yield topic.mkString
 }

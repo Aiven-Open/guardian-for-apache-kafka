@@ -23,12 +23,16 @@ import java.util.Base64
 /** A Kafka Client that uses Alpakka Kafka Consumer under the hood to create a stream of events from a Kafka cluster. To
   * configure the Alpakka Kafka Consumer use the standard typesafe configuration i.e. akka.kafka.consumer (note that the
   * `keySerializer` and `valueSerializer` are hardcoded so you cannot override this).
+  * @param configure
+  *   A way to configure the underlying Kafka consumer settings
   * @param system
   *   A classic `ActorSystem`
   * @param kafkaClusterConfig
   *   Additional cluster configuration that is needed
   */
-class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster)
+class KafkaClient(
+    configure: Option[ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]] = None
+)(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster)
     extends KafkaClientInterface
     with StrictLogging {
   override type CursorContext = Committable
@@ -37,8 +41,10 @@ class KafkaClient()(implicit system: ActorSystem, kafkaClusterConfig: KafkaClust
   if (kafkaClusterConfig.topics.isEmpty)
     logger.warn("Kafka Cluster configuration has no topics set")
 
-  private[kafka] val consumerSettings =
-    ConsumerSettings(system, new ByteArrayDeserializer, new ByteArrayDeserializer)
+  private[kafka] val consumerSettings = {
+    val base = ConsumerSettings(system, new ByteArrayDeserializer, new ByteArrayDeserializer)
+    configure.fold(base)(block => block(base))
+  }
 
   private[kafka] val subscriptions = Subscriptions.topics(kafkaClusterConfig.topics)
 
