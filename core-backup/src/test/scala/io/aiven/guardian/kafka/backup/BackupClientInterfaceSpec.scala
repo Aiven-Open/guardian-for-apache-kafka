@@ -40,7 +40,7 @@ class BackupClientInterfaceSpec
 
   property("Ordered Kafka events should produce at least one BackupStreamPosition.Boundary") {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
+      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 
@@ -61,7 +61,7 @@ class BackupClientInterfaceSpec
     "Every ReducedConsumerRecord after a BackupStreamPosition.Boundary should be in the next consecutive time period"
   ) {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
+      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 
@@ -95,7 +95,7 @@ class BackupClientInterfaceSpec
     "The time difference between two consecutive BackupStreamPosition.Middle's has to be less then the specified time period"
   ) {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
+      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 
@@ -121,7 +121,7 @@ class BackupClientInterfaceSpec
 
   property("backup method completes flow correctly for all valid Kafka events") {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(kafkaDataWithTimePeriod.data,
+      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
                                                                     kafkaDataWithTimePeriod.periodSlice
       )
 

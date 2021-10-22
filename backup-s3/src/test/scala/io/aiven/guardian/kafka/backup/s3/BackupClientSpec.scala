@@ -7,6 +7,7 @@ import akka.stream.alpakka.s3.S3Settings
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import akka.testkit.TestKitBase
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMatcher.matchTo
@@ -131,11 +132,11 @@ trait BackupClientSpec
     forAll(kafkaDataWithTimePeriodsGen(), s3ConfigGen(useVirtualDotHost, bucketPrefix)) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
         logger.info(s"Data bucket is ${s3Config.dataBucket}")
-        val backupClient = new MockedS3BackupClientInterface(kafkaDataWithTimePeriod.data,
-                                                             kafkaDataWithTimePeriod.periodSlice,
-                                                             s3Config,
-                                                             Some(s3Settings),
-                                                             Some(_.throttle(ThrottleElements, ThrottleAmount))
+        val backupClient = new MockedS3BackupClientInterface(
+          Source(kafkaDataWithTimePeriod.data).throttle(ThrottleElements, ThrottleAmount),
+          kafkaDataWithTimePeriod.periodSlice,
+          s3Config,
+          Some(s3Settings)
         )
 
         val delay =

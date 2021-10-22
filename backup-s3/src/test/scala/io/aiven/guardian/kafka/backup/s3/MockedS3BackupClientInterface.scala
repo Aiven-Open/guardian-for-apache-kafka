@@ -12,15 +12,12 @@ import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import scala.concurrent.duration.FiniteDuration
 
 class MockedS3BackupClientInterface(
-    kafkaData: List[ReducedConsumerRecord],
+    kafkaData: Source[ReducedConsumerRecord, NotUsed],
     periodSlice: FiniteDuration,
     s3Config: S3Config,
-    maybeS3Settings: Option[S3Settings],
-    sourceTransform: Option[
-      Source[(ReducedConsumerRecord, Long), NotUsed] => Source[(ReducedConsumerRecord, Long), NotUsed]
-    ] = None
+    maybeS3Settings: Option[S3Settings]
 )(implicit val s3Headers: S3Headers)
-    extends BackupClient(maybeS3Settings)(new MockedKafkaClientInterface(kafkaData, sourceTransform),
+    extends BackupClient(maybeS3Settings)(new MockedKafkaClientInterface(kafkaData),
                                           Backup(periodSlice),
                                           s3Config,
                                           implicitly

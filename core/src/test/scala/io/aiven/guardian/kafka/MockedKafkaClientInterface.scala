@@ -19,12 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
   *   A function that allows you to transform the source in some way. Convenient for cases such as throttling. By
   *   default this is `None` so it just preserves the original source.
   */
-class MockedKafkaClientInterface(
-    kafkaData: List[ReducedConsumerRecord],
-    sourceTransform: Option[
-      Source[(ReducedConsumerRecord, Long), NotUsed] => Source[(ReducedConsumerRecord, Long), NotUsed]
-    ] = None
-) extends KafkaClientInterface {
+class MockedKafkaClientInterface(kafkaData: Source[ReducedConsumerRecord, NotUsed]) extends KafkaClientInterface {
 
   /** A collection that keeps track of whenever a cursor is committed
     */
@@ -42,17 +37,12 @@ class MockedKafkaClientInterface(
   /** @return
     *   A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
-  override def getSource: SourceWithContext[ReducedConsumerRecord, Long, Future[NotUsed]] = {
-    val source = Source(kafkaData.map { reducedConsumerRecord =>
-      (reducedConsumerRecord, reducedConsumerRecord.offset)
-    })
-
-    val finalSource = sourceTransform.fold(source)(block => block(source))
-
+  override def getSource: SourceWithContext[ReducedConsumerRecord, Long, Future[NotUsed]] =
     SourceWithContext
-      .fromTuples(finalSource)
+      .fromTuples(kafkaData.map { reducedConsumerRecord =>
+        (reducedConsumerRecord, reducedConsumerRecord.offset)
+      })
       .mapMaterializedValue(Future.successful)
-  }
 
   /** @return
     *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
