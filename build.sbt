@@ -22,6 +22,7 @@ val scalaTestScalaCheckVersion = "3.2.9.0"
 val akkaStreamsJson            = "0.8.0"
 val diffxVersion               = "0.5.6"
 val testContainersVersion      = "0.39.8"
+val testContainersJavaVersion  = "1.16.2"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -88,7 +89,9 @@ lazy val core = project
       "com.softwaremill.diffx"     %% "diffx-scalatest"                % diffxVersion               % Test,
       "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-http-testkit"              % akkaHttpVersion            % Test,
-      "com.dimafeng"               %% "testcontainers-scala-scalatest" % testContainersVersion      % Test
+      "com.dimafeng"               %% "testcontainers-scala-scalatest" % testContainersVersion      % Test,
+      "com.dimafeng"               %% "testcontainers-scala-kafka"     % testContainersVersion      % Test,
+      "org.testcontainers"          % "kafka"                          % testContainersJavaVersion  % Test
     )
   )
 
