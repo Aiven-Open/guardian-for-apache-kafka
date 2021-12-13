@@ -4,14 +4,13 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import com.softwaremill.diffx.generic.auto._
-import com.softwaremill.diffx.scalatest.DiffMatcher._
 import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.kafka.common.record.TimestampType
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.Inspectors
 import org.scalatest.concurrent.ScalaFutures
@@ -40,19 +39,15 @@ class BackupClientInterfaceSpec
 
   property("Ordered Kafka events should produce at least one BackupStreamPosition.Boundary") {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                                    kafkaDataWithTimePeriod.periodSlice
-      )
+      val mock =
+        new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
+                                                           kafkaDataWithTimePeriod.periodSlice
+        )
 
       val calculatedFuture = mock.materializeBackupStreamPositions()
 
-      val result = calculatedFuture.futureValue
-      val backupStreamPositions = result.map { case (_, backupStreamPosition) =>
-        backupStreamPosition
-      }
-
-      Inspectors.forAtLeast(1, backupStreamPositions)(
-        _ must matchTo(BackupStreamPosition.Boundary: BackupStreamPosition)
+      Inspectors.forAtLeast(1, calculatedFuture.futureValue)(
+        _ must equal(mock.End: mock.RecordElement)
       )
     }
   }
@@ -61,16 +56,17 @@ class BackupClientInterfaceSpec
     "Every ReducedConsumerRecord after a BackupStreamPosition.Boundary should be in the next consecutive time period"
   ) {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                                    kafkaDataWithTimePeriod.periodSlice
-      )
+      val mock =
+        new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
+                                                           kafkaDataWithTimePeriod.periodSlice
+        )
 
       val result = mock.materializeBackupStreamPositions().futureValue.toList
 
       val allBoundariesWithoutMiddles = result
         .sliding(2)
-        .collect { case Seq((_, _: BackupStreamPosition.Boundary.type), (afterRecord, _)) =>
-          afterRecord
+        .collect { case Seq(mock.End, afterRecordRecordElement: mock.Element) =>
+          afterRecordRecordElement
         }
         .toList
 
@@ -83,8 +79,8 @@ class BackupClientInterfaceSpec
 
         Inspectors.forEvery(withBeforeAndAfter) { case (before, after) =>
           val periodAsMillis = kafkaDataWithTimePeriod.periodSlice.toMillis
-          ((before.timestamp - initialTime) / periodAsMillis) mustNot equal(
-            (after.timestamp - initialTime) / periodAsMillis
+          ((before.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis) mustNot equal(
+            (after.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis
           )
         }
       }
@@ -95,58 +91,209 @@ class BackupClientInterfaceSpec
     "The time difference between two consecutive BackupStreamPosition.Middle's has to be less then the specified time period"
   ) {
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                                    kafkaDataWithTimePeriod.periodSlice
-      )
+      val mock =
+        new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
+                                                           kafkaDataWithTimePeriod.periodSlice
+        )
 
       val result = mock.materializeBackupStreamPositions().futureValue.toList
 
       val allCoupledMiddles = result
         .sliding(2)
-        .collect {
-          case Seq((beforeRecord, _: BackupStreamPosition.Middle.type),
-                   (afterRecord, _: BackupStreamPosition.Middle.type)
-              ) =>
-            (beforeRecord, afterRecord)
+        .collect { case Seq(before: mock.Element, after: mock.Element) =>
+          (before, after)
         }
         .toList
 
       Inspectors.forEvery(allCoupledMiddles) { case (before, after) =>
-        ChronoUnit.MICROS.between(before.toOffsetDateTime,
-                                  after.toOffsetDateTime
+        ChronoUnit.MICROS.between(before.reducedConsumerRecord.toOffsetDateTime,
+                                  after.reducedConsumerRecord.toOffsetDateTime
         ) must be < kafkaDataWithTimePeriod.periodSlice.toMicros
       }
     }
   }
 
+  property("the time difference between the first and last timestamp for a given key is less than time period") {
+    forAll(kafkaDataWithTimePeriodsGen().filter(_.data.size > 2)) {
+      (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
+        val mock =
+          new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
+                                                             kafkaDataWithTimePeriod.periodSlice
+          )
+
+        mock.clear()
+        val calculatedFuture = for {
+          _ <- mock.backup.run()
+          _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+          processedRecords = mock.mergeBackedUpData()
+          asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
+                         Source
+                           .single(byteString)
+                           .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                           .toMat(Sink.collection)(Keep.right)
+                           .run()
+                           .map(records =>
+                             (key,
+                              records.flatten.collect { case Some(v) =>
+                                v
+                              }
+                             )
+                           )
+                       })
+        } yield asRecords
+
+        val result = calculatedFuture.futureValue
+
+        Inspectors.forEvery(result) { case (_, records) =>
+          (records.headOption, records.lastOption) match {
+            case (Some(first), Some(last)) if first != last =>
+              ChronoUnit.MICROS.between(first.toOffsetDateTime,
+                                        last.toOffsetDateTime
+              ) must be < kafkaDataWithTimePeriod.periodSlice.toMicros
+            case _ =>
+          }
+        }
+    }
+  }
+
   property("backup method completes flow correctly for all valid Kafka events") {
-    forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
-      val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                                    kafkaDataWithTimePeriod.periodSlice
-      )
+    forAll(kafkaDataWithTimePeriodsGen().filter(_.data.size > 2)) {
+      (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
+        val mock =
+          new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
+                                                             kafkaDataWithTimePeriod.periodSlice
+          )
 
-      val calculatedFuture = for {
-        _ <- mock.backup.run()
-        _ <- akka.pattern.after(100 millis)(Future.successful(()))
-        processedRecords = mock.mergeBackedUpData
-        asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
-                       Source
-                         .single(byteString)
-                         .via(CirceStreamSupport.decode[List[ReducedConsumerRecord]])
-                         .toMat(Sink.collection)(Keep.right)
-                         .run()
-                         .map(records => (key, records.flatten))
-                     })
-      } yield asRecords
+        mock.clear()
+        val calculatedFuture = for {
+          _ <- mock.backup.run()
+          _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+          processedRecords = mock.mergeBackedUpData()
+          asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
+                         Source
+                           .single(byteString)
+                           .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                           .toMat(Sink.collection)(Keep.right)
+                           .run()
+                           .map(records =>
+                             (key,
+                              records.flatten.collect { case Some(v) =>
+                                v
+                              }
+                             )
+                           )
+                       })
+        } yield asRecords
 
-      val result = calculatedFuture.futureValue
+        val result = calculatedFuture.futureValue
 
-      val observed = result.flatMap { case (_, values) => values }
+        val observed = result.flatMap { case (_, values) => values }
 
-      kafkaDataWithTimePeriod.data.containsSlice(observed) mustEqual true
-      if (observed.nonEmpty) {
-        observed.head must matchTo(kafkaDataWithTimePeriod.data.head)
-      }
+        kafkaDataWithTimePeriod.data mustEqual observed
+    }
+  }
+
+  property("backup method completes flow correctly for single element") {
+    val reducedConsumerRecord = ReducedConsumerRecord("", 1, "key", "value", 1, TimestampType.CREATE_TIME)
+
+    val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source.single(
+                                                                    reducedConsumerRecord
+                                                                  ),
+                                                                  1 day
+    )
+    mock.clear()
+    val calculatedFuture = for {
+      _ <- mock.backup.run()
+      _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+      processedRecords = mock.mergeBackedUpData()
+      asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
+                     Source
+                       .single(byteString)
+                       .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                       .toMat(Sink.collection)(Keep.right)
+                       .run()
+                       .map(records =>
+                         (key,
+                          records.flatten.collect { case Some(v) =>
+                            v
+                          }
+                         )
+                       )
+                   })
+    } yield asRecords
+
+    val result = calculatedFuture.futureValue
+
+    val observed = result.flatMap { case (_, values) => values }
+
+    List(reducedConsumerRecord) mustEqual observed
+  }
+
+  property("backup method completes flow correctly for two elements") {
+    val reducedConsumerRecords = List(
+      ReducedConsumerRecord("", 1, "key", "value1", 1, TimestampType.CREATE_TIME),
+      ReducedConsumerRecord("", 2, "key", "value2", 2, TimestampType.CREATE_TIME)
+    )
+
+    val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(
+                                                                    reducedConsumerRecords
+                                                                  ),
+                                                                  1 millis
+    )
+    mock.clear()
+    val calculatedFuture = for {
+      _ <- mock.backup.run()
+      _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+      processedRecords = mock.mergeBackedUpData()
+      asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
+                     Source
+                       .single(byteString)
+                       .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                       .toMat(Sink.collection)(Keep.right)
+                       .run()
+                       .map(records =>
+                         (key,
+                          records.flatten.collect { case Some(v) =>
+                            v
+                          }
+                         )
+                       )
+                   })
+    } yield asRecords
+
+    val result = calculatedFuture.futureValue
+
+    val observed = result.flatMap { case (_, values) => values }
+
+    reducedConsumerRecords mustEqual observed
+  }
+
+  property("backup method correctly terminates every key apart from last") {
+    forAll(kafkaDataWithTimePeriodsGen().filter(_.data.size > 1)) {
+      (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
+        val mock =
+          new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
+                                                             kafkaDataWithTimePeriod.periodSlice
+          )
+
+        mock.clear()
+        val calculatedFuture = for {
+          _ <- mock.backup.run()
+          _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+          processedRecords = mock.mergeBackedUpData(terminate = false)
+        } yield processedRecords.splitAt(processedRecords.length - 1)
+
+        val (terminated, nonTerminated) = calculatedFuture.futureValue
+
+        if (nonTerminated.nonEmpty) {
+          Inspectors.forEvery(terminated) { case (_, byteString) =>
+            byteString.utf8String.takeRight(2) mustEqual "}]"
+          }
+        }
+
+        Inspectors.forEvery(nonTerminated) { case (_, byteString) =>
+          byteString.utf8String.takeRight(2) mustEqual "},"
+        }
     }
   }
 }

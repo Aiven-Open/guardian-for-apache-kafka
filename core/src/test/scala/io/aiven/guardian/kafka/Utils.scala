@@ -2,6 +2,10 @@ package io.aiven.guardian.kafka
 
 import org.apache.kafka.common.KafkaFuture
 
+import scala.collection.immutable
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
+
 import java.util.concurrent.CompletableFuture
 
 object Utils {
@@ -18,6 +22,23 @@ object Utils {
           wrappingFuture.complete(value)
       }
       wrappingFuture
+    }
+  }
+
+  /** The standard Scala groupBy returns an `immutable.Map` which is unordered, this version returns an ordered
+    * `ListMap` for when preserving insertion order is important
+    */
+  implicit class GroupBy[A](val t: IterableOnce[A]) {
+    def orderedGroupBy[K](f: A => K): immutable.ListMap[K, List[A]] = {
+      var m = immutable.ListMap.empty[K, ListBuffer[A]]
+      for (elem <- t.iterator) {
+        val key = f(elem)
+        m = m.updatedWith(key) {
+          case Some(value) => Some(value.addOne(elem))
+          case None        => Some(mutable.ListBuffer[A](elem))
+        }
+      }
+      m.map { case (k, v) => (k, v.toList) }
     }
   }
 

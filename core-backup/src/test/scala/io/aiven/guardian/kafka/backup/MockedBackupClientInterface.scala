@@ -8,6 +8,7 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import io.aiven.guardian.kafka.MockedKafkaClientInterface
+import io.aiven.guardian.kafka.Utils._
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
@@ -16,6 +17,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters._
 
+import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /** A mocked `BackupClientInterface` which given a `kafkaClientInterface` allows you to
@@ -30,21 +32,44 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     * `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
     * have finished writing to it
     */
-  val backedUpData: Iterable[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)]().asScala
+  val backedUpData: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)]()
 
   /** This method is intended to be called after you have written to it during a test.
+    * @param terminate
+    *   Whether to terminate the ByteString with `null]` so its valid parsable JSON
+    * @param sort
+    *   Whether to sort the outputting collection. There are sometimes corner cases when dealing with small sets of
+    *   static data that the outputted stream can be unordered.
     * @return
     *   `backupData` with all of the `ByteString` data merged for each unique key
     */
-  def mergeBackedUpData: List[(String, ByteString)] = backedUpData
-    .groupBy { case (key, _) =>
-      key
-    }
-    .view
-    .mapValues { data =>
-      data.toList.map { case (_, byteString) => byteString }.foldLeft(ByteString())(_ ++ _)
-    }
-    .toList
+  def mergeBackedUpData(terminate: Boolean = true, sort: Boolean = true): List[(String, ByteString)] = {
+    val base = backedUpData.asScala
+      .orderedGroupBy { case (key, _) =>
+        key
+      }
+      .view
+      .mapValues { data =>
+        val complete = data.map { case (_, byteString) => byteString }.foldLeft(ByteString())(_ ++ _)
+        if (terminate)
+          if (complete.utf8String.endsWith("},"))
+            complete ++ ByteString("null]")
+          else
+            complete
+        else
+          complete
+      }
+      .toList
+    if (sort)
+      base.sortBy { case (key, _) =>
+        val withoutExtension = key.substring(0, key.lastIndexOf('.'))
+        OffsetDateTime.parse(withoutExtension).getNano
+      }
+    else
+      base
+  }
+
+  def clear(): Unit = backedUpData.clear()
 
   override implicit lazy val backupConfig: Backup = Backup(
     periodSlice
@@ -64,16 +89,13 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     *   A Sink that also provides a `BackupResult`
     */
   override def backupToStorageSink(key: String): Sink[ByteString, Future[Done]] = Sink.foreach { byteString =>
-    backedUpData ++ Iterable((key, byteString))
+    backedUpData.add((key, byteString))
   }
 
   def materializeBackupStreamPositions()(implicit
       system: ActorSystem
-  ): Future[immutable.Iterable[(ReducedConsumerRecord, BackupStreamPosition)]] =
-    calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord)).asSource
-      .map { case (data, _) =>
-        data
-      }
+  ): Future[immutable.Iterable[RecordElement]] =
+    calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
       .toMat(Sink.collection)(Keep.right)
       .run()
 }
