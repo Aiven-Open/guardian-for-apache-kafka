@@ -3,7 +3,7 @@
 ## Supported Versions
 
 We release patches for security vulnerabilities. Which versions are eligible
-receiving such patches depend on the CVSS v3.0 Rating:
+ro receive such patches depend on the CVSS v3.0 Rating:
 
 | CVSS v3.0 | Supported Versions                        |
 | --------- | ----------------------------------------- |
