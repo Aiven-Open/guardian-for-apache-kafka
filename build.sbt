@@ -7,8 +7,8 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
 ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-val akkaVersion                = "2.6.16"
-val akkaHttpVersion            = "10.2.6"
+val akkaVersion                = "2.6.17"
+val akkaHttpVersion            = "10.2.7"
 val alpakkaKafkaVersion        = "2.1.1"
 val alpakkaVersion             = "3.0.2+34-bdac5519+20211013-1607-SNAPSHOT"
 val quillJdbcMonixVersion      = "3.7.2"
