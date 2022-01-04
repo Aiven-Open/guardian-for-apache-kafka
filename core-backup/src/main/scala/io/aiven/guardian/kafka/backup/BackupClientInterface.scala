@@ -186,6 +186,9 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
     stringWithContext.map { case (string, context) => (ByteString(string), context) }
   }
 
+  private[backup] def dropCommaFromEndOfJsonArray(byteString: ByteString) =
+    byteString.dropRight(1)
+
   /** Applies the transformation to the first element of a Stream so that it starts of as a JSON array.
     *
     * @param element
@@ -201,7 +204,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
     transformReducedConsumerRecords(List(element)).map {
       case (byteString, Some(context)) =>
         if (terminate)
-          Start(ByteString("[") ++ byteString.dropRight(1) ++ ByteString("]"), context, key)
+          Start(ByteString("[") ++ dropCommaFromEndOfJsonArray(byteString) ++ ByteString("]"), context, key)
         else
           Start(ByteString("[") ++ byteString, context, key)
       case _ =>
@@ -224,7 +227,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
       .sliding(2, step = 2)
       .map {
         case Seq((before, Some(context)), (after, None)) =>
-          List((before.dropRight(1) ++ after, context))
+          List((dropCommaFromEndOfJsonArray(before) ++ after, context))
         case Seq((before, Some(beforeContext)), (after, Some(afterContext))) =>
           List((before, beforeContext), (after, afterContext))
         case Seq((single, Some(context))) =>
