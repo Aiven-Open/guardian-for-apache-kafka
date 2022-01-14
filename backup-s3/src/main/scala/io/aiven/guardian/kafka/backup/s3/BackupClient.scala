@@ -64,7 +64,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
                       )
                       single
                     case rest =>
-                      val last = rest.minBy(_.initiated)(Ordering[Instant].reverse)
+                      val last = rest.maxBy(_.initiated)(Ordering[Instant])
                       logger.warn(
                         s"Found multiple previously cancelled uploads for key: $key and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
                       )
