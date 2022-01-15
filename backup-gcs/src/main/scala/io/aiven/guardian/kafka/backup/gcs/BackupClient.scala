@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 // TODO: GCS implementation currently does not work correctly because of inability of current GCS implementation in
-// Alpakka to allows us to commit Kafka cursor whenever chunks are uploaded
+// Alpakka to allow us to commit Kafka cursor whenever chunks are uploaded
 class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[GoogleSettings])(implicit
     override val kafkaClientInterface: T,
     override val backupConfig: Backup,
