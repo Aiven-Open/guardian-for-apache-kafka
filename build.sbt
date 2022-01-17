@@ -24,6 +24,7 @@ val diffxVersion               = "0.7.0"
 val testContainersVersion      = "0.39.12"
 val testContainersJavaVersion  = "1.16.2"
 val scalaCheckVersion          = "1.15.5-1-SNAPSHOT"
+val enumeratumVersion          = "1.7.0"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -62,10 +63,13 @@ val cliSettings = Seq(
   scalacOptions ++= Seq(
     "-opt-inline-from:**", // See https://www.lightbend.com/blog/scala-inliner-optimizer
     "-opt:l:method"
-  ),
+  ) ++ flagsFor13,
   publish / skip       := true,
   publishLocal / skip  := true,
-  publishSigned / skip := true
+  publishSigned / skip := true,
+  scalaVersion         := "2.13.6",
+  rpmVendor            := "Aiven",
+  rpmLicense           := Some("ASL 2.0")
 )
 
 val baseName = "guardian-for-apache-kafka"
@@ -96,6 +100,21 @@ lazy val core = project
       "org.testcontainers"          % "kafka"                          % testContainersJavaVersion  % Test
     )
   )
+
+lazy val coreCli = project
+  .in(file("core-cli"))
+  .settings(
+    cliSettings,
+    name := s"$baseName-core-cli",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.typesafe.akka" %% "akka-slf4j"  % akkaVersion,
+      "com.monovore"      %% "decline"     % declineVersion,
+      "com.beachape"      %% "enumeratum"  % enumeratumVersion
+    )
+  )
+  .dependsOn(core)
 
 lazy val coreS3 = project
   .in(file("core-s3"))
@@ -155,15 +174,13 @@ lazy val cliBackup = project
   .in(file("cli-backup"))
   .settings(
     cliSettings,
-    name := s"$baseName-cli-backup",
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-      "com.monovore"      %% "decline"     % declineVersion
-    )
+    name := s"$baseName-cli-backup"
   )
-  .dependsOn(backupS3, backupGCS)
-  .enablePlugins(SbtNativePackager)
+  .dependsOn(coreCli   % "compile->compile;test->test",
+             backupS3  % "compile->compile;test->test",
+             backupGCS % "compile->compile;test->test"
+  )
+  .enablePlugins(JavaAppPackaging)
 
 lazy val coreCompaction = project
   .in(file("core-compaction"))
@@ -196,15 +213,10 @@ lazy val cliCompaction = project
   .in(file("cli-compaction"))
   .settings(
     cliSettings,
-    name := s"$baseName-cli-compaction",
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-      "com.monovore"      %% "decline"     % declineVersion
-    )
+    name := s"$baseName-cli-compaction"
   )
-  .dependsOn(compactionS3, compactionGCS)
-  .enablePlugins(SbtNativePackager)
+  .dependsOn(coreCli, compactionS3, compactionGCS)
+  .enablePlugins(JavaAppPackaging)
 
 lazy val restoreS3 = project
   .in(file("restore-s3"))
@@ -226,15 +238,10 @@ lazy val cliRestore = project
   .in(file("cli-restore"))
   .settings(
     cliSettings,
-    name := s"$baseName-cli-restore",
-    libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-      "com.monovore"      %% "decline"     % declineVersion
-    )
+    name := s"$baseName-cli-restore"
   )
-  .dependsOn(restoreS3, restoreGCS)
-  .enablePlugins(SbtNativePackager)
+  .dependsOn(coreCli, restoreS3, restoreGCS)
+  .enablePlugins(JavaAppPackaging)
 
 // This is currently causing problems, see https://github.com/djspiewak/sbt-github-actions/issues/74
 ThisBuild / githubWorkflowUseSbtThinClient := false
