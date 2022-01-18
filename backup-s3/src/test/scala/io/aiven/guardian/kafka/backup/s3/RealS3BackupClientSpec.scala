@@ -13,7 +13,7 @@ import akka.stream.alpakka.s3.S3Settings
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
-import com.softwaremill.diffx.scalatest.DiffMatcher.matchTo
+import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataInChunksWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithMinSizeGen
@@ -237,7 +237,7 @@ class RealS3BackupClientSpec
         }
         .toMap
 
-      downloadedGroupedAsKey must matchTo(inputAsKey)
+      downloadedGroupedAsKey mustMatchTo inputAsKey
     }
   }
 
@@ -338,7 +338,7 @@ class RealS3BackupClientSpec
         }
         .toMap
 
-      downloadedGroupedAsKey must matchTo(inputAsKey)
+      downloadedGroupedAsKey mustMatchTo inputAsKey
     }
   }
 }
