@@ -1,5 +1,6 @@
 package io.aiven.guardian.kafka.backup.gcs
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model.ContentTypes
 import akka.stream.alpakka.google.GoogleAttributes
 import akka.stream.alpakka.google.GoogleSettings
@@ -15,9 +16,12 @@ import io.aiven.guardian.kafka.gcs.configs.{GCS => GCSConfig}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
+// TODO: GCS implementation currently does not work correctly because of inability of current GCS implementation in
+// Alpakka to allow us to commit Kafka cursor whenever chunks are uploaded
 class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[GoogleSettings])(implicit
     override val kafkaClientInterface: T,
     override val backupConfig: Backup,
+    override val system: ActorSystem,
     gcsConfig: GCSConfig
 ) extends BackupClientInterface[T] {
 
@@ -25,12 +29,22 @@ class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[Google
 
   override type BackupResult = Option[StorageObject]
 
-  override def backupToStorageSink(key: String): Sink[ByteString, Future[BackupResult]] = {
+  override type CurrentState = Nothing
+
+  override def getCurrentUploadState(key: String): Future[Option[Nothing]] = Future.successful(None)
+
+  override def backupToStorageSink(key: String,
+                                   currentState: Option[Nothing]
+  ): Sink[(ByteString, kafkaClientInterface.CursorContext), Future[BackupResult]] = {
     val base = GCStorage
       .resumableUpload(gcsConfig.dataBucket, key, ContentTypes.`application/json`)
       .mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
 
-    maybeGoogleSettings.fold(base)(googleSettings => base.withAttributes(GoogleAttributes.settings(googleSettings)))
+    maybeGoogleSettings
+      .fold(base)(googleSettings => base.withAttributes(GoogleAttributes.settings(googleSettings)))
+      .contramap[(ByteString, kafkaClientInterface.CursorContext)] { case (byteString, _) =>
+        byteString
+      }
   }
 
 }

@@ -10,7 +10,7 @@ ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/c
 val akkaVersion                = "2.6.17"
 val akkaHttpVersion            = "10.2.7"
 val alpakkaKafkaVersion        = "2.1.1"
-val alpakkaVersion             = "3.0.2+34-bdac5519+20211013-1607-SNAPSHOT"
+val alpakkaVersion             = "3.0.4"
 val quillJdbcMonixVersion      = "3.7.2"
 val postgresqlJdbcVersion      = "42.2.24"
 val scalaLoggingVersion        = "3.9.4"
@@ -23,6 +23,7 @@ val akkaStreamsJson            = "0.8.0"
 val diffxVersion               = "0.5.6"
 val testContainersVersion      = "0.39.8"
 val testContainersJavaVersion  = "1.16.2"
+val scalaCheckVersion          = "1.15.5-1-SNAPSHOT"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -86,6 +87,7 @@ lazy val core = project
       "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Test,
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
       "org.scalatestplus"          %% "scalacheck-1-15"                % scalaTestScalaCheckVersion % Test,
+      "org.mdedetrich"             %% "scalacheck"                     % scalaCheckVersion          % Test,
       "com.softwaremill.diffx"     %% "diffx-scalatest"                % diffxVersion               % Test,
       "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-http-testkit"              % akkaHttpVersion            % Test,
@@ -101,10 +103,10 @@ lazy val coreS3 = project
     librarySettings,
     name := s"$baseName-s3",
     libraryDependencies ++= Seq(
-      "org.mdedetrich"    %% "akka-stream-alpakka-s3" % alpakkaVersion,
-      "org.scalatest"     %% "scalatest"              % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
-      "com.typesafe.akka" %% "akka-http-xml"          % akkaHttpVersion            % Test
+      "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
+      "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
+      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
+      "com.typesafe.akka"  %% "akka-http-xml"          % akkaHttpVersion            % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -115,10 +117,10 @@ lazy val coreGCS = project
     librarySettings,
     name := s"$baseName-gcs",
     libraryDependencies ++= Seq(
-      "org.mdedetrich"    %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion,
-      "org.scalatest"     %% "scalatest"                                % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-15"                          % scalaTestScalaCheckVersion % Test,
-      "com.typesafe.akka" %% "akka-http-spray-json"                     % akkaHttpVersion            % Test
+      "com.lightbend.akka" %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion,
+      "org.scalatest"      %% "scalatest"                                % scalaTestVersion           % Test,
+      "org.scalatestplus"  %% "scalacheck-1-15"                          % scalaTestScalaCheckVersion % Test,
+      "com.typesafe.akka"  %% "akka-http-spray-json"                     % akkaHttpVersion            % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")

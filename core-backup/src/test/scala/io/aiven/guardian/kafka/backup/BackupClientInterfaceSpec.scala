@@ -8,6 +8,7 @@ import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
+import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.common.record.TimestampType
@@ -41,7 +42,7 @@ class BackupClientInterfaceSpec
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       val mock =
         new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                           kafkaDataWithTimePeriod.periodSlice
+                                                           PeriodFromFirst(kafkaDataWithTimePeriod.periodSlice)
         )
 
       val calculatedFuture = mock.materializeBackupStreamPositions()
@@ -58,7 +59,7 @@ class BackupClientInterfaceSpec
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       val mock =
         new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                           kafkaDataWithTimePeriod.periodSlice
+                                                           PeriodFromFirst(kafkaDataWithTimePeriod.periodSlice)
         )
 
       val result = mock.materializeBackupStreamPositions().futureValue.toList
@@ -93,7 +94,7 @@ class BackupClientInterfaceSpec
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       val mock =
         new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                           kafkaDataWithTimePeriod.periodSlice
+                                                           PeriodFromFirst(kafkaDataWithTimePeriod.periodSlice)
         )
 
       val result = mock.materializeBackupStreamPositions().futureValue.toList
@@ -118,7 +119,7 @@ class BackupClientInterfaceSpec
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
         val mock =
           new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                             kafkaDataWithTimePeriod.periodSlice
+                                                             PeriodFromFirst(kafkaDataWithTimePeriod.periodSlice)
           )
 
         mock.clear()
@@ -161,7 +162,7 @@ class BackupClientInterfaceSpec
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
         val mock =
           new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                             kafkaDataWithTimePeriod.periodSlice
+                                                             PeriodFromFirst(kafkaDataWithTimePeriod.periodSlice)
           )
 
         mock.clear()
@@ -199,7 +200,7 @@ class BackupClientInterfaceSpec
     val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source.single(
                                                                     reducedConsumerRecord
                                                                   ),
-                                                                  1 day
+                                                                  PeriodFromFirst(1 day)
     )
     mock.clear()
     val calculatedFuture = for {
@@ -238,7 +239,7 @@ class BackupClientInterfaceSpec
     val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(
                                                                     reducedConsumerRecords
                                                                   ),
-                                                                  1 millis
+                                                                  PeriodFromFirst(1 millis)
     )
     mock.clear()
     val calculatedFuture = for {
@@ -273,7 +274,7 @@ class BackupClientInterfaceSpec
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
         val mock =
           new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
-                                                             kafkaDataWithTimePeriod.periodSlice
+                                                             PeriodFromFirst(kafkaDataWithTimePeriod.periodSlice)
           )
 
         mock.clear()

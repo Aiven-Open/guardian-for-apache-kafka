@@ -2,9 +2,10 @@ package io.aiven.guardian.kafka
 
 import akka.Done
 import akka.actor.ActorSystem
+import akka.kafka.CommitDelivery
 import akka.kafka.CommitterSettings
-import akka.kafka.ConsumerMessage.Committable
 import akka.kafka.ConsumerMessage.CommittableOffset
+import akka.kafka.ConsumerMessage.CommittableOffsetBatch
 import akka.kafka.ConsumerSettings
 import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Committer
@@ -14,8 +15,10 @@ import akka.stream.scaladsl.SourceWithContext
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
+import scala.collection.immutable
 import scala.concurrent.Future
 
 import java.util.Base64
@@ -23,27 +26,39 @@ import java.util.Base64
 /** A Kafka Client that uses Alpakka Kafka Consumer under the hood to create a stream of events from a Kafka cluster. To
   * configure the Alpakka Kafka Consumer use the standard typesafe configuration i.e. akka.kafka.consumer (note that the
   * `keySerializer` and `valueSerializer` are hardcoded so you cannot override this).
-  * @param configure
+  * @param configureConsumer
   *   A way to configure the underlying Kafka consumer settings
+  * @param configureCommitter
+  *   A way to configure the underlying kafka committer settings
   * @param system
   *   A classic `ActorSystem`
   * @param kafkaClusterConfig
   *   Additional cluster configuration that is needed
   */
 class KafkaClient(
-    configure: Option[ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]] = None
+    configureConsumer: Option[
+      ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]
+    ] = None,
+    configureCommitter: Option[
+      CommitterSettings => CommitterSettings
+    ] = None
 )(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster)
     extends KafkaClientInterface
     with StrictLogging {
-  override type CursorContext = Committable
-  override type Control       = Consumer.Control
+  override type CursorContext        = CommittableOffset
+  override type Control              = Consumer.Control
+  override type BatchedCursorContext = CommittableOffsetBatch
 
   if (kafkaClusterConfig.topics.isEmpty)
     logger.warn("Kafka Cluster configuration has no topics set")
 
   private[kafka] val consumerSettings = {
     val base = ConsumerSettings(system, new ByteArrayDeserializer, new ByteArrayDeserializer)
-    configure.fold(base)(block => block(base))
+    configureConsumer
+      .fold(base)(block => block(base))
+      .withProperties(
+        ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest"
+      )
   }
 
   private[kafka] val subscriptions = Subscriptions.topics(kafkaClusterConfig.topics)
@@ -51,7 +66,7 @@ class KafkaClient(
   /** @return
     *   A `SourceWithContext` that returns a Kafka Stream which automatically handles committing of cursors
     */
-  override val getSource: SourceWithContext[ReducedConsumerRecord, CommittableOffset, Consumer.Control] =
+  override def getSource: SourceWithContext[ReducedConsumerRecord, CommittableOffset, Consumer.Control] =
     Consumer
       .sourceWithOffsetContext(consumerSettings, subscriptions)
       .map(consumerRecord =>
@@ -65,10 +80,24 @@ class KafkaClient(
         )
       )
 
-  private[kafka] val committerSettings: CommitterSettings = CommitterSettings(system)
+  private[kafka] val committerSettings: CommitterSettings = {
+    val base = CommitterSettings(system)
+    configureCommitter
+      .fold(base)(block => block(base))
+      .withDelivery(CommitDelivery.waitForAck)
+  }
 
   /** @return
     *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
     */
-  override val commitCursor: Sink[Committable, Future[Done]] = Committer.sink(committerSettings)
+  override def commitCursor: Sink[CommittableOffsetBatch, Future[Done]] = Committer.sink(committerSettings)
+
+  /** How to batch an immutable iterable of `CursorContext` into a `BatchedCursorContext`
+    * @param cursors
+    *   The cursors that need to be batched
+    * @return
+    *   A collection data structure that represents the batched cursors
+    */
+  override def batchCursorContext(cursors: immutable.Iterable[CommittableOffset]): CommittableOffsetBatch =
+    CommittableOffsetBatch(cursors.toSeq)
 }
