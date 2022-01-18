@@ -26,8 +26,6 @@ import scala.concurrent.Future
 
 import java.time.Instant
 
-final case class CurrentS3State(uploadId: String, parts: Seq[Part])
-
 class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings])(implicit
     override val kafkaClientInterface: T,
     override val backupConfig: Backup,
@@ -36,6 +34,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
     s3Headers: S3Headers
 ) extends BackupClientInterface[T]
     with StrictLogging {
+  import BackupClient._
 
   override def empty: () => Future[Option[MultipartUploadResult]] = () => Future.successful(None)
 
@@ -165,4 +164,8 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
     val base = sink.mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
     maybeS3Settings.fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
   }
+}
+
+object BackupClient {
+  final case class CurrentS3State(uploadId: String, parts: Seq[Part])
 }
