@@ -12,7 +12,7 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.testkit.TestKitBase
 import com.softwaremill.diffx.generic.auto._
-import com.softwaremill.diffx.scalatest.DiffMatcher.matchTo
+import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.Generators._
@@ -221,7 +221,7 @@ trait BackupClientSpec
 
         kafkaDataWithTimePeriod.data.containsSlice(observed) mustEqual true
         if (observed.nonEmpty) {
-          observed.head must matchTo(kafkaDataWithTimePeriod.data.head)
+          observed.head mustMatchTo (kafkaDataWithTimePeriod.data.head)
         }
     }
   }

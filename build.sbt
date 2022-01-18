@@ -88,7 +88,7 @@ lazy val core = project
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
       "org.scalatestplus"          %% "scalacheck-1-15"                % scalaTestScalaCheckVersion % Test,
       "org.mdedetrich"             %% "scalacheck"                     % scalaCheckVersion          % Test,
-      "com.softwaremill.diffx"     %% "diffx-scalatest"                % diffxVersion               % Test,
+      "com.softwaremill.diffx"     %% "diffx-scalatest-must"           % diffxVersion               % Test,
       "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-http-testkit"              % akkaHttpVersion            % Test,
       "com.dimafeng"               %% "testcontainers-scala-scalatest" % testContainersVersion      % Test,

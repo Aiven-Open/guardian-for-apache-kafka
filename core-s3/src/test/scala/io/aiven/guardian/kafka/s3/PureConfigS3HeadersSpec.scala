@@ -4,7 +4,7 @@ import akka.stream.alpakka.s3.MetaHeaders
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.headers._
 import com.softwaremill.diffx.generic.auto._
-import com.softwaremill.diffx.scalatest.DiffMatcher._
+import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.kafka.s3.Config._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
@@ -128,7 +128,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
 
   property("Valid CannedAcl configs should parse correctly") {
     forAll { (cannedAcl: CannedAcl) =>
-      ConfigSource.string(s"test=${configCannedAcl(cannedAcl)}").at("test").load[CannedAcl] must matchTo(
+      ConfigSource.string(s"test=${configCannedAcl(cannedAcl)}").at("test").load[CannedAcl] mustMatchTo (
         Right(cannedAcl): Result[CannedAcl]
       )
     }
@@ -136,7 +136,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
 
   property("Valid MetaHeaders configs should parse correctly") {
     forAll { (metaHeaders: MetaHeaders) =>
-      ConfigSource.string(configMetaHeaders(metaHeaders)).load[MetaHeaders] must matchTo(
+      ConfigSource.string(configMetaHeaders(metaHeaders)).load[MetaHeaders] mustMatchTo (
         Right(metaHeaders): Result[MetaHeaders]
       )
     }
@@ -144,7 +144,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
 
   property("Valid StorageClass configs should parse correctly") {
     forAll { (storageClass: StorageClass) =>
-      ConfigSource.string(s"test=${configStorageClass(storageClass)}").at("test").load[StorageClass] must matchTo(
+      ConfigSource.string(s"test=${configStorageClass(storageClass)}").at("test").load[StorageClass] mustMatchTo (
         Right(storageClass): Result[StorageClass]
       )
     }
@@ -152,7 +152,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
 
   property("Valid ServerSideEncryption configs should parse correctly") {
     forAll { (serverSideEncryption: ServerSideEncryption) =>
-      ConfigSource.string(configServerSideEncryption(serverSideEncryption)).load[ServerSideEncryption] must matchTo(
+      ConfigSource.string(configServerSideEncryption(serverSideEncryption)).load[ServerSideEncryption] mustMatchTo (
         Right(serverSideEncryption): Result[ServerSideEncryption]
       )
     }
@@ -170,7 +170,7 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
         s"server-side-encryption={\n${configServerSideEncryption(serverSideEncryption)}\n}"
       )}
           |""".stripMargin
-      ConfigSource.string(string).load[S3Headers] must matchTo(
+      ConfigSource.string(string).load[S3Headers] mustMatchTo (
         Right(s3Headers): Result[S3Headers]
       )
     }
