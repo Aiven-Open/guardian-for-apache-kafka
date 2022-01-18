@@ -148,6 +148,15 @@ class RealS3BackupClientSpec
     }
   )
 
+  def waitUntilBackupClientHasCommitted(backupClient: BackupClientChunkState[_],
+                                        step: FiniteDuration = 100 millis,
+                                        delay: FiniteDuration = 5 seconds
+  ): Future[Unit] =
+    if (backupClient.processedChunks.size() > 0)
+      akka.pattern.after(delay)(Future.successful(()))
+    else
+      akka.pattern.after(step)(waitUntilBackupClientHasCommitted(backupClient, step, delay))
+
   property("entire flow works properly from start to end") {
     forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix)
@@ -231,15 +240,6 @@ class RealS3BackupClientSpec
       downloadedGroupedAsKey must matchTo(inputAsKey)
     }
   }
-
-  def waitUntilBackupClientHasCommitted(backupClient: BackupClientChunkState[_],
-                                        step: FiniteDuration = 100 millis,
-                                        delay: FiniteDuration = 5 seconds
-  ): Future[Unit] =
-    if (backupClient.processedChunks.size() > 0)
-      akka.pattern.after(delay)(Future.successful(()))
-    else
-      akka.pattern.after(step)(waitUntilBackupClientHasCommitted(backupClient, step, delay))
 
   property("suspend/resume works correctly") {
     forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
