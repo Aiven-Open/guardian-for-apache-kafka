@@ -13,6 +13,7 @@ import akka.kafka.scaladsl.Consumer
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.SourceWithContext
 import com.typesafe.scalalogging.StrictLogging
+import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -42,7 +43,7 @@ class KafkaClient(
     configureCommitter: Option[
       CommitterSettings => CommitterSettings
     ] = None
-)(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster)
+)(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster, backupConfig: Backup)
     extends KafkaClientInterface
     with StrictLogging {
   override type CursorContext        = CommittableOffset
@@ -58,6 +59,9 @@ class KafkaClient(
       .fold(base)(block => block(base))
       .withProperties(
         ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest"
+      )
+      .withGroupId(
+        backupConfig.kafkaGroupId
       )
   }
 

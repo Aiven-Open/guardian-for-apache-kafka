@@ -20,6 +20,7 @@ import io.aiven.guardian.kafka.Generators.kafkaDataWithMinSizeGen
 import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.Utils._
 import io.aiven.guardian.kafka.backup.KafkaClient
+import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
@@ -73,12 +74,12 @@ class RealS3BackupClientSpec
     Some(
       _.withBootstrapServers(
         container.bootstrapServers
-      ).withGroupId("test-group")
+      )
     )
 
   def createKafkaClient(
       killSwitch: SharedKillSwitch
-  )(implicit kafkaClusterConfig: KafkaCluster): KafkaClientWithKillSwitch =
+  )(implicit kafkaClusterConfig: KafkaCluster, backupConfig: Backup): KafkaClientWithKillSwitch =
     new KafkaClientWithKillSwitch(
       configureConsumer = baseKafkaConfig,
       killSwitch = killSwitch
@@ -173,7 +174,7 @@ class RealS3BackupClientSpec
       implicit val kafkaClusterConfig: KafkaCluster = KafkaCluster(topics)
 
       implicit val config: S3Config     = s3Config
-      implicit val backupConfig: Backup = Backup(PeriodFromFirst(1 minute))
+      implicit val backupConfig: Backup = Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 minute))
 
       val producerSettings = createProducer()
 
@@ -253,8 +254,9 @@ class RealS3BackupClientSpec
 
       implicit val kafkaClusterConfig: KafkaCluster = KafkaCluster(topics)
 
-      implicit val config: S3Config     = s3Config
-      implicit val backupConfig: Backup = Backup(ChronoUnitSlice(ChronoUnit.MINUTES))
+      implicit val config: S3Config = s3Config
+      implicit val backupConfig: Backup =
+        Backup(MockedBackupClientInterface.KafkaGroupId, ChronoUnitSlice(ChronoUnit.MINUTES))
 
       val producerSettings = createProducer()
 

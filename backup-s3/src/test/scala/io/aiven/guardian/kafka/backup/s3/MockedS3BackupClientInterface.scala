@@ -5,6 +5,7 @@ import akka.actor.ActorSystem
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.S3Settings
 import akka.stream.scaladsl.Source
+import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
 import io.aiven.guardian.kafka.backup.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
@@ -18,7 +19,7 @@ class MockedS3BackupClientInterface(
     maybeS3Settings: Option[S3Settings]
 )(implicit val s3Headers: S3Headers, system: ActorSystem)
     extends BackupClient(maybeS3Settings)(new MockedKafkaClientInterface(kafkaData),
-                                          Backup(timeConfiguration),
+                                          Backup(MockedBackupClientInterface.KafkaGroupId, timeConfiguration),
                                           implicitly,
                                           s3Config,
                                           implicitly
