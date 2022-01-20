@@ -17,9 +17,9 @@ import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataInChunksWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithMinSizeGen
-import io.aiven.guardian.kafka.KafkaClient
 import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.Utils._
+import io.aiven.guardian.kafka.backup.KafkaClient
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst

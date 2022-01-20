@@ -15,8 +15,8 @@ import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl._
 import akka.util.ByteString
 import com.typesafe.scalalogging.StrictLogging
-import io.aiven.guardian.kafka.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.BackupClientInterface
+import io.aiven.guardian.kafka.backup.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 

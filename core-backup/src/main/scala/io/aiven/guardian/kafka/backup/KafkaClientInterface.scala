@@ -1,4 +1,4 @@
-package io.aiven.guardian.kafka
+package io.aiven.guardian.kafka.backup
 
 import akka.Done
 import akka.stream.scaladsl.Sink

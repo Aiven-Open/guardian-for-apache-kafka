@@ -8,8 +8,8 @@ import akka.stream.alpakka.googlecloud.storage.StorageObject
 import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import io.aiven.guardian.kafka.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.BackupClientInterface
+import io.aiven.guardian.kafka.backup.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.gcs.configs.{GCS => GCSConfig}
 
