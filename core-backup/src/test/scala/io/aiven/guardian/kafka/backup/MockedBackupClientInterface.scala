@@ -28,6 +28,8 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
 )(implicit override val system: ActorSystem)
     extends BackupClientInterface[MockedKafkaClientInterface] {
 
+  import MockedBackupClientInterface._
+
   /** The collection that receives the data as its being submitted where each value is the key along with the
     * `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
     * have finished writing to it
@@ -72,6 +74,7 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
   def clear(): Unit = backedUpData.clear()
 
   override implicit lazy val backupConfig: Backup = Backup(
+    KafkaGroupId,
     timeConfiguration
   )
 
@@ -105,6 +108,14 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
       .toMat(Sink.collection)(Keep.right)
       .run()
+}
+
+object MockedBackupClientInterface {
+
+  /** A Kafka group id that is used in testing. When used in pure mocks this value is simply ignored (since there is no
+    * Kafka cluster) where as when used against actual test Kafka clusters this is the consumer group that is used
+    */
+  val KafkaGroupId: String = "test"
 }
 
 /** A `MockedBackupClientInterface` that also uses a mocked `KafkaClientInterface`
