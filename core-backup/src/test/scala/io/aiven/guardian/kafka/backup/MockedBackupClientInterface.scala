@@ -7,7 +7,6 @@ import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import io.aiven.guardian.kafka.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.Utils._
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.TimeConfiguration

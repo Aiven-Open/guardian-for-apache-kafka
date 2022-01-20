@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.S3Settings
 import akka.stream.scaladsl.Source
-import io.aiven.guardian.kafka.MockedKafkaClientInterface
+import io.aiven.guardian.kafka.backup.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
