@@ -108,9 +108,8 @@ object Generators {
     } yield bucketName
   }
 
-  def s3ConfigGen(useVirtualDotHost: Boolean, prefix: Option[String] = None): Gen[S3Config] = (for {
-    dataBucket       <- bucketNameGen(useVirtualDotHost, prefix)
-    compactionBucket <- bucketNameGen(useVirtualDotHost, prefix)
-  } yield S3Config(dataBucket, compactionBucket)).filter(config => config.dataBucket != config.compactionBucket)
+  def s3ConfigGen(useVirtualDotHost: Boolean, prefix: Option[String] = None): Gen[S3Config] = for {
+    dataBucket <- bucketNameGen(useVirtualDotHost, prefix)
+  } yield S3Config(dataBucket)
 
 }
