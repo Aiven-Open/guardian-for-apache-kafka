@@ -29,9 +29,21 @@ class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[Google
 
   override type BackupResult = Option[StorageObject]
 
-  override type CurrentState = Nothing
+  override type State = Nothing
 
-  override def getCurrentUploadState(key: String): Future[Option[Nothing]] = Future.successful(None)
+  override def getCurrentUploadState(key: String): Future[UploadStateResult] =
+    Future.successful(UploadStateResult.empty)
+
+  override def backupToStorageTerminateSink(
+      previousState: PreviousState
+  ): Sink[ByteString, Future[Option[StorageObject]]] = {
+    val base = GCStorage
+      .resumableUpload(gcsConfig.dataBucket, previousState.previousKey, ContentTypes.`application/json`)
+      .mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
+
+    maybeGoogleSettings
+      .fold(base)(googleSettings => base.withAttributes(GoogleAttributes.settings(googleSettings)))
+  }
 
   override def backupToStorageSink(key: String,
                                    currentState: Option[Nothing]
@@ -46,5 +58,4 @@ class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[Google
         byteString
       }
   }
-
 }

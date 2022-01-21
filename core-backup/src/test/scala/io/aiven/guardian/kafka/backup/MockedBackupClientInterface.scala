@@ -82,19 +82,18 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     */
   override type BackupResult = Done
 
-  override type CurrentState = Nothing
+  override type State = Nothing
 
-  override def getCurrentUploadState(key: String): Future[Option[Nothing]] = Future.successful(None)
+  override def getCurrentUploadState(key: String): Future[UploadStateResult] =
+    Future.successful(UploadStateResult.empty)
 
   override def empty: () => Future[Done] = () => Future.successful(Done)
 
-  /** Override this method to define how to backup a `ByteString` to a `DataSource`
-    *
-    * @param key
-    *   The object key or filename for what is being backed up
-    * @return
-    *   A Sink that also provides a `BackupResult`
-    */
+  override def backupToStorageTerminateSink(previousState: PreviousState): Sink[ByteString, Future[Done]] =
+    Sink.foreach[ByteString] { byteString =>
+      backedUpData.add((previousState.previousKey, byteString))
+    }
+
   override def backupToStorageSink(key: String,
                                    currentState: Option[Nothing]
   ): Sink[(ByteString, kafkaClientInterface.CursorContext), Future[Done]] =

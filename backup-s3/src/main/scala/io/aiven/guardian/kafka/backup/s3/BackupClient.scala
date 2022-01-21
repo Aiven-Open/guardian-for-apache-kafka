@@ -4,6 +4,7 @@ import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.alpakka.s3.FailedUploadPart
+import akka.stream.alpakka.s3.ListMultipartUploadResultUploads
 import akka.stream.alpakka.s3.MultipartUploadResult
 import akka.stream.alpakka.s3.Part
 import akka.stream.alpakka.s3.S3Attributes
@@ -40,10 +41,55 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
 
   override type BackupResult = Option[MultipartUploadResult]
 
-  override type CurrentState = CurrentS3State
+  override type State = CurrentS3State
 
-  override def getCurrentUploadState(key: String): Future[Option[CurrentS3State]] = {
-    implicit val ec: ExecutionContext = system.classicSystem.getDispatcher
+  private def extractStateFromUpload(keys: Seq[ListMultipartUploadResultUploads], current: Boolean)(implicit
+      executionContext: ExecutionContext
+  ): Future[Some[(CurrentS3State, String)]] = {
+    val listMultipartUploads = keys match {
+      case Seq(single) =>
+        if (current)
+          logger.info(
+            s"Found previous uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
+          )
+        else
+          logger.info(
+            s"Found current uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
+          )
+        single
+      case rest =>
+        val last = rest.maxBy(_.initiated)(Ordering[Instant])
+        if (current)
+          logger.warn(
+            s"Found multiple currently cancelled uploads for key: ${last.key} and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
+          )
+        else
+          logger.warn(
+            s"Found multiple previously cancelled uploads for key: ${last.key} and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
+          )
+        last
+    }
+    val uploadId = listMultipartUploads.uploadId
+    val key      = listMultipartUploads.key
+    val baseList = S3.listParts(s3Config.dataBucket, key, listMultipartUploads.uploadId)
+
+    for {
+      parts <- maybeS3Settings
+                 .fold(baseList)(s3Settings => baseList.withAttributes(S3Attributes.settings(s3Settings)))
+                 .runWith(Sink.seq)
+
+      finalParts = parts.lastOption match {
+                     case Some(part) if part.size >= akka.stream.alpakka.s3.scaladsl.S3.MinChunkSize =>
+                       parts
+                     case _ =>
+                       // We drop the last part here since its broken
+                       parts.dropRight(1)
+                   }
+    } yield Some((CurrentS3State(uploadId, finalParts.map(_.toPart)), key))
+  }
+
+  def getCurrentUploadState(key: String): Future[UploadStateResult] = {
+    implicit val ec: ExecutionContext = system.dispatcher
 
     val baseListMultipart = S3.listMultipartUpload(s3Config.dataBucket, None)
 
@@ -52,41 +98,19 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
         maybeS3Settings
           .fold(baseListMultipart)(s3Settings => baseListMultipart.withAttributes(S3Attributes.settings(s3Settings)))
           .runWith(Sink.seq)
-      keys = incompleteUploads.filter(_.key == key)
-      result <- if (keys.isEmpty)
-                  Future.successful(None)
-                else {
-                  val listMultipartUploads = keys match {
-                    case Seq(single) =>
-                      logger.info(
-                        s"Found previous uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
-                      )
-                      single
-                    case rest =>
-                      val last = rest.maxBy(_.initiated)(Ordering[Instant])
-                      logger.warn(
-                        s"Found multiple previously cancelled uploads for key: $key and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
-                      )
-                      last
-                  }
-                  val uploadId = listMultipartUploads.uploadId
-                  val baseList = S3.listParts(s3Config.dataBucket, key, listMultipartUploads.uploadId)
+      (currentKeys, previousKeys) = incompleteUploads.partition(_.key == key)
+      current <- if (currentKeys.nonEmpty)
+                   extractStateFromUpload(currentKeys, current = true)
+                 else
+                   Future.successful(None)
+      previous <- if (previousKeys.nonEmpty)
+                    extractStateFromUpload(previousKeys, current = false)
+                  else
+                    Future.successful(None)
 
-                  for {
-                    parts <- maybeS3Settings
-                               .fold(baseList)(s3Settings => baseList.withAttributes(S3Attributes.settings(s3Settings)))
-                               .runWith(Sink.seq)
-
-                    finalParts = parts.lastOption match {
-                                   case Some(part) if part.size >= akka.stream.alpakka.s3.scaladsl.S3.MinChunkSize =>
-                                     parts
-                                   case _ =>
-                                     // We drop the last part here since its broken
-                                     parts.dropRight(1)
-                                 }
-                  } yield Some(CurrentS3State(uploadId, finalParts.map(_.toPart)))
-                }
-    } yield result
+    } yield UploadStateResult(current.map(_._1),
+                              previous.map { case (state, previousKey) => PreviousState(state, previousKey) }
+    )
 
   }
 
@@ -124,6 +148,28 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
       .toMat(failureSink)(Keep.none)
 
     Sink.combine(success, failure)(Broadcast(_))
+  }
+
+  override def backupToStorageTerminateSink(
+      previousState: PreviousState
+  ): Sink[ByteString, Future[BackupResult]] = {
+    logger.info(
+      s"Terminating and completing previous backup with key: ${previousState.previousKey} and uploadId:${previousState.state.uploadId}"
+    )
+    val sink = S3
+      .resumeMultipartUploadWithHeaders(
+        s3Config.dataBucket,
+        previousState.previousKey,
+        previousState.state.uploadId,
+        previousState.state.parts,
+        s3Headers = s3Headers,
+        chunkingParallelism = 1
+      )
+
+    val base = sink.mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
+
+    maybeS3Settings
+      .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
   }
 
   override def backupToStorageSink(key: String,

@@ -4,6 +4,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl._
 import akka.util.ByteString
+import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.Errors
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
@@ -26,7 +27,7 @@ import java.time.temporal._
   * @tparam T
   *   The underlying `kafkaClientInterface` type
   */
-trait BackupClientInterface[T <: KafkaClientInterface] {
+trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
   implicit val kafkaClientInterface: T
   implicit val backupConfig: Backup
   implicit val system: ActorSystem
@@ -54,36 +55,61 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
                                   override val context: kafkaClientInterface.CursorContext
   ) extends ByteStringElement
 
+  case class PreviousState(state: State, previousKey: String)
+  case class UploadStateResult(current: Option[State], previous: Option[PreviousState])
+  object UploadStateResult {
+    val empty: UploadStateResult = UploadStateResult(None, None)
+  }
+
   /** Override this type to define the result of backing up data to a datasource
     */
   type BackupResult
 
   /** Override this type to define the result of calculating the previous state (if it exists)
     */
-  type CurrentState
+  type State
 
   import BackupClientInterface._
 
-  /** Override this method to define how to retrieve the current state of a backup.
+  /** Override this method to define how to retrieve the current state of any unfinished backups.
     * @param key
-    *   The object key or filename for what is being backed up
+    *   The object key or filename for what is currently being backed up
     * @return
-    *   An optional [[Future]] that contains the state if it found a previously aborted backup. Return [[None]] if if
-    *   its a brand new backup.
+    *   A [[Future]] with a [[UploadStateResult]] data structure that optionally contains the state associated with
+    *   `key` along with the previous latest state before `key` (if it exists)
     */
-  def getCurrentUploadState(key: String): Future[Option[CurrentState]]
+  def getCurrentUploadState(key: String): Future[UploadStateResult]
+
+  /** A sink that is executed whenever a previously existing Backup needs to be terminated and closed. Generally
+    * speaking this [[Sink]] is similar to the [[backupToStorageSink]] except that
+    * [[kafkaClientInterface.CursorContext]] is not required since no Kafka messages are being written.
+    *
+    * Note that the terminate refers to the fact that this Sink is executed with a `null]` [[Source]] which when written
+    * to an already existing unfinished backup terminates the containing JSON array so that it becomes valid parsable
+    * JSON.
+    * @param previousState
+    *   A data structure containing both the [[State]] along with the associated key which you can refer to in order to
+    *   define your [[Sink]]
+    * @return
+    *   A [[Sink]] that points to an existing key defined by `previousState.previousKey`
+    */
+  def backupToStorageTerminateSink(previousState: PreviousState): Sink[ByteString, Future[BackupResult]]
 
   /** Override this method to define how to backup a `ByteString` combined with Kafka
     * `kafkaClientInterface.CursorContext` to a `DataSource`
     * @param key
     *   The object key or filename for what is being backed up
     * @param currentState
-    *   The current state if it exists. This is used when resuming from a previously aborted backup
+    *   The current state if it exists. If this is empty then a new backup is being created with the associated `key`
+    *   otherwise if this contains a [[State]] then the defined [[Sink]] needs to handle resuming a previously
+    *   unfinished backup with that `key` by directly appending the [[ByteString]] data.
     * @return
-    *   A Sink that also provides a `BackupResult`
+    *   A [[Sink]] that given a [[ByteString]] (containing a single Kafka [[ReducedConsumerRecord]]) along with its
+    *   [[kafkaClientInterface.CursorContext]] backs up the data to your data storage. The [[Sink]] is also responsible
+    *   for executing [[kafkaClientInterface.commitCursor]] when the data is successfully backed up
     */
   def backupToStorageSink(key: String,
-                          currentState: Option[CurrentState]
+                          currentState: Option[State]
   ): Sink[(ByteString, kafkaClientInterface.CursorContext), Future[BackupResult]]
 
   /** Override this method to define a zero vale that covers the case that occurs immediately when `SubFlow` has been
@@ -270,29 +296,57 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
     }
   }
 
+  private[backup] val terminateSource: Source[ByteString, NotUsed] =
+    Source.single(ByteString("null]"))
+
   /** Prepares the sink before it gets handed to `backupToStorageSink`
     */
-  private[backup] def prepareStartOfStream(state: Option[CurrentState],
+  private[backup] def prepareStartOfStream(uploadStateResult: UploadStateResult,
                                            start: Start
   ): Sink[ByteStringElement, Future[BackupResult]] =
-    if (state.isDefined)
-      Flow[ByteStringElement]
-        .flatMapPrefix(1) {
-          case Seq(byteStringElement: Start) =>
-            val withoutStartOfJsonArray = byteStringElement.data.drop(1)
-            Flow[ByteStringElement].prepend(
-              Source.single(byteStringElement.copy(data = withoutStartOfJsonArray))
+    (uploadStateResult.previous, uploadStateResult.current) match {
+      case (Some(previous), None) =>
+        backupConfig.timeConfiguration match {
+          case _: PeriodFromFirst =>
+            backupToStorageSink(start.key, None)
+              .contramap[ByteStringElement] { byteStringElement =>
+                (byteStringElement.data, byteStringElement.context)
+              }
+          case _: ChronoUnitSlice =>
+            logger.warn(
+              s"Detected previous backup using PeriodFromFirst however current configuration is now changed to ChronoUnitSlice. Object/file with an older key: ${start.key} may contain newer events than object/file with newer key: ${previous.previousKey}"
             )
-          case _ => throw Errors.ExpectedStartOfSource
+            backupToStorageSink(start.key, None)
+              .contramap[ByteStringElement] { byteStringElement =>
+                (byteStringElement.data, byteStringElement.context)
+              }
         }
-        .toMat(backupToStorageSink(start.key, state).contramap[ByteStringElement] { byteStringElement =>
-          (byteStringElement.data, byteStringElement.context)
-        })(Keep.right)
-    else
-      backupToStorageSink(start.key, state)
-        .contramap[ByteStringElement] { byteStringElement =>
-          (byteStringElement.data, byteStringElement.context)
+      case (None, Some(current)) =>
+        backupConfig.timeConfiguration match {
+          case _: PeriodFromFirst =>
+            throw Errors.UnhandledStreamCase(List(current))
+          case _: ChronoUnitSlice =>
+            Flow[ByteStringElement]
+              .flatMapPrefix(1) {
+                case Seq(byteStringElement: Start) =>
+                  val withoutStartOfJsonArray = byteStringElement.data.drop(1)
+                  Flow[ByteStringElement].prepend(
+                    Source.single(byteStringElement.copy(data = withoutStartOfJsonArray))
+                  )
+                case _ => throw Errors.ExpectedStartOfSource
+              }
+              .toMat(backupToStorageSink(start.key, Some(current)).contramap[ByteStringElement] { byteStringElement =>
+                (byteStringElement.data, byteStringElement.context)
+              })(Keep.right)
         }
+      case (None, None) =>
+        backupToStorageSink(start.key, None)
+          .contramap[ByteStringElement] { byteStringElement =>
+            (byteStringElement.data, byteStringElement.context)
+          }
+      case (Some(previous), Some(current)) =>
+        throw Errors.UnhandledStreamCase(List(previous.state, current))
+    }
 
   /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into a
     * data source.
@@ -357,10 +411,15 @@ trait BackupClientInterface[T <: KafkaClientInterface] {
       Sink.lazyInit(
         {
           case start: Start =>
-            implicit val ec: ExecutionContext = system.getDispatcher
+            implicit val ec: ExecutionContext = system.dispatcher
             for {
-              state <- getCurrentUploadState(start.key)
-            } yield prepareStartOfStream(state, start)
+              uploadStateResult <- getCurrentUploadState(start.key)
+              _ <- (uploadStateResult.previous, uploadStateResult.current) match {
+                     case (Some(previous), None) =>
+                       terminateSource.runWith(backupToStorageTerminateSink(previous)).map(Some.apply)
+                     case _ => Future.successful(None)
+                   }
+            } yield prepareStartOfStream(uploadStateResult, start)
           case _ => throw Errors.ExpectedStartOfSource
         },
         empty
