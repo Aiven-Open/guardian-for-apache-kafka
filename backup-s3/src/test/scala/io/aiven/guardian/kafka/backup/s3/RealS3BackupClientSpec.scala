@@ -149,6 +149,15 @@ class RealS3BackupClientSpec
     }
   )
 
+  def getKeysFromTwoDownloads(dataBucket: String): Future[(String, String)] = waitForS3Download(
+    dataBucket,
+    {
+      case Seq(first, second) => (first.key, second.key)
+      case rest =>
+        throw DownloadNotReady(rest)
+    }
+  )
+
   def waitUntilBackupClientHasCommitted(backupClient: BackupClientChunkState[_],
                                         step: FiniteDuration = 100 millis,
                                         delay: FiniteDuration = 5 seconds
@@ -158,7 +167,7 @@ class RealS3BackupClientSpec
     else
       akka.pattern.after(step)(waitUntilBackupClientHasCommitted(backupClient, step, delay))
 
-  property("entire flow works properly from start to end") {
+  property("basic flow without interruptions using PeriodFromFirst works correctly") {
     forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix)
     ) { (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod, s3Config: S3Config) =>
@@ -242,7 +251,142 @@ class RealS3BackupClientSpec
     }
   }
 
-  property("suspend/resume works correctly") {
+  property("suspend/resume using PeriodFromFirst creates separate object after resume point") {
+    forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
+           s3ConfigGen(useVirtualDotHost, bucketPrefix)
+    ) { (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod, s3Config: S3Config) =>
+      logger.info(s"Data bucket is ${s3Config.dataBucket}")
+
+      val data = kafkaDataInChunksWithTimePeriod.data.flatten
+
+      val topics = data.map(_.topic).toSet
+
+      implicit val kafkaClusterConfig: KafkaCluster = KafkaCluster(topics)
+
+      implicit val config: S3Config     = s3Config
+      implicit val backupConfig: Backup = Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 minute))
+
+      val producerSettings = createProducer()
+
+      val killSwitch = KillSwitches.shared("kill-switch")
+
+      val backupClient =
+        new BackupClientChunkState(Some(s3Settings))(createKafkaClient(killSwitch),
+                                                     implicitly,
+                                                     implicitly,
+                                                     implicitly,
+                                                     implicitly
+        )
+
+      val asProducerRecords = toProducerRecords(data)
+      val baseSource        = toSource(asProducerRecords, 30 seconds)
+
+      val adminClient = AdminClient.create(
+        Map[String, AnyRef](
+          CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
+        ).asJava
+      )
+
+      val createTopics = adminClient.createTopics(topics.map { topic =>
+        new NewTopic(topic, 1, 1.toShort)
+      }.asJava)
+
+      val calculatedFuture = for {
+        _ <- createTopics.all().toCompletableFuture.asScala
+        _ <- createBucket(s3Config.dataBucket)
+        _ = backupClient.backup.run()
+        _ = baseSource.runWith(Producer.plainSink(producerSettings))
+        _ <- waitUntilBackupClientHasCommitted(backupClient)
+        _ = killSwitch.abort(TerminationException)
+        secondBackupClient <- akka.pattern.after(2 seconds) {
+                                Future {
+                                  new BackupClient(Some(s3Settings))(
+                                    new KafkaClient(configureConsumer = baseKafkaConfig),
+                                    implicitly,
+                                    implicitly,
+                                    implicitly,
+                                    implicitly
+                                  )
+                                }
+                              }
+        _ = secondBackupClient.backup.run()
+        _                     <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
+        (firstKey, secondKey) <- getKeysFromTwoDownloads(s3Config.dataBucket)
+        firstDownloaded <- S3.download(s3Config.dataBucket, firstKey)
+                             .withAttributes(s3Attrs)
+                             .runWith(Sink.head)
+                             .flatMap {
+                               case Some((downloadSource, _)) =>
+                                 downloadSource
+                                   .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                                   .runWith(Sink.seq)
+                               case None =>
+                                 throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
+                             }
+        secondDownloaded <- S3.download(s3Config.dataBucket, secondKey)
+                              .withAttributes(s3Attrs)
+                              .runWith(Sink.head)
+                              .flatMap {
+                                case Some((downloadSource, _)) =>
+                                  downloadSource
+                                    .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                                    .runWith(Sink.seq)
+                                case None =>
+                                  throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
+                              }
+
+      } yield {
+        val first = firstDownloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
+          reducedConsumerRecord
+        }
+
+        val second = secondDownloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
+          reducedConsumerRecord
+        }
+        (first, second)
+      }
+
+      val (firstDownloaded, secondDownloaded) = calculatedFuture.futureValue
+
+      // Only care about ordering when it comes to key
+      val firstDownloadedGroupedAsKey = firstDownloaded
+        .groupBy(_.key)
+        .view
+        .mapValues { reducedConsumerRecords =>
+          reducedConsumerRecords.map(_.value)
+        }
+        .toMap
+
+      val secondDownloadedGroupedAsKey = secondDownloaded
+        .groupBy(_.key)
+        .view
+        .mapValues { reducedConsumerRecords =>
+          reducedConsumerRecords.map(_.value)
+        }
+        .toMap
+
+      val inputAsKey = data
+        .groupBy(_.key)
+        .view
+        .mapValues { reducedConsumerRecords =>
+          reducedConsumerRecords.map(_.value)
+        }
+        .toMap
+
+      val downloaded = (firstDownloadedGroupedAsKey.keySet ++ secondDownloadedGroupedAsKey.keySet).map { key =>
+        (key,
+         firstDownloadedGroupedAsKey.getOrElse(key, List.empty) ++ secondDownloadedGroupedAsKey.getOrElse(key,
+                                                                                                          List.empty
+         )
+        )
+      }.toMap
+
+      downloaded mustMatchTo inputAsKey
+
+    }
+  }
+
+  property("suspend/resume for same object using ChronoUnitSlice works correctly") {
     forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix)
     ) { (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod, s3Config: S3Config) =>
@@ -260,10 +404,10 @@ class RealS3BackupClientSpec
 
       val producerSettings = createProducer()
 
-      val firstKillSwitch = KillSwitches.shared("first-kill-switch")
+      val killSwitch = KillSwitches.shared("kill-switch")
 
       val backupClient =
-        new BackupClientChunkState(Some(s3Settings))(createKafkaClient(firstKillSwitch),
+        new BackupClientChunkState(Some(s3Settings))(createKafkaClient(killSwitch),
                                                      implicitly,
                                                      implicitly,
                                                      implicitly,
@@ -290,7 +434,7 @@ class RealS3BackupClientSpec
         _ <- waitForStartOfTimeUnit(ChronoUnit.MINUTES)
         _ = baseSource.runWith(Producer.plainSink(producerSettings))
         _ <- waitUntilBackupClientHasCommitted(backupClient)
-        _ = firstKillSwitch.abort(TerminationException)
+        _ = killSwitch.abort(TerminationException)
         secondBackupClient <- akka.pattern.after(2 seconds) {
                                 Future {
                                   new BackupClient(Some(s3Settings))(
@@ -303,7 +447,7 @@ class RealS3BackupClientSpec
                                 }
                               }
         _ = secondBackupClient.backup.run()
-        _   <- sendTopicAfterTimePeriod(1 minutes, producerSettings, topics.head)
+        _   <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
         key <- getKeyFromSingleDownload(s3Config.dataBucket)
         downloaded <- S3.download(s3Config.dataBucket, key)
                         .withAttributes(s3Attrs)
