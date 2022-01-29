@@ -24,6 +24,7 @@ val diffxVersion               = "0.7.0"
 val testContainersVersion      = "0.39.12"
 val testContainersJavaVersion  = "1.16.2"
 val scalaCheckVersion          = "1.15.5-1-SNAPSHOT"
+val scalaCheckOpsVersion       = "2.8.1"
 val enumeratumVersion          = "1.7.0"
 
 val flagsFor12 = Seq(
@@ -92,6 +93,7 @@ lazy val core = project
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
       "org.scalatestplus"          %% "scalacheck-1-15"                % scalaTestScalaCheckVersion % Test,
       "org.mdedetrich"             %% "scalacheck"                     % scalaCheckVersion          % Test,
+      "com.rallyhealth"            %% "scalacheck-ops_1-15"            % scalaCheckOpsVersion       % Test,
       "com.softwaremill.diffx"     %% "diffx-scalatest-must"           % diffxVersion               % Test,
       "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-http-testkit"              % akkaHttpVersion            % Test,
@@ -218,13 +220,23 @@ lazy val cliCompaction = project
   .dependsOn(coreCli, compactionS3, compactionGCS)
   .enablePlugins(JavaAppPackaging)
 
+lazy val coreRestore = project
+  .in(file("core-restore"))
+  .settings(
+    librarySettings,
+    name := s"$baseName-core-restore"
+  )
+  .dependsOn(core % "compile->compile;test->test")
+  .dependsOn(coreBackup % "test->test")
+
 lazy val restoreS3 = project
   .in(file("restore-s3"))
   .settings(
     librarySettings,
     name := s"$baseName-restore-s3"
   )
-  .dependsOn(compactionS3)
+  .dependsOn(coreRestore % "compile->compile;test->test", coreS3 % "compile->compile;test->test")
+  .dependsOn(backupS3 % "test->compile")
 
 lazy val restoreGCS = project
   .in(file("restore-gcs"))
@@ -232,7 +244,7 @@ lazy val restoreGCS = project
     librarySettings,
     name := s"$baseName-restore-gcs"
   )
-  .dependsOn(compactionGCS)
+  .dependsOn(coreRestore, coreGCS)
 
 lazy val cliRestore = project
   .in(file("cli-restore"))
@@ -268,6 +280,8 @@ ThisBuild / githubWorkflowEnv ++= Map(
   "ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID"     -> "${{ secrets.AWS_ACCESS_KEY }}",
   "ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY" -> "${{ secrets.AWS_SECRET_KEY }}"
 )
+
+ThisBuild / githubWorkflowJavaVersions := List("openjdk@1.11")
 
 import ReleaseTransformations._
 

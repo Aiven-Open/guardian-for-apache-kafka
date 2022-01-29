@@ -18,5 +18,5 @@ trait AkkaStreamTestKit extends TestKitBase with BeforeAndAfterAll { this: Suite
   /** If its not possible to determine whether a Stream has finished in a test and instead you need to use a manual
     * wait, make sure you wait at least this period of time for akka-streams to initialize properly.
     */
-  val AkkaStreamInitializationConstant: FiniteDuration = 500 millis
+  val AkkaStreamInitializationConstant: FiniteDuration = 1 second
 }

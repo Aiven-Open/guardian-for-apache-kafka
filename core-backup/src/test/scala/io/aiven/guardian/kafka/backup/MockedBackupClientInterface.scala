@@ -7,7 +7,8 @@ import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import io.aiven.guardian.kafka.Utils._
+import io.aiven.guardian.kafka.TestUtils._
+import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
@@ -16,7 +17,6 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 
-import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /** A mocked `BackupClientInterface` which given a `kafkaClientInterface` allows you to
@@ -64,8 +64,7 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
       .toList
     if (sort)
       base.sortBy { case (key, _) =>
-        val withoutExtension = key.substring(0, key.lastIndexOf('.'))
-        OffsetDateTime.parse(withoutExtension).getNano
+        Utils.keyToOffsetDateTime(key)
       }
     else
       base
