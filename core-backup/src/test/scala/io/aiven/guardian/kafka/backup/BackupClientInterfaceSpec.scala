@@ -17,6 +17,7 @@ import org.scalatest.Inspectors
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.typelevel.jawn.AsyncParser
 
 import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
@@ -130,16 +131,13 @@ class BackupClientInterfaceSpec
           asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                          Source
                            .single(byteString)
-                           .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                           .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
+                           .collect { case Some(value) =>
+                             value
+                           }
                            .toMat(Sink.collection)(Keep.right)
                            .run()
-                           .map(records =>
-                             (key,
-                              records.flatten.collect { case Some(v) =>
-                                v
-                              }
-                             )
-                           )
+                           .map(records => (key, records))
                        })
         } yield asRecords
 
@@ -173,16 +171,13 @@ class BackupClientInterfaceSpec
           asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                          Source
                            .single(byteString)
-                           .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                           .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
+                           .collect { case Some(value) =>
+                             value
+                           }
                            .toMat(Sink.collection)(Keep.right)
                            .run()
-                           .map(records =>
-                             (key,
-                              records.flatten.collect { case Some(v) =>
-                                v
-                              }
-                             )
-                           )
+                           .map(records => (key, records))
                        })
         } yield asRecords
 
@@ -210,16 +205,13 @@ class BackupClientInterfaceSpec
       asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                      Source
                        .single(byteString)
-                       .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                       .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
+                       .collect { case Some(value) =>
+                         value
+                       }
                        .toMat(Sink.collection)(Keep.right)
                        .run()
-                       .map(records =>
-                         (key,
-                          records.flatten.collect { case Some(v) =>
-                            v
-                          }
-                         )
-                       )
+                       .map(records => (key, records))
                    })
     } yield asRecords
 
@@ -249,16 +241,13 @@ class BackupClientInterfaceSpec
       asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                      Source
                        .single(byteString)
-                       .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                       .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
+                       .collect { case Some(value) =>
+                         value
+                       }
                        .toMat(Sink.collection)(Keep.right)
                        .run()
-                       .map(records =>
-                         (key,
-                          records.flatten.collect { case Some(v) =>
-                            v
-                          }
-                         )
-                       )
+                       .map(records => (key, records))
                    })
     } yield asRecords
 
