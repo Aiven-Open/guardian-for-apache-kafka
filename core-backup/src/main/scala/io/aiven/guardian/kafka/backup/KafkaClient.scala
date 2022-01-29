@@ -17,6 +17,7 @@ import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 import scala.collection.immutable
@@ -50,6 +51,8 @@ class KafkaClient(
   override type Control              = Consumer.Control
   override type BatchedCursorContext = CommittableOffsetBatch
 
+  import KafkaClient._
+
   if (kafkaClusterConfig.topics.isEmpty)
     logger.warn("Kafka Cluster configuration has no topics set")
 
@@ -73,16 +76,7 @@ class KafkaClient(
   override def getSource: SourceWithContext[ReducedConsumerRecord, CommittableOffset, Consumer.Control] =
     Consumer
       .sourceWithOffsetContext(consumerSettings, subscriptions)
-      .map(consumerRecord =>
-        ReducedConsumerRecord(
-          consumerRecord.topic(),
-          consumerRecord.offset(),
-          Base64.getEncoder.encodeToString(consumerRecord.key()),
-          Base64.getEncoder.encodeToString(consumerRecord.value()),
-          consumerRecord.timestamp(),
-          consumerRecord.timestampType()
-        )
-      )
+      .map(consumerRecordToReducedConsumerRecord)
 
   private[kafka] val committerSettings: CommitterSettings = {
     val base = CommitterSettings(system)
@@ -104,4 +98,18 @@ class KafkaClient(
     */
   override def batchCursorContext(cursors: immutable.Iterable[CommittableOffset]): CommittableOffsetBatch =
     CommittableOffsetBatch(cursors.toSeq)
+}
+
+object KafkaClient {
+  def consumerRecordToReducedConsumerRecord(
+      consumerRecord: ConsumerRecord[Array[Byte], Array[Byte]]
+  ): ReducedConsumerRecord =
+    ReducedConsumerRecord(
+      consumerRecord.topic(),
+      consumerRecord.offset(),
+      Base64.getEncoder.encodeToString(consumerRecord.key()),
+      Base64.getEncoder.encodeToString(consumerRecord.value()),
+      consumerRecord.timestamp(),
+      consumerRecord.timestampType()
+    )
 }

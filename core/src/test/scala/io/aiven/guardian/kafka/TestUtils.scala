@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
 
-object Utils {
+object TestUtils {
 
   // Taken from https://stackoverflow.com/a/56763206/1519631
   implicit final class KafkaFutureToCompletableFuture[T](kafkaFuture: KafkaFuture[T]) {

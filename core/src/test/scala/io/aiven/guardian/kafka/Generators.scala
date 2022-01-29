@@ -94,7 +94,19 @@ object Generators {
 
   } yield reducedConsumerRecords
 
-  final case class KafkaDataWithTimePeriod(data: List[ReducedConsumerRecord], periodSlice: FiniteDuration)
+  final case class KafkaDataWithTimePeriod(data: List[ReducedConsumerRecord], periodSlice: FiniteDuration) {
+    def topics: Set[String] = data.map(_.topic).toSet
+    def toKafkaDataWithTimePeriodAndPickedRecord(
+        picked: ReducedConsumerRecord
+    ): KafkaDataWithTimePeriodAndPickedRecord = KafkaDataWithTimePeriodAndPickedRecord(data, periodSlice, picked)
+  }
+
+  final case class KafkaDataWithTimePeriodAndPickedRecord(data: List[ReducedConsumerRecord],
+                                                          periodSlice: FiniteDuration,
+                                                          picked: ReducedConsumerRecord
+  ) {
+    def topics: Set[String] = data.map(_.topic).toSet
+  }
 
   def randomPeriodSliceBetweenMinMax(reducedConsumerRecords: List[ReducedConsumerRecord]): Gen[FiniteDuration] = {
     val head = reducedConsumerRecords.head
@@ -134,6 +146,17 @@ object Generators {
     duration <- periodSliceFunction(records)
   } yield KafkaDataWithTimePeriod(records, duration)
 
+  def kafkaDataWithTimePeriodsAndPickedRecordGen(
+      min: Int = 2,
+      max: Int = 100,
+      padTimestampsMillis: Int = 10,
+      periodSliceFunction: List[ReducedConsumerRecord] => Gen[FiniteDuration] = randomPeriodSliceBetweenMinMax,
+      condition: Option[List[ReducedConsumerRecord] => Boolean] = None
+  ): Gen[KafkaDataWithTimePeriodAndPickedRecord] = for {
+    records           <- kafkaDataWithTimePeriodsGen(min, max, padTimestampsMillis, periodSliceFunction, condition)
+    randomRecordIndex <- Gen.choose(0, records.data.length - 1)
+  } yield records.toKafkaDataWithTimePeriodAndPickedRecord(records.data(randomRecordIndex))
+
   def reducedConsumerRecordsUntilSize(size: Long, toBytesFunc: List[ReducedConsumerRecord] => Array[Byte])(
       reducedConsumerRecords: List[ReducedConsumerRecord]
   ): Boolean =
@@ -142,7 +165,18 @@ object Generators {
   def timePeriodAlwaysGreaterThanAllMessages(reducedConsumerRecords: List[ReducedConsumerRecord]): Gen[FiniteDuration] =
     FiniteDuration(reducedConsumerRecords.last.timestamp + 1, MILLISECONDS)
 
-  final case class KafkaDataInChunksWithTimePeriod(data: List[List[ReducedConsumerRecord]], periodSlice: FiniteDuration)
+  final case class KafkaDataInChunksWithTimePeriod(data: List[List[ReducedConsumerRecord]],
+                                                   periodSlice: FiniteDuration
+  ) {
+    def topics: Set[String] = data.flatten.map(_.topic).toSet
+  }
+
+  final case class KafkaDataInChunksWithTimePeriodRenamedTopics(data: List[List[ReducedConsumerRecord]],
+                                                                periodSlice: FiniteDuration,
+                                                                renamedTopics: Map[String, String]
+  ) {
+    def topics: Set[String] = data.flatten.map(_.topic).toSet
+  }
 
   /** @param size
     *   The minimum number of bytes
@@ -159,6 +193,23 @@ object Generators {
       duration           <- timePeriodAlwaysGreaterThanAllMessages(recordsSplitBySize.flatten)
     } yield KafkaDataInChunksWithTimePeriod(recordsSplitBySize, duration)
   }
+
+  /** @param size
+    *   The minimum number of bytes
+    * @return
+    *   A list of [[ReducedConsumerRecord]] that is at least as big as `size`.
+    */
+  def kafkaDataWithMinSizeRenamedTopicsGen(size: Long,
+                                           amount: Int,
+                                           toBytesFunc: List[ReducedConsumerRecord] => Array[Byte]
+  ): Gen[KafkaDataInChunksWithTimePeriodRenamedTopics] =
+    for {
+      kafkaData <- kafkaDataWithMinSizeGen(size, amount, toBytesFunc)
+      // New topics need to be unique, hence the set
+      newTopicNames <-
+        Gen.containerOfN[Set, String](kafkaData.topics.size, kafkaTopic.filterNot(kafkaData.topics.contains))
+      newTopics = kafkaData.topics.zip(newTopicNames).toMap
+    } yield KafkaDataInChunksWithTimePeriodRenamedTopics(kafkaData.data, kafkaData.periodSlice, newTopics)
 
   /** Generator for a valid Kafka topic that can be used in actual Kafka clusters
     */
