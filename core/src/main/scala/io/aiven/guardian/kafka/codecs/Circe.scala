@@ -16,8 +16,9 @@ trait Circe {
 
   implicit val kafkaTimestampTypeEncoder: Encoder[TimestampType] = Encoder.instance[TimestampType](_.id.asJson)
 
-  implicit val reducedConsumerRecordDecoder: Decoder[ReducedConsumerRecord] = Decoder.forProduct6(
+  implicit val reducedConsumerRecordDecoder: Decoder[ReducedConsumerRecord] = Decoder.forProduct7(
     "topic",
+    "partition",
     "offset",
     "key",
     "value",
@@ -25,8 +26,9 @@ trait Circe {
     "timestamp_type"
   )(ReducedConsumerRecord.apply)
 
-  implicit val reducedConsumerRecordEncoder: Encoder[ReducedConsumerRecord] = Encoder.forProduct6(
+  implicit val reducedConsumerRecordEncoder: Encoder[ReducedConsumerRecord] = Encoder.forProduct7(
     "topic",
+    "partition",
     "offset",
     "key",
     "value",

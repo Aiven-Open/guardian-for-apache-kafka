@@ -190,7 +190,7 @@ class BackupClientInterfaceSpec
   }
 
   property("backup method completes flow correctly for single element") {
-    val reducedConsumerRecord = ReducedConsumerRecord("", 1, "key", "value", 1, TimestampType.CREATE_TIME)
+    val reducedConsumerRecord = ReducedConsumerRecord("", 0, 1, "key", "value", 1, TimestampType.CREATE_TIME)
 
     val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source.single(
                                                                     reducedConsumerRecord
@@ -224,8 +224,8 @@ class BackupClientInterfaceSpec
 
   property("backup method completes flow correctly for two elements") {
     val reducedConsumerRecords = List(
-      ReducedConsumerRecord("", 1, "key", "value1", 1, TimestampType.CREATE_TIME),
-      ReducedConsumerRecord("", 2, "key", "value2", 2, TimestampType.CREATE_TIME)
+      ReducedConsumerRecord("", 0, 1, "key", "value1", 1, TimestampType.CREATE_TIME),
+      ReducedConsumerRecord("", 0, 2, "key", "value2", 2, TimestampType.CREATE_TIME)
     )
 
     val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source(
