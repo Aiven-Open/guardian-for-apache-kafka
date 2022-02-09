@@ -22,6 +22,7 @@ import java.time.ZoneId
   *   The timestamp type (same as `ConsumerRecord` `timestampType`)
   */
 final case class ReducedConsumerRecord(topic: String,
+                                       partition: Int,
                                        offset: Long,
                                        key: String,
                                        value: String,

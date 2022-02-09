@@ -106,6 +106,7 @@ object KafkaClient {
   ): ReducedConsumerRecord =
     ReducedConsumerRecord(
       consumerRecord.topic(),
+      consumerRecord.partition(),
       consumerRecord.offset(),
       Base64.getEncoder.encodeToString(consumerRecord.key()),
       Base64.getEncoder.encodeToString(consumerRecord.value()),

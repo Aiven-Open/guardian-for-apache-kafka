@@ -19,7 +19,8 @@ object Generators {
                                    key: String,
                                    timestamp: Long
   ): Gen[ReducedConsumerRecord] = for {
-    t             <- Gen.const(topic)
+    t <- Gen.const(topic)
+    p <- Gen.const(0) // In mocks this value is irrelevant and in tests we always have a single partition
     o             <- Gen.const(offset)
     k             <- Gen.const(key)
     value         <- Gen.alphaStr.map(string => Base64.getEncoder.encodeToString(string.getBytes))
@@ -27,6 +28,7 @@ object Generators {
     timestampType <- Gen.const(TimestampType.CREATE_TIME)
   } yield ReducedConsumerRecord(
     t,
+    p,
     o,
     k,
     value,
