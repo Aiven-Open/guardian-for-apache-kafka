@@ -34,7 +34,10 @@ class CliSpec extends AnyPropSpec with Matchers {
       "hours"
     )
 
-    backup.Main.main(args.toArray)
+    try backup.Main.main(args.toArray)
+    catch {
+      case _: Throwable =>
+    }
     backup.Main.initializedApp.get() match {
       case Some(s3App: backup.S3App) =>
         s3App.backupConfig mustEqual BackupConfig(groupId, ChronoUnitSlice(ChronoUnit.HOURS))
@@ -42,6 +45,7 @@ class CliSpec extends AnyPropSpec with Matchers {
         s3App.kafkaClient.consumerSettings.getProperty("bootstrap.servers") mustEqual bootstrapServer
         s3App.s3Config.dataBucket mustEqual dataBucket
       case _ =>
+        fail("Expected an App to be initialized")
     }
   }
 

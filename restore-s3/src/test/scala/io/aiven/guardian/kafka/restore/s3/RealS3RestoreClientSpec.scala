@@ -94,7 +94,7 @@ class RealS3RestoreClientSpec
           )
 
         val restoreClient =
-          new RestoreClient[KafkaProducer](Some(s3Settings))
+          new RestoreClient[KafkaProducer](Some(s3Settings), None)
 
         val adminClient = AdminClient.create(
           Map[String, AnyRef](
