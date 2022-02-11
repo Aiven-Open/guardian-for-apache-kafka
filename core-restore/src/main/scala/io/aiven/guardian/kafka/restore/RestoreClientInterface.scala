@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka.restore
 import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.SharedKillSwitch
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -26,6 +27,7 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends StrictLogging 
   implicit val restoreConfig: Restore
   implicit val kafkaClusterConfig: KafkaCluster
   implicit val system: ActorSystem
+  val maybeKillSwitch: Option[SharedKillSwitch]
 
   def retrieveBackupKeys: Future[List[String]]
 
@@ -78,16 +80,21 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends StrictLogging 
       case None => true
     }
 
-  private[kafka] def restoreKey(key: String): Future[Done] = Source
-    .single(key)
-    .via(downloadFlow)
-    .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
-    .collect {
-      case Some(reducedConsumerRecord)
-          if checkTopicInConfig(reducedConsumerRecord) && checkTopicGreaterThanTime(reducedConsumerRecord) =>
-        reducedConsumerRecord
-    }
-    .runWith(kafkaProducerInterface.getSink)
+  private[kafka] def restoreKey(key: String): Future[Done] = {
+    val base = Source
+      .single(key)
+      .via(downloadFlow)
+      .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
+      .collect {
+        case Some(reducedConsumerRecord)
+            if checkTopicInConfig(reducedConsumerRecord) && checkTopicGreaterThanTime(reducedConsumerRecord) =>
+          reducedConsumerRecord
+      }
+
+    maybeKillSwitch
+      .fold(base)(killSwitch => base.via(killSwitch.flow))
+      .runWith(kafkaProducerInterface.getSink)
+  }
 
   def restore: Future[Done] = {
     implicit val ec: ExecutionContext = system.dispatcher

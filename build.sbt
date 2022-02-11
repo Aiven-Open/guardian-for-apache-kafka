@@ -244,7 +244,7 @@ lazy val restoreGCS = project
     librarySettings,
     name := s"$baseName-restore-gcs"
   )
-  .dependsOn(coreRestore, coreGCS)
+  .dependsOn(coreRestore % "compile->compile;test->test", coreGCS % "compile->compile;test->test")
 
 lazy val cliRestore = project
   .in(file("cli-restore"))
@@ -252,7 +252,10 @@ lazy val cliRestore = project
     cliSettings,
     name := s"$baseName-cli-restore"
   )
-  .dependsOn(coreCli, restoreS3, restoreGCS)
+  .dependsOn(coreCli    % "compile->compile;test->test",
+             restoreS3  % "compile->compile;test->test",
+             restoreGCS % "compile->compile;test->test"
+  )
   .enablePlugins(JavaAppPackaging)
 
 // This is currently causing problems, see https://github.com/djspiewak/sbt-github-actions/issues/74
