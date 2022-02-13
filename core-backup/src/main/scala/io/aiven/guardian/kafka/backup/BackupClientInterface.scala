@@ -40,20 +40,14 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
   ) extends RecordElement
   private[backup] case object End extends RecordElement
 
-  /** An element after the record has been transformed to a ByteString
-    */
-  private[backup] sealed trait ByteStringElement {
-    val data: ByteString
+  private[backup] sealed trait ByteStringContext {
     val context: kafkaClientInterface.CursorContext
   }
 
-  private[backup] case class Start(override val data: ByteString,
-                                   override val context: kafkaClientInterface.CursorContext,
-                                   key: String
-  ) extends ByteStringElement
-  private[backup] case class Tail(override val data: ByteString,
-                                  override val context: kafkaClientInterface.CursorContext
-  ) extends ByteStringElement
+  private[backup] case class Start(override val context: kafkaClientInterface.CursorContext, key: String)
+      extends ByteStringContext
+
+  private[backup] case class Tail(override val context: kafkaClientInterface.CursorContext) extends ByteStringContext
 
   case class PreviousState(state: State, previousKey: String)
   case class UploadStateResult(current: Option[State], previous: Option[PreviousState])
@@ -250,15 +244,18 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
     *   A [[List]] containing a single [[Start]] ready to be processed in the [[Sink]]
     */
   private[backup] def transformFirstElement(element: Element, key: String, terminate: Boolean) =
-    transformReducedConsumerRecords(List(element)).map {
+    SourceWithContext.fromTuples(Source(transformReducedConsumerRecords(List(element)).map {
       case (byteString, Some(context)) =>
-        if (terminate)
-          Start(ByteString("[") ++ dropCommaFromEndOfJsonArray(byteString) ++ ByteString("]"), context, key)
-        else
-          Start(ByteString("[") ++ byteString, context, key)
+        val bs =
+          if (terminate)
+            ByteString("[") ++ dropCommaFromEndOfJsonArray(byteString) ++ ByteString("]")
+          else
+            ByteString("[") ++ byteString
+
+        (bs, Start(context, key))
       case _ =>
         throw Errors.UnhandledStreamCase(List(element))
-    }
+    }))
 
   /** Fixes the case where is an odd amount of elements in the stream
     * @param head
@@ -303,22 +300,22 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
     */
   private[backup] def prepareStartOfStream(uploadStateResult: UploadStateResult,
                                            start: Start
-  ): Sink[ByteStringElement, Future[BackupResult]] =
+  ): Sink[(ByteString, ByteStringContext), Future[BackupResult]] =
     (uploadStateResult.previous, uploadStateResult.current) match {
       case (Some(previous), None) =>
         backupConfig.timeConfiguration match {
           case _: PeriodFromFirst =>
             backupToStorageSink(start.key, None)
-              .contramap[ByteStringElement] { byteStringElement =>
-                (byteStringElement.data, byteStringElement.context)
+              .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+                (byteString, byteStringContext.context)
               }
           case _: ChronoUnitSlice =>
             logger.warn(
               s"Detected previous backup using PeriodFromFirst however current configuration is now changed to ChronoUnitSlice. Object/file with an older key: ${start.key} may contain newer events than object/file with newer key: ${previous.previousKey}"
             )
             backupToStorageSink(start.key, None)
-              .contramap[ByteStringElement] { byteStringElement =>
-                (byteStringElement.data, byteStringElement.context)
+              .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+                (byteString, byteStringContext.context)
               }
         }
       case (None, Some(current)) =>
@@ -326,23 +323,28 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
           case _: PeriodFromFirst =>
             throw Errors.UnhandledStreamCase(List(current))
           case _: ChronoUnitSlice =>
-            Flow[ByteStringElement]
-              .flatMapPrefix(1) {
-                case Seq(byteStringElement: Start) =>
-                  val withoutStartOfJsonArray = byteStringElement.data.drop(1)
-                  Flow[ByteStringElement].prepend(
-                    Source.single(byteStringElement.copy(data = withoutStartOfJsonArray))
-                  )
-                case _ => throw Errors.ExpectedStartOfSource
-              }
-              .toMat(backupToStorageSink(start.key, Some(current)).contramap[ByteStringElement] { byteStringElement =>
-                (byteStringElement.data, byteStringElement.context)
+            FlowWithContext
+              .fromTuples(
+                Flow[(ByteString, ByteStringContext)]
+                  .flatMapPrefix(1) {
+                    case Seq((byteString, start: Start)) =>
+                      val withoutStartOfJsonArray = byteString.drop(1)
+                      Flow[(ByteString, ByteStringContext)].prepend(
+                        Source.single((withoutStartOfJsonArray, start))
+                      )
+                    case _ => throw Errors.ExpectedStartOfSource
+                  }
+              )
+              .asFlow
+              .toMat(backupToStorageSink(start.key, Some(current)).contramap[(ByteString, ByteStringContext)] {
+                case (byteString, byteStringContext) =>
+                  (byteString, byteStringContext.context)
               })(Keep.right)
         }
       case (None, None) =>
         backupToStorageSink(start.key, None)
-          .contramap[ByteStringElement] { byteStringElement =>
-            (byteStringElement.data, byteStringElement.context)
+          .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+            (byteString, byteStringContext.context)
           }
       case (Some(previous), Some(current)) =>
         throw Errors.UnhandledStreamCase(List(previous.state, current))
@@ -372,7 +374,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
           // This case only occurs when you have a single element in a timeslice.
           // We have to terminate immediately to create a JSON array with a single element
           val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
-          Source(transformFirstElement(only, key, terminate = true))
+          transformFirstElement(only, key, terminate = true)
         case (Seq(first: Element, second: Element), restOfReducedConsumerRecords) =>
           val key         = calculateKey(first.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
           val firstSource = transformFirstElement(first, key, terminate = false)
@@ -389,18 +391,18 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
             .prefixAndTail(1)
             .flatMapConcat((transformTailingElement _).tupled)
             .mapConcat(identity)
-            .map { case (byteString, context) => Tail(byteString, context) }
+            .map { case (byteString, context) => (byteString, Tail(context)) }
 
-          Source.combine(
-            Source(
-              firstSource
-            ),
-            restTransformed
-          )(Concat(_))
+          SourceWithContext.fromTuples(
+            Source.combine(
+              firstSource.asSource,
+              restTransformed
+            )(Concat(_))
+          )
         case (Seq(only: Element), _) =>
           // This case can also occur when user terminates the stream
           val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
-          Source(transformFirstElement(only, key, terminate = false))
+          transformFirstElement(only, key, terminate = false)
         case (rest, _) =>
           throw Errors.UnhandledStreamCase(rest)
       }
@@ -410,7 +412,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
       // See https://stackoverflow.com/questions/68774425/combine-prefixandtail1-with-sink-lazysink-for-subflow-created-by-splitafter/68776660?noredirect=1#comment121558518_68776660
       Sink.lazyInit(
         {
-          case start: Start =>
+          case (_, start: Start) =>
             implicit val ec: ExecutionContext = system.dispatcher
             for {
               uploadStateResult <- getCurrentUploadState(start.key)
