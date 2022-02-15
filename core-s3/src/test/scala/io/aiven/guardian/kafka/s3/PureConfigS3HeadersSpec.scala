@@ -165,10 +165,10 @@ class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckP
           |${s3Headers.metaHeaders.fold("")(metaHeaders => s"meta-headers={\n${configMetaHeaders(metaHeaders)}\n}")}
           |${s3Headers.storageClass.fold("")(storageClass => s"storage-class=${configStorageClass(storageClass)}")}
           |${if (s3Headers.customHeaders.isEmpty) ""
-      else s"custom-headers={\n${configCustomHeaders(s3Headers.customHeaders)}\n}"}
+                     else s"custom-headers={\n${configCustomHeaders(s3Headers.customHeaders)}\n}"}
           |${s3Headers.serverSideEncryption.fold("")(serverSideEncryption =>
-        s"server-side-encryption={\n${configServerSideEncryption(serverSideEncryption)}\n}"
-      )}
+                       s"server-side-encryption={\n${configServerSideEncryption(serverSideEncryption)}\n}"
+                     )}
           |""".stripMargin
       ConfigSource.string(string).load[S3Headers] mustMatchTo (
         Right(s3Headers): Result[S3Headers]
