@@ -8,11 +8,11 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 val akkaVersion                = "2.6.18"
-val akkaHttpVersion            = "10.2.7"
-val alpakkaKafkaVersion        = "2.1.1"
+val akkaHttpVersion            = "10.2.8"
+val alpakkaKafkaVersion        = "3.0.0"
 val alpakkaVersion             = "3.0.4"
 val quillJdbcMonixVersion      = "3.7.2"
-val postgresqlJdbcVersion      = "42.2.24"
+val postgresqlJdbcVersion      = "42.2.25"
 val scalaLoggingVersion        = "3.9.4"
 val logbackClassicVersion      = "1.2.10"
 val declineVersion             = "2.2.0"
@@ -21,7 +21,7 @@ val scalaTestVersion           = "3.2.9"
 val scalaTestScalaCheckVersion = "3.2.9.0"
 val akkaStreamsJson            = "0.8.0"
 val diffxVersion               = "0.7.0"
-val testContainersVersion      = "0.39.12"
+val testContainersVersion      = "0.40.0"
 val testContainersJavaVersion  = "1.16.2"
 val scalaCheckVersion          = "1.15.5-1-SNAPSHOT"
 val scalaCheckOpsVersion       = "2.8.1"
@@ -284,7 +284,7 @@ ThisBuild / githubWorkflowEnv ++= Map(
   "ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY" -> "${{ secrets.AWS_SECRET_KEY }}"
 )
 
-ThisBuild / githubWorkflowJavaVersions := List("openjdk@1.11")
+ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
 
 import ReleaseTransformations._
 
