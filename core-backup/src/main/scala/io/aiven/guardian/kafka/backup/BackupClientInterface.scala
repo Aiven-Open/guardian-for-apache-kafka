@@ -69,38 +69,39 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
     * @param key
     *   The object key or filename for what is currently being backed up
     * @return
-    *   A [[Future]] with a [[UploadStateResult]] data structure that optionally contains the state associated with
-    *   `key` along with the previous latest state before `key` (if it exists)
+    *   A [[scala.concurrent.Future]] with a [[UploadStateResult]] data structure that optionally contains the state
+    *   associated with `key` along with the previous latest state before `key` (if it exists)
     */
   def getCurrentUploadState(key: String): Future[UploadStateResult]
 
   /** A sink that is executed whenever a previously existing Backup needs to be terminated and closed. Generally
-    * speaking this [[Sink]] is similar to the [[backupToStorageSink]] except that
-    * [[kafkaClientInterface.CursorContext]] is not required since no Kafka messages are being written.
+    * speaking this [[akka.stream.scaladsl.Sink]] is similar to the `backupToStorageSink` except that
+    * `kafkaClientInterface.CursorContext` is not required since no Kafka messages are being written.
     *
-    * Note that the terminate refers to the fact that this Sink is executed with a `null]` [[Source]] which when written
-    * to an already existing unfinished backup terminates the containing JSON array so that it becomes valid parsable
-    * JSON.
+    * Note that the terminate refers to the fact that this Sink is executed with a `null]`
+    * [[akka.stream.scaladsl.Source]] which when written to an already existing unfinished backup terminates the
+    * containing JSON array so that it becomes valid parsable JSON.
     * @param previousState
     *   A data structure containing both the [[State]] along with the associated key which you can refer to in order to
-    *   define your [[Sink]]
+    *   define your [[akka.stream.scaladsl.Sink]]
     * @return
-    *   A [[Sink]] that points to an existing key defined by `previousState.previousKey`
+    *   A [[akka.stream.scaladsl.Sink]] that points to an existing key defined by `previousState.previousKey`
     */
   def backupToStorageTerminateSink(previousState: PreviousState): Sink[ByteString, Future[BackupResult]]
 
-  /** Override this method to define how to backup a `ByteString` combined with Kafka
+  /** Override this method to define how to backup a [[akka.util.ByteString]] combined with Kafka
     * `kafkaClientInterface.CursorContext` to a `DataSource`
     * @param key
     *   The object key or filename for what is being backed up
     * @param currentState
     *   The current state if it exists. If this is empty then a new backup is being created with the associated `key`
-    *   otherwise if this contains a [[State]] then the defined [[Sink]] needs to handle resuming a previously
-    *   unfinished backup with that `key` by directly appending the [[ByteString]] data.
+    *   otherwise if this contains a [[State]] then the defined [[akka.stream.scaladsl.Sink]] needs to handle resuming a
+    *   previously unfinished backup with that `key` by directly appending the [[akka.util.ByteString]] data.
     * @return
-    *   A [[Sink]] that given a [[ByteString]] (containing a single Kafka [[ReducedConsumerRecord]]) along with its
-    *   [[kafkaClientInterface.CursorContext]] backs up the data to your data storage. The [[Sink]] is also responsible
-    *   for executing [[kafkaClientInterface.commitCursor]] when the data is successfully backed up
+    *   A [[akka.stream.scaladsl.Sink]] that given a [[akka.util.ByteString]] (containing a single Kafka
+    *   [[io.aiven.guardian.kafka.models.ReducedConsumerRecord]]) along with its `kafkaClientInterface.CursorContext`
+    *   backs up the data to your data storage. The [[akka.stream.scaladsl.Sink]] is also responsible for executing
+    *   `kafkaClientInterface.commitCursor` when the data is successfully backed up
     */
   def backupToStorageSink(key: String,
                           currentState: Option[State]

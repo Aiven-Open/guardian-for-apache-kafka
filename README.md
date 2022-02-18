@@ -4,8 +4,14 @@
 
 # Guardian for Apache Kafka®
 
-Guardian is a backup and restore tool for Apache Kafka clusters. It is designed to continuously stream kafka topics
-into persistent/object storages such as S3 and also provides tools for restoring said backups.
+Guardian is a backup and restore tool for Apache Kafka clusters. It is designed to continuously stream kafka topics into
+persistent/object storages such as S3 and also provides tools for restoring said backups.
+
+## Documentation
+
+* [Guardian reference](https://aiven.github.io/guardian-for-apache-kafka/) documentation.
 
 ## Trademarks
-Apache Kafka is either a registered trademark or trademark of the Apache Software Foundation in the United States and/or other countries.
+
+Apache Kafka is either a registered trademark or trademark of the Apache Software Foundation in the United States and/or
+other countries.

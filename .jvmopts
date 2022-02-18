@@ -1,0 +1,3 @@
+-XX:+IgnoreUnrecognizedVMOptions
+--add-opens java.base/java.lang=ALL-UNNAMED
+--illegal-access=permit
