@@ -1,6 +1,6 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 
-ThisBuild / scalaVersion         := "2.13.6"
+ThisBuild / scalaVersion         := "2.13.8"
 ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
@@ -49,7 +49,7 @@ val flagsFor13 = Seq(
 )
 
 val librarySettings = Seq(
-  crossScalaVersions := List("2.12.14", "2.13.6"),
+  crossScalaVersions := List("2.12.15", "2.13.8"),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n == 13 =>
@@ -69,7 +69,6 @@ val cliSettings = Seq(
   publish / skip       := true,
   publishLocal / skip  := true,
   publishSigned / skip := true,
-  scalaVersion         := "2.13.6",
   rpmVendor            := "Aiven",
   rpmLicense           := Some("ASL 2.0")
 )
