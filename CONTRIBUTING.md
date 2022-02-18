@@ -67,8 +67,8 @@ the [scalafmt installation guide][scalafmt-installation-link] for more details
 * There are native builds of Scalafmt that let you run a `scalafmt` as a CLI tool, see the CLI section in
 [scalafmt installation guide][scalafmt-installation-link]
 
-Note that a github action exists which will check that your PR is formatted when you create it. The check runs
-separately ad in parallel to the main build/tests
+Note that a github action exists which will check that your code is formatted whenever you create a PR. For more details
+read the [documentation](https://aiven.github.io/guardian-for-apache-kafka/ci.html#scalafmt)
 
 ## sbt - Compiling, Building and Testing
 
@@ -81,6 +81,19 @@ it will start a REPL session where you can type in commands, i.e.
 * `core/compile` will only compile the `core` project. See [build.sbt](build.sbt) to get a reference for how the projects
 are named
 * `publishLocal` will publish the project into the local `~/.m2` repository
+* `clean` will clean all builds targets (including documentation) from the project. Note that sbt stores build
+in sub-directories named `target`
+* `reload` will reload sbt which is used when the [sbt][sbt-link] build definition is changed
+
+## sbt - documentation
+
+Documentation is also built within SBT, i.e.
+
+* `docs/makeSite` will compile documentation
+* `docs/previewSite` will compile documentation (if needed) and open the result in your system's default browser
+
+For details about how the document generation works go 
+[here](https://aiven.github.io/guardian-for-apache-kafka/doc-generation.html)
 
 [adopt-openjdk-link]: https://adoptopenjdk.net/
 [metals-link]: https://scalameta.org/metals/

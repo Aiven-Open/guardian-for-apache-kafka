@@ -64,8 +64,67 @@ jobs:
       - name: Build project
         run: sbt ++${{ matrix.scala }} clean coverage test
 
+      - name: Compile docs
+        run: sbt ++${{ matrix.scala }} docs/makeSite
+
       - name: Upload coverage data to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: Scala ${{ matrix.scala }}
         run: sbt ++${{ matrix.scala }} coverageReport coverageAggregate coveralls
+
+      - name: Compress target directories
+        run: tar cf targets.tar target cli-compaction/target compaction-gcs/target backup-s3/target compaction-s3/target docs/target cli-backup/target core-restore/target restore-s3/target core-gcs/target core-compaction/target core-s3/target core-backup/target core-cli/target cli-restore/target core/target restore-gcs/target backup-gcs/target project/target
+
+      - name: Upload target directories
+        uses: actions/upload-artifact@v2
+        with:
+          name: target-${{ matrix.os }}-${{ matrix.scala }}-${{ matrix.java }}
+          path: targets.tar
+
+  publish:
+    name: Publish Artifacts
+    needs: [build]
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main')
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        scala: [2.13.8]
+        java: [temurin@11]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout current branch (full)
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java (temurin@11)
+        if: matrix.java == 'temurin@11'
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Cache sbt
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.sbt
+            ~/.ivy2/cache
+            ~/.coursier/cache/v1
+            ~/.cache/coursier/v1
+            ~/AppData/Local/Coursier/Cache/v1
+            ~/Library/Caches/Coursier/v1
+          key: ${{ runner.os }}-sbt-cache-v2-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+
+      - name: Download target directories (2.13.8)
+        uses: actions/download-artifact@v2
+        with:
+          name: target-${{ matrix.os }}-2.13.8-${{ matrix.java }}
+
+      - name: Inflate target directories (2.13.8)
+        run: |
+          tar xf targets.tar
+          rm targets.tar
+
+      - run: sbt ++${{ matrix.scala }} docs/ghpagesPushSite

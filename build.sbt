@@ -1,4 +1,5 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
+import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
 
 ThisBuild / scalaVersion         := "2.13.8"
 ThisBuild / organization         := "aiven.io"
@@ -74,6 +75,33 @@ val cliSettings = Seq(
 )
 
 val baseName = "guardian-for-apache-kafka"
+
+lazy val guardian = project
+  .in(file("."))
+  .enablePlugins(ScalaUnidocPlugin)
+  .disablePlugins(SitePlugin)
+  .aggregate(
+    core,
+    coreCli,
+    coreS3,
+    coreGCS,
+    coreBackup,
+    backupS3,
+    backupGCS,
+    cliBackup,
+    coreCompaction,
+    compactionS3,
+    compactionGCS,
+    cliCompaction,
+    coreRestore,
+    restoreS3,
+    restoreGCS,
+    cliRestore
+  )
+  .settings(
+    publish / skip     := true,
+    crossScalaVersions := List() // workaround for https://github.com/sbt/sbt/issues/3465
+  )
 
 lazy val core = project
   .in(file("core"))
@@ -268,12 +296,65 @@ lazy val cliRestore = project
   )
   .enablePlugins(JavaAppPackaging)
 
+def binaryVersion(key: String): String = key.substring(0, key.lastIndexOf('.'))
+
+lazy val docs = project
+  .enablePlugins(ParadoxPlugin, ParadoxSitePlugin, PreprocessPlugin, GhpagesPlugin)
+  .settings(
+    Compile / paradox / name     := "Guardian for Apache Kafka",
+    publish / skip               := true,
+    makeSite                     := makeSite.dependsOn(LocalRootProject / ScalaUnidoc / doc).value,
+    previewPath                  := (Paradox / siteSubdirName).value,
+    paradoxTheme                 := Some(builtinParadoxTheme("generic")),
+    apidocRootPackage            := "io.aiven.guardian",
+    Preprocess / siteSubdirName  := s"api/${projectInfoVersion.value}",
+    Preprocess / sourceDirectory := (LocalRootProject / ScalaUnidoc / unidoc / target).value,
+    git.remoteRepo               := scmInfo.value.get.connection.replace("scm:git:", ""),
+    paradoxGroups                := Map("Language" -> Seq("Scala")),
+    paradoxProperties ++= Map(
+      "akka.version"                        -> akkaVersion,
+      "akka-http.version"                   -> akkaHttpVersion,
+      "akka-streams-json.version"           -> akkaStreamsJson,
+      "pure-config.version"                 -> pureConfigVersion,
+      "decline.version"                     -> declineVersion,
+      "scala-logging.version"               -> scalaLoggingVersion,
+      "extref.akka.base_url"                -> s"https://doc.akka.io/docs/akka/${binaryVersion(akkaVersion)}/%s",
+      "extref.akka-stream-json.base_url"    -> s"https://github.com/mdedetrich/akka-streams-json",
+      "extref.alpakka.base_url"             -> s"https://doc.akka.io/api/alpakka/${binaryVersion(alpakkaVersion)}/%s",
+      "extref.alpakka-docs.base_url"        -> s"https://docs.akka.io/docs/alpakka/${binaryVersion(alpakkaVersion)}/%s",
+      "extref.pureconfig.base_url"          -> s"https://pureconfig.github.io/docs/",
+      "scaladoc.io.aiven.guardian.base_url" -> s"/guardian-for-apache-kafka/${(Preprocess / siteSubdirName).value}/"
+    )
+  )
+
+ThisBuild / homepage := Some(url("https://github.com/aiven/akka-streams-json"))
+
+ThisBuild / scmInfo := Some(
+  ScmInfo(url("https://github.com/aiven/guardian-for-apache-kafka"),
+          "scm:git:git@github.com:aiven/guardian-for-apache-kafka.git"
+  )
+)
+
+ThisBuild / developers := List(
+  Developer("jlprat", "Josep Prat", "josep.prat@aiven.io", url("https://github.com/jlprat")),
+  Developer("mdedetrich", "Matthew de Detrich", "matthew.dedetrich@aiven.io", url("https://github.com/mdedetrich")),
+  Developer("reta", "Andriy Redko", "andriy.redko@aiven.io", url("https://github.com/reta"))
+)
+
+maintainer := "matthew.dedetrich@aiven.io"
+
+ThisBuild / licenses += ("Apache-2.0", url("https://opensource.org/licenses/Apache-2.0"))
+
 // This is currently causing problems, see https://github.com/djspiewak/sbt-github-actions/issues/74
 ThisBuild / githubWorkflowUseSbtThinClient := false
 
-ThisBuild / githubWorkflowTargetBranches := Seq("main") // Once we have branches per version, add the pattern here
+ThisBuild / githubWorkflowTargetBranches := Seq("main")
 
-ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+// Once we have branches per version, add the pattern here, see
+// https://github.com/djspiewak/sbt-github-actions#integration-with-sbt-ci-release
+ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.Equals(Ref.Branch("main")))
+
+ThisBuild / githubWorkflowPublish := Seq(WorkflowStep.Sbt(List("docs/ghpagesPushSite")))
 
 ThisBuild / githubWorkflowBuildPreamble := Seq(
   WorkflowStep.Sbt(List("scalafixAll --check"), name = Some("Linter: Scalafix checks"))
@@ -300,7 +381,8 @@ ThisBuild / githubWorkflowEnv ++= Map(
 ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
 
 ThisBuild / githubWorkflowBuild := Seq(
-  WorkflowStep.Sbt(List("clean", "coverage", "test"), name = Some("Build project"))
+  WorkflowStep.Sbt(List("clean", "coverage", "test"), name = Some("Build project")),
+  WorkflowStep.Sbt(List("docs/makeSite"), name = Some("Compile docs"))
 )
 
 ThisBuild / githubWorkflowBuildPostamble ++= Seq(
