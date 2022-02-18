@@ -270,7 +270,7 @@ ThisBuild / githubWorkflowBuildPreamble := Seq(
 )
 
 // Configuration needed for Scalafix
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
+ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.6.0"
 
 ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value
 
