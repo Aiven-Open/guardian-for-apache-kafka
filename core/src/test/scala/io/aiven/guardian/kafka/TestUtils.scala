@@ -81,4 +81,11 @@ object TestUtils {
     recurseUntilHitTimeUnit(previousEnum, buffer)
   }
 
+  def checkEnvVarAvailable(env: String): Boolean =
+    try
+      sys.env.contains(env)
+    catch {
+      case _: NoSuchElementException => false
+    }
+
 }

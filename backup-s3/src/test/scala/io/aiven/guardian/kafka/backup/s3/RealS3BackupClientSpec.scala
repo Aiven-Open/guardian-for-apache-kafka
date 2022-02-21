@@ -84,7 +84,7 @@ class RealS3BackupClientSpec
     else
       akka.pattern.after(step)(waitUntilBackupClientHasCommitted(backupClient, step, delay))
 
-  property("basic flow without interruptions using PeriodFromFirst works correctly") {
+  property("basic flow without interruptions using PeriodFromFirst works correctly", RealS3Available) {
     forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix)
     ) { (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod, s3Config: S3Config) =>
@@ -168,7 +168,7 @@ class RealS3BackupClientSpec
     }
   }
 
-  property("suspend/resume using PeriodFromFirst creates separate object after resume point") {
+  property("suspend/resume using PeriodFromFirst creates separate object after resume point", RealS3Available) {
     forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix)
     ) { (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod, s3Config: S3Config) =>
@@ -303,7 +303,7 @@ class RealS3BackupClientSpec
     }
   }
 
-  property("suspend/resume for same object using ChronoUnitSlice works correctly") {
+  property("suspend/resume for same object using ChronoUnitSlice works correctly", RealS3Available) {
     forAll(kafkaDataWithMinSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix)
     ) { (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod, s3Config: S3Config) =>
