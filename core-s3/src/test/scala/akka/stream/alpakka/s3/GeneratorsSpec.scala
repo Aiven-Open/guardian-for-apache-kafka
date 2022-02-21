@@ -21,7 +21,7 @@ class GeneratorsSpec extends AnyPropSpec with Matchers with ScalaCheckPropertyCh
   }
 
   def withPrefixGen(useVirtualDotHost: Boolean): Gen[String] = for {
-    range      <- Gen.choose(2, Generators.MaxBucketLength - 2)
+    range      <- Gen.choose(2, Generators.MaxBucketLength - 3)
     firstChar  <- Generators.bucketLetterOrNumberCharGen
     chars      <- Gen.listOfN(range, Generators.bucketAllCharGen(useVirtualDotHost = false))
     bucketName <- Generators.bucketNameGen(useVirtualDotHost, Some((firstChar +: chars).mkString))
