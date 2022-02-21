@@ -13,8 +13,11 @@ import akka.stream.scaladsl.Source
 import akka.testkit.TestKitBase
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
+import io.aiven.guardian.kafka.TestUtils
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.scalatest.Ignore
+import org.scalatest.Tag
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.propspec.AnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -37,6 +40,12 @@ trait S3Spec
     with ScalaFutures
     with Config
     with StrictLogging {
+
+  // See https://stackoverflow.com/a/38834773
+  case object RealS3Available
+      extends Tag(
+        if (TestUtils.checkEnvVarAvailable("ALPAKKA_S3_REGION_DEFAULT_REGION")) "" else classOf[Ignore].getName
+      )
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(5 minutes, 100 millis)
