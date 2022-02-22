@@ -44,7 +44,7 @@ trait S3Spec
   // See https://stackoverflow.com/a/38834773
   case object RealS3Available
       extends Tag(
-        if (TestUtils.checkEnvVarAvailable("ALPAKKA_S3_REGION_DEFAULT_REGION")) "" else classOf[Ignore].getName
+        if (TestUtils.checkEnvVarAvailable("ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID")) "" else classOf[Ignore].getName
       )
 
   implicit val ec: ExecutionContext            = system.dispatcher
