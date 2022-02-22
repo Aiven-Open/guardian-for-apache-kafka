@@ -12,20 +12,21 @@ val akkaHttpVersion            = "10.2.8"
 val alpakkaKafkaVersion        = "3.0.0"
 val alpakkaVersion             = "3.0.4"
 val quillJdbcMonixVersion      = "3.7.2"
-val postgresqlJdbcVersion      = "42.2.25"
+val postgresqlJdbcVersion      = "42.3.3"
 val scalaLoggingVersion        = "3.9.4"
 val logbackClassicVersion      = "1.2.10"
 val declineVersion             = "2.2.0"
 val pureConfigVersion          = "0.17.1"
-val scalaTestVersion           = "3.2.9"
-val scalaTestScalaCheckVersion = "3.2.9.0"
+val scalaTestVersion           = "3.2.11"
+val scalaTestScalaCheckVersion = "3.2.11.0"
 val akkaStreamsJson            = "0.8.0"
 val diffxVersion               = "0.7.0"
-val testContainersVersion      = "0.40.0"
-val testContainersJavaVersion  = "1.16.2"
+val testContainersVersion      = "0.40.2"
+val testContainersJavaVersion  = "1.16.3"
 val scalaCheckVersion          = "1.15.5-1-SNAPSHOT"
 val scalaCheckOpsVersion       = "2.8.1"
 val enumeratumVersion          = "1.7.0"
+val organizeImportsVersion     = "0.6.0"
 
 val flagsFor12 = Seq(
   "-Xlint:_",
@@ -270,7 +271,7 @@ ThisBuild / githubWorkflowBuildPreamble := Seq(
 )
 
 // Configuration needed for Scalafix
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
+ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % organizeImportsVersion
 
 ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value
 
