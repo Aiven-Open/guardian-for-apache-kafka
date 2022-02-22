@@ -83,7 +83,11 @@ object TestUtils {
 
   def checkEnvVarAvailable(env: String): Boolean =
     try
-      sys.env.contains(env)
+      sys.env.get(env) match {
+        case Some(_)                      => true
+        case Some(value) if value.isBlank => false
+        case None                         => false
+      }
     catch {
       case _: NoSuchElementException => false
     }
