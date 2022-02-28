@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>S3 · Guardian for Apache Kafka Documentation</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='Guardian for Apache Kafka'/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="../lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../js/page.js"></script>
+<script type="text/javascript" src="../js/warnOldVersion.js"></script>
+<script type="text/javascript" src="../js/groups.js"></script>
+<script type="text/javascript" src="../js/snippets.js"></script>
+<link rel="stylesheet" type="text/css" href="../lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="../images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="../index.html" >
+<span class="home-icon">⌂</span>Guardian for Apache Kafka Documentation
+</a>
+<div class="version-number">
+0.1.0*
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../overview.html" class="page">Overview</a></li>
+  <li><a href="../backup/index.html" class="page">Backup</a>
+  <ul>
+    <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
+  </ul></li>
+  <li><a href="../restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
+  </ul></li>
+  <li><a href="../s3/index.html" class="page">S3</a>
+  <ul>
+    <li><a href="../s3/configuration.html" class="active page">S3</a></li>
+  </ul></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="../index.html">Guardian for Apache Kafka Documentation</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="../index.html" >
+<span class="home-icon">⌂</span>Guardian for Apache Kafka Documentation
+</a>
+<div class="version-number">
+0.1.0*
+</div>
+</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../overview.html" class="page">Overview</a></li>
+  <li><a href="../backup/index.html" class="page">Backup</a>
+  <ul>
+    <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
+  </ul></li>
+  <li><a href="../restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
+  </ul></li>
+  <li><a href="../s3/index.html" class="page">S3</a>
+  <ul>
+    <li><a href="../s3/configuration.html" class="active page">S3</a></li>
+  </ul></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="../index.html">Guardian for Apache Kafka Documentation</a></li>
+  <li><a href="../s3/index.html">S3</a></li>
+  <li>S3</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<h1><a href="#s3" name="s3" class="anchor"><span class="anchor-link"></span></a>S3</h1>
+<h2><a href="#reference" name="reference" class="anchor"><span class="anchor-link"></span></a>Reference</h2>
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/core-s3/src/main/resources/reference.conf" target="_blank" title="Go to snippet source">source</a><code class="language-conf">alpakka.s3 {
+  buffer = ${?ALPAKKA_S3_BUFFER}
+  disk-buffer-path = ${?ALPAKKA_S3_DISK_BUFFER_PATH}
+
+  forward-proxy {
+    scheme = ${?ALPAKKA_S3_FORWARD_PROXY_SCHEME}
+    host = ${?ALPAKKA_S3_FORWARD_PROXY_HOST}
+    port = ${?ALPAKKA_S3_FORWARD_PROXY_PORT}
+
+    credentials {
+      username = ${?ALPAKKA_S3_FORWARD_PROXY_CREDENTIALS_USERNAME}
+      password = ${?ALPAKKA_S3_FORWARD_PROXY_CREDENTIALS_PASSWORD}
+    }
+  }
+
+  aws {
+    credentials {
+      access-key-id = ${?ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID}
+      secret-access-key = ${?ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY}
+      token = ${?ALPAKKA_S3_AWS_CREDENTIALS_TOKEN}
+      provider = ${?ALPAKKA_S3_AWS_CREDENTIALS_PROVIDER}
+    }
+
+    region {
+      default-region = ${?ALPAKKA_S3_REGION_DEFAULT_REGION}
+      provider = ${?ALPAKKA_S3_REGION_PROVIDER}
+    }
+  }
+
+  path-style-access = ${?ALPAKKA_S3_PATH_STYLE_ACCESS}
+  access-style = ${?ALPAKKA_S3_ACCESS_STYLE}
+  endpoint-url = ${?ALPAKKA_S3_ENDPOINT_URL}
+  list-bucket-api-version = ${?ALPAKKA_S3_LIST_BUCKET_API_VERSION}
+  validate-object-key = ${?ALPAKKA_S3_VALIDATE_OBJECT_KEY}
+
+  retry-settings {
+    max-retries = ${?ALPAKKA_S3_RETRY_SETTINGS_MAX_RETRIES}
+    min-backoff = ${?ALPAKKA_S3_RETRY_SETTINGS_MIN_BACKOFF}
+    max-backoff = ${?ALPAKKA_S3_RETRY_SETTINGS_MAX_BACKOFF}
+    random-factor = ${?ALPAKKA_S3_RETRY_SETTINGS_RANDOM_FACTOR}
+  }
+}
+
+s3-headers = {
+    canned-acl = ${?S3_HEADERS_CANNED_ACL}
+    storage-class = ${?S3_HEADERS_STORAGE_CLASS}
+    server-side-encryption = ${?S3_HEADERS_SERVER_SIDE_ENCRYPTION}
+}
+
+s3-config = {
+    data-bucket = ${?S3_CONFIG_DATA_BUCKET}
+    data-bucket-prefix = ${?S3_CONFIG_DATA_BUCKET_PREFIX}
+}</code></pre>
+<h2><a href="#explanation" name="explanation" class="anchor"><span class="anchor-link"></span></a>Explanation</h2>
+<ul>
+  <li><code>s3-headers</code>: See <a href="https://doc.akka.io/api/alpakka/3.0/akka/stream/alpakka/s3/headers/index.html">documentation</a></li>
+  <li><code>alpakka.s3</code>: See <a href="https://docs.akka.io/docs/alpakka/3.0/s3.html#configuration">documentation</a></li>
+  <li><code>s3-config</code>: Core S3 configuration about where to persist the data</li>
+  <li><code>data-bucket</code>: The main S3 bucket where data is backed up and where to restore data from</li>
+  <li><code>data-bucket-prefix</code>: S3 prefix configuration to be used when searching for the bucket</li>
+</ul>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/s3/configuration.md">here</a>.
+</div>
+
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../s3/configuration.html#s3" class="header">S3</a>
+  <ul>
+    <li><a href="../s3/configuration.html#reference" class="header">Reference</a></li>
+    <li><a href="../s3/configuration.html#explanation" class="header">Explanation</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2022</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="../lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="../js/magellan.js"></script>
+
+<style type="text/css">@import "../lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="../lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="../lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.1.0-SNAPSHOT', '')});</script>
+
+
+</html>
