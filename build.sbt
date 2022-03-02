@@ -19,7 +19,7 @@ val declineVersion             = "2.2.0"
 val pureConfigVersion          = "0.17.1"
 val scalaTestVersion           = "3.2.11"
 val scalaTestScalaCheckVersion = "3.2.11.0"
-val akkaStreamsJson            = "0.8.0"
+val akkaStreamsJson            = "0.8.2"
 val diffxVersion               = "0.7.0"
 val testContainersVersion      = "0.40.2"
 val testContainersJavaVersion  = "1.16.3"
@@ -125,9 +125,9 @@ lazy val coreS3 = project
     name := s"$baseName-s3",
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
+      "com.typesafe.akka"  %% "akka-http-xml"          % akkaHttpVersion,
       "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test,
-      "com.typesafe.akka"  %% "akka-http-xml"          % akkaHttpVersion            % Test
+      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -139,9 +139,9 @@ lazy val coreGCS = project
     name := s"$baseName-gcs",
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion,
+      "com.typesafe.akka"  %% "akka-http-spray-json"                     % akkaHttpVersion,
       "org.scalatest"      %% "scalatest"                                % scalaTestVersion           % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"                          % scalaTestScalaCheckVersion % Test,
-      "com.typesafe.akka"  %% "akka-http-spray-json"                     % akkaHttpVersion            % Test
+      "org.scalatestplus"  %% "scalacheck-1-15"                          % scalaTestScalaCheckVersion % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -304,6 +304,9 @@ ThisBuild / githubWorkflowBuildPostamble ++= Seq(
     )
   )
 )
+
+dependencyCheckOutputDirectory := Some(baseDirectory.value / "dependency-check")
+dependencyCheckSuppressionFile := Some(baseDirectory.value / "dependency-check" / "suppression.xml")
 
 import ReleaseTransformations._
 
