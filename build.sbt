@@ -276,6 +276,9 @@ ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value
 
 ThisBuild / semanticdbEnabled := true
 
+// See https://scalacenter.github.io/scalafix/docs/users/installation.html#sbt
+ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
+
 ThisBuild / githubWorkflowEnv ++= Map(
   "ALPAKKA_S3_REGION_PROVIDER"                   -> "static",
   "ALPAKKA_S3_REGION_DEFAULT_REGION"             -> "us-west-2",
