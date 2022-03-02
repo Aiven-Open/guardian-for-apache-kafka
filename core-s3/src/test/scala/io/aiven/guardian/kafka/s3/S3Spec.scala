@@ -48,7 +48,7 @@ trait S3Spec
       )
 
   implicit val ec: ExecutionContext            = system.dispatcher
-  implicit val defaultPatience: PatienceConfig = PatienceConfig(5 minutes, 100 millis)
+  implicit val defaultPatience: PatienceConfig = PatienceConfig(10 minutes, 100 millis)
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 1, minSize = 1)
 
