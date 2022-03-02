@@ -213,10 +213,30 @@ object Generators {
       newTopics = kafkaData.topics.zip(newTopicNames).toMap
     } yield KafkaDataInChunksWithTimePeriodRenamedTopics(kafkaData.data, kafkaData.periodSlice, newTopics)
 
+  private lazy val kafkaTopicBaseGen = Gen.oneOf(Gen.alphaChar, Gen.numChar)
+  private lazy val kafkaTopicAllGen =
+    Gen.oneOf(Gen.alphaChar, Gen.numChar, Gen.const('-'), Gen.const('.'), Gen.const('_'))
+
   /** Generator for a valid Kafka topic that can be used in actual Kafka clusters
     */
   lazy val kafkaTopic: Gen[String] = for {
-    size  <- Gen.choose(1, 249)
-    topic <- Gen.listOfN(size, Gen.oneOf(Gen.alphaChar, Gen.numChar, Gen.const('-'), Gen.const('.'), Gen.const('_')))
-  } yield topic.mkString
+    size <- Gen.choose(1, 249)
+    topic <- size match {
+               case 1 => kafkaTopicBaseGen.map(_.toString)
+               case 2 =>
+                 for {
+                   first  <- kafkaTopicBaseGen
+                   second <- kafkaTopicAllGen
+                   order  <- Gen.choose(0, 1) // There isn't a boolean Gen in scalacheck
+                 } yield
+                   if (order == 0)
+                     List(first, second).mkString
+                   else
+                     List(second, first).mkString
+               case _ =>
+                 Gen
+                   .listOfN(size, kafkaTopicAllGen)
+                   .map(_.mkString)
+             }
+  } yield topic
 }
