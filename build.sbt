@@ -125,9 +125,11 @@ lazy val coreS3 = project
     name := s"$baseName-s3",
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
-      "com.typesafe.akka"  %% "akka-http-xml"          % akkaHttpVersion,
-      "org.scalatest"      %% "scalatest"              % scalaTestVersion           % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"        % scalaTestScalaCheckVersion % Test
+      // Ordinarily this would be in Test scope however if its not then a lower version of akka-http-xml which has a
+      // security vulnerability gets resolved in Compile scope
+      "com.typesafe.akka" %% "akka-http-xml"   % akkaHttpVersion,
+      "org.scalatest"     %% "scalatest"       % scalaTestVersion           % Test,
+      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestScalaCheckVersion % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -139,9 +141,11 @@ lazy val coreGCS = project
     name := s"$baseName-gcs",
     libraryDependencies ++= Seq(
       "com.lightbend.akka" %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion,
-      "com.typesafe.akka"  %% "akka-http-spray-json"                     % akkaHttpVersion,
-      "org.scalatest"      %% "scalatest"                                % scalaTestVersion           % Test,
-      "org.scalatestplus"  %% "scalacheck-1-15"                          % scalaTestScalaCheckVersion % Test
+      // Ordinarily this would be in Test scope however if its not then a lower version of akka-http-spray-json which
+      // has a security vulnerability gets resolved in Compile scope
+      "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
+      "org.scalatest"     %% "scalatest"            % scalaTestVersion           % Test,
+      "org.scalatestplus" %% "scalacheck-1-15"      % scalaTestScalaCheckVersion % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
