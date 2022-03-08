@@ -39,18 +39,20 @@
 <div class="nav-toc">
 <ul>
   <li><a href="../overview.html" class="page">Overview</a></li>
+  <li><a href="../security.html" class="page">Security</a></li>
+  <li><a href="../application/index.html" class="page">Application</a></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
-  </ul></li>
-  <li><a href="../restore/index.html" class="page">Restore</a>
-  <ul>
-    <li><a href="../restore/configuration.html" class="active page">Configuration</a></li>
   </ul></li>
   <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
+  </ul></li>
+  <li><a href="../restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="../restore/configuration.html" class="active page">Configuration</a></li>
   </ul></li>
 </ul>
 </div>
@@ -90,18 +92,20 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-toc">
 <ul>
   <li><a href="../overview.html" class="page">Overview</a></li>
+  <li><a href="../security.html" class="page">Security</a></li>
+  <li><a href="../application/index.html" class="page">Application</a></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
-  </ul></li>
-  <li><a href="../restore/index.html" class="page">Restore</a>
-  <ul>
-    <li><a href="../restore/configuration.html" class="active page">Configuration</a></li>
   </ul></li>
   <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
+  </ul></li>
+  <li><a href="../restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="../restore/configuration.html" class="active page">Configuration</a></li>
   </ul></li>
 </ul>
 </div>
@@ -136,16 +140,13 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 }</code></pre>
 <h2><a href="#explanation" name="explanation" class="anchor"><span class="anchor-link"></span></a>Explanation</h2>
 <ul>
-  <li><code>from-when</code>: An <code>ISO-8601</code> time that specifies from when topics need to be restored.</li>
+  <li><code>from-when</code>: An <code>ISO-8601</code> time that specifies from when topics need to be restored. Note that the time used is based  on the original Kafka timestamp, <strong>NOT</strong> the current time.</li>
   <li><code>override-topics</code>: A mapping of currently backed up topics to a new topic in the destination Kafka cluster</li>
 </ul>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/restore/configuration.md">here</a>.
 </div>
 
-<div class="nav-next">
-<p><strong>Next:</strong> <a href="../persistence/index.html">Persistence Modules</a></p>
-</div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
 <nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">

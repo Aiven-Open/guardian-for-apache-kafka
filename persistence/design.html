@@ -39,18 +39,20 @@
 <div class="nav-toc">
 <ul>
   <li><a href="../overview.html" class="page">Overview</a></li>
+  <li><a href="../security.html" class="page">Security</a></li>
+  <li><a href="../application/index.html" class="page">Application</a></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
-  </ul></li>
-  <li><a href="../restore/index.html" class="page">Restore</a>
-  <ul>
-    <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
   <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="active page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
+  </ul></li>
+  <li><a href="../restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
 </ul>
 </div>
@@ -90,18 +92,20 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-toc">
 <ul>
   <li><a href="../overview.html" class="page">Overview</a></li>
+  <li><a href="../security.html" class="page">Security</a></li>
+  <li><a href="../application/index.html" class="page">Application</a></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
-  </ul></li>
-  <li><a href="../restore/index.html" class="page">Restore</a>
-  <ul>
-    <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
   <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="active page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
+  </ul></li>
+  <li><a href="../restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
 </ul>
 </div>
@@ -129,7 +133,11 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#design" name="design" class="anchor"><span class="anchor-link"></span></a>Design</h1>
-<p>Storage mechanisms are implemented via the <code>BackupClientInterface</code> see <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/BackupClientInterface.html" title="io.aiven.guardian.kafka.backup.BackupClientInterface"><code>BackupClientInterface</code></a></span></p>
+<p>Storage mechanisms are implemented via the <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/BackupClientInterface.html" title="io.aiven.guardian.kafka.backup.BackupClientInterface"><code>BackupClientInterface</code></a></span> and <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/restore/RestoreClientInterface.html" title="io.aiven.guardian.kafka.restore.RestoreClientInterface"><code>RestoreClientInterface</code></a></span>. To add custom storage mechanisms you need to implement these methods. These interfaces are designed to be as simple as possible while being completely abstract to allow for any theoretical storage mechanism.</p>
+<h2><a href="#backupclientinterface" name="backupclientinterface" class="anchor"><span class="anchor-link"></span></a>BackupClientInterface</h2>
+<p>The <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/BackupClientInterface.html" title="io.aiven.guardian.kafka.backup.BackupClientInterface"><code>BackupClientInterface</code></a></span> implements the entire backup flow including the resuming from a previously terminated backup. Of note is the <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/BackupClientInterface.html" title="io.aiven.guardian.kafka.backup.BackupClientInterface"><code>BackupClientInterface.State</code></a></span> which is the data structure that is returned when any previously existing backup for that key exists. This is provided to <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/BackupClientInterface.html" title="io.aiven.guardian.kafka.backup.BackupClientInterface"><code>BackupClientInterface.backupToStorageSink</code></a></span> indicating whether the backup being performed is a new backup or resuming from a previous one with the retrieval of the current state being defined by <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/BackupClientInterface.html" title="io.aiven.guardian.kafka.backup.BackupClientInterface"><code>BackupClientInterface.getCurrentUploadState</code></a></span>.</p>
+<p>Note that when implementing <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/BackupClientInterface.html" title="io.aiven.guardian.kafka.backup.BackupClientInterface"><code>BackupClientInterface</code></a></span> you do not need to handle the corner cases regarding the contents of the byte string when resuming/suspending/terminating.</p>
+<h2><a href="#restoreclientinterface" name="restoreclientinterface" class="anchor"><span class="anchor-link"></span></a>RestoreClientInterface</h2>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/persistence/design.md">here</a>.
 </div>
@@ -139,6 +147,20 @@ The source code for this page can be found <a href="https://github.com/aiven/gua
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../persistence/design.html#design" class="header">Design</a>
+  <ul>
+    <li><a href="../persistence/design.html#backupclientinterface" class="header">BackupClientInterface</a></li>
+    <li><a href="../persistence/design.html#restoreclientinterface" class="header">RestoreClientInterface</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 
