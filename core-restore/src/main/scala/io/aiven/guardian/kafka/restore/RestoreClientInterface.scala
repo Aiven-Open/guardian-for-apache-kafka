@@ -70,10 +70,10 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends StrictLogging 
     } yield latest.map { case (key, _) => key }
   }
 
-  def checkTopicInConfig(reducedConsumerRecord: ReducedConsumerRecord): Boolean =
+  private[kafka] def checkTopicInConfig(reducedConsumerRecord: ReducedConsumerRecord): Boolean =
     kafkaClusterConfig.topics.contains(reducedConsumerRecord.topic)
 
-  def checkTopicGreaterThanTime(reducedConsumerRecord: ReducedConsumerRecord): Boolean =
+  private[kafka] def checkTopicGreaterThanTime(reducedConsumerRecord: ReducedConsumerRecord): Boolean =
     restoreConfig.fromWhen match {
       case Some(pickedDate) =>
         reducedConsumerRecord.toOffsetDateTime >= pickedDate
