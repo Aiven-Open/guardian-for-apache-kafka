@@ -106,7 +106,13 @@ lazy val core = project
 lazy val coreCli = project
   .in(file("core-cli"))
   .settings(
-    cliSettings,
+    publish / skip       := true,
+    publishLocal / skip  := true,
+    publishSigned / skip := true,
+    scalacOptions ++= Seq(
+      "-opt-inline-from:**", // See https://www.lightbend.com/blog/scala-inliner-optimizer
+      "-opt:l:method"
+    ) ++ flagsFor13,
     name := s"$baseName-core-cli",
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
