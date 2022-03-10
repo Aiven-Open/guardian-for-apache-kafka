@@ -1,6 +1,6 @@
 addSbtPlugin("org.scalameta"                     % "sbt-scalafmt"             % "2.4.6")
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox"              % "0.9.2")
-addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-apidoc"       % "0.10+8-1685fc09")
+addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-apidoc"       % "0.10+12-1d5b87db")
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-project-info" % "1.1.3")
 addSbtPlugin("com.github.sbt"                    % "sbt-unidoc"               % "0.5.0")
 addSbtPlugin("com.typesafe.sbt"                  % "sbt-ghpages"              % "0.6.3")
