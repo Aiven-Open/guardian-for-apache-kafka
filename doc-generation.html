@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Overview · Guardian for Apache Kafka Documentation</title>
+<title>Document Generation · Guardian for Apache Kafka Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='docs'/>
-<link rel="canonical" href="https://github.com/aiven/akka-streams-jsonoverview.html"/>
+<link rel="canonical" href="https://github.com/aiven/akka-streams-jsondoc-generation.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="js/page.js"></script>
@@ -38,10 +38,10 @@
 <select class="supergroup" name="Language"><option class="group" value="group-scala">Scala</option></select>
 <div class="nav-toc">
 <ul>
-  <li><a href="overview.html" class="active page">Overview</a></li>
+  <li><a href="overview.html" class="page">Overview</a></li>
   <li><a href="security.html" class="page">Security</a></li>
   <li><a href="ci.html" class="page">CI - Continuous Integration</a></li>
-  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
+  <li><a href="doc-generation.html" class="active page">Document Generation</a></li>
   <li><a href="application/index.html" class="page">Application</a></li>
   <li><a href="backup/index.html" class="page">Backup</a>
   <ul>
@@ -93,10 +93,10 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <select class="supergroup" name="Language"><option class="group" value="group-scala">Scala</option></select>
 <div class="nav-toc">
 <ul>
-  <li><a href="overview.html" class="active page">Overview</a></li>
+  <li><a href="overview.html" class="page">Overview</a></li>
   <li><a href="security.html" class="page">Security</a></li>
   <li><a href="ci.html" class="page">CI - Continuous Integration</a></li>
-  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
+  <li><a href="doc-generation.html" class="active page">Document Generation</a></li>
   <li><a href="application/index.html" class="page">Application</a></li>
   <li><a href="backup/index.html" class="page">Backup</a>
   <ul>
@@ -127,7 +127,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="index.html">Guardian for Apache Kafka Documentation</a></li>
-  <li>Overview</li>
+  <li>Document Generation</li>
 </ul>
 </div>
 </div>
@@ -135,26 +135,32 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#overview" name="overview" class="anchor"><span class="anchor-link"></span></a>Overview</h1>
-<p>Guardian for Apache Kafka is an open source utility for backing up <a href="https://kafka.apache.org/">Apache Kafka</a> clusters. It is built using <a href="https://www.scala-lang.org/">Scala</a> entirely with <a href="https://doc.akka.io/docs/akka/current/stream/index.html">Akka-Streams</a> to ensure that the tool runs as desired with large datasets in different scenarios.</p>
-<h2><a href="#versions" name="versions" class="anchor"><span class="anchor-link"></span></a>Versions</h2>
-<p>The core modules are compiled against:</p>
+<h1><a href="#document-generation" name="document-generation" class="anchor"><span class="anchor-link"></span></a>Document Generation</h1>
+<p>Guardian uses <a href="https://github.com/lightbend/paradox">sbt-paradox</a> as the main plugin for generating documentation which is hosted using <a href="https://pages.github.com/">github pages</a>. In addition various other plugins are used which are noted below</p>
 <ul>
-  <li>Akka Streams 2.6.18+ (<a href="https://doc.akka.io/docs/akka/2.6/stream/index.html">Reference</a>, <a href="https://github.com/akka/akka">Github</a>)</li>
-  <li>Akka Streams Json 0.8.2+ (<a href="https://github.com/mdedetrich/akka-streams-json">Github</a>)</li>
-  <li>PureConfig 0.17.1+ (<a href="https://pureconfig.github.io/docs/">Reference</a>, <a href="https://github.com/pureconfig/pureconfig">Github</a>)</li>
-  <li>ScalaLogging 3.9.4+ (<a href="https://github.com/lightbend/scala-logging">Github</a>)</li>
+  <li><a href="https://github.com/lightbend/sbt-paradox-apidoc">sbt-paradox-api-doc</a>: Allows you to directly link to Scala  documentation using the <code>@@apidoc</code> directive</li>
+  <li><a href="https://github.com/lightbend/sbt-paradox-project-info">sbt-paradox-project-info</a>: Provides an <code>@@projectInfo</code>  directive that derives common information about the project (such as dependencies, project info etc etc)</li>
+  <li><a href="https://github.com/sbt/sbt-site">sbt-site</a>: Used in conjunction with <a href="https://github.com/lightbend/paradox">sbt-paradox</a> to generate the  final site structure</li>
+  <li><a href="https://github.com/sbt/sbt-ghpages">sbt-ghpages</a>: Used for uploading the final site  to <a href="https://pages.github.com/">github-pages</a>.</li>
+  <li><a href="https://github.com/sbt/sbt-unidoc">sbt-unidoc</a>: Used to aggregate/concatenate documentation Scala API documentation  from various sbt modules into a single documentation result</li>
 </ul>
-<p>The cli modules are compiled against:</p>
+<h2><a href="#design" name="design" class="anchor"><span class="anchor-link"></span></a>Design</h2>
+<p><a href="https://github.com/lightbend/paradox">sbt-paradox</a> generates documentation using standard <a href="https://www.markdownguide.org/">Markdown</a>. The documentation can be found in the <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/docs">docs-folder</a>. Note that this folder also corresponds to a sbt-module which is also named <code>docs</code> which also means that commands related to documentation are run in that sbt sub-project (i.e. <code>docs/makeSite</code> generates the documentation site).</p>
+<p>Guardian also uses <a href="https://docs.scala-lang.org/style/scaladoc.html">scaladoc</a> which is already included within Scala compiler/SBT to generate Scala API documentation. <a href="https://docs.scala-lang.org/style/scaladoc.html">scaladoc</a> is analogous to Java&rsquo;s own <a href="https://en.wikipedia.org/wiki/Javadoc">javadoc</a> which generates API documentation that is written within the code itself.</p>
+<p>One advantage of using <a href="https://github.com/lightbend/paradox">sbt-paradox</a> and its various plugins as the main driver for documentation generation is it that checks at document generation (i.e. compile time) that the docs are well-formed. This checking includes</p>
 <ul>
-  <li>Decline 2.2.0+ (<a href="https://ben.kirw.in/decline/">Reference</a>, <a href="https://github.com/bkirwi/decline">Github</a>)</li>
+  <li>references to other links</li>
+  <li>references to specific Scala API documentation directly using Scala classes/objects/traits</li>
+  <li>TOC (table of contents) are well-formed (e.g. you don&rsquo;t have markdown files in <code>docs</code> which aren&rsquo;t referenced  anywhere)</li>
+  <li>references to versions from Guardians various Scala submodules are always up-to-date</li>
+  <li>references to code snippets</li>
 </ul>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/overview.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/doc-generation.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="security.html">Security</a></p>
+<p><strong>Next:</strong> <a href="application/index.html">Application</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
@@ -163,9 +169,9 @@ The source code for this page can be found <a href="https://github.com/aiven/gua
 <div class="nav-title">On this page:</div>
 <div class="nav-toc">
 <ul>
-  <li><a href="overview.html#overview" class="header">Overview</a>
+  <li><a href="doc-generation.html#document-generation" class="header">Document Generation</a>
   <ul>
-    <li><a href="overview.html#versions" class="header">Versions</a></li>
+    <li><a href="doc-generation.html#design" class="header">Design</a></li>
   </ul></li>
 </ul>
 </div>

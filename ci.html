@@ -41,6 +41,7 @@
   <li><a href="overview.html" class="page">Overview</a></li>
   <li><a href="security.html" class="page">Security</a></li>
   <li><a href="ci.html" class="active page">CI - Continuous Integration</a></li>
+  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="application/index.html" class="page">Application</a></li>
   <li><a href="backup/index.html" class="page">Backup</a>
   <ul>
@@ -95,6 +96,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="overview.html" class="page">Overview</a></li>
   <li><a href="security.html" class="page">Security</a></li>
   <li><a href="ci.html" class="active page">CI - Continuous Integration</a></li>
+  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="application/index.html" class="page">Application</a></li>
   <li><a href="backup/index.html" class="page">Backup</a>
   <ul>
@@ -137,20 +139,20 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <p>Guardian uses github actions to perform CI whenever a pull request is made and when a pull request is merged into master. CI is also responsible for publishing github github. The integration with github actions for the main build is performed using <a href="https://github.com/djspiewak/sbt-github-actions">sbt-github-actions</a>.</p>
 <h2><a href="#design" name="design" class="anchor"><span class="anchor-link"></span></a>Design</h2>
 <p>One thing to note about <a href="https://github.com/djspiewak/sbt-github-actions">sbt-github-actions</a> is that it generates the github workflow files directly from the sbt <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/build.sbt">build definition file</a>. This means that the <code>build.sbt</code> is the source of truth and hence <a href="https://github.com/djspiewak/sbt-github-actions">sbt-github-actions</a> also checks that the github workflow is in sync with <code>build.sbt</code> as part of the CI process.</p>
-<p>Essentially that means any changes to <code>build.sbt</code> (such as updating Scala versions) can also cause changes in github workflow actions. Likewise if you need to do any custom changes to the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/.github/workflows/ci.yml">ci.yaml</a> you need to do this in <code>build.sbt</code> using <a href="https://github.com/djspiewak/sbt-github-actions">sbt-github-actions</a> dsl.</p>
+<p>Essentially that means any changes to <code>build.sbt</code> (such as updating Scala versions) can also cause changes in github workflow actions. Likewise if you need to do any custom changes to the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/.github/workflows/ci.yml">ci.yaml</a> you need to do this in <code>build.sbt</code> using <a href="https://github.com/djspiewak/sbt-github-actions">sbt-github-actions</a> SBT dsl.</p>
 <p>To regenerate the relevant github workflow files after changes to <code>build.sbt</code> are done you need to run</p>
 <pre><code>githubWorkflowGenerate
 </code></pre>
 <p>In the sbt shell. For more information go <a href="https://github.com/djspiewak/sbt-github-actions#generative-plugin">here</a></p>
 <h2><a href="#scalafmt" name="scalafmt" class="anchor"><span class="anchor-link"></span></a>Scalafmt</h2>
-<p>In addition and separately to <a href="https://github.com/djspiewak/sbt-github-actions">sbt-github-actions</a> Guardian also has a <a href="https://scalameta.org/scalafmt/">scalafmt</a> pipeline that checks the code is correctly formatted on each PR. This allows the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/.github/workflows/format.yml">scalafmt pipeline</a> to run at the same time the main build does. Furthermore, it uses <a href="https://scalameta.org/scalafmt/docs/installation.html#native-image">scalafmt-native</a> for improved runtime performance (typically it takes 5-10 seconds to check the entire project is formatted)</p>
+<p>In addition and separately to [sbt-github-actions][sbt-github-actions] Guardian also has a <a href="https://scalameta.org/scalafmt/">scalafmt</a> pipeline that checks the code is correctly formatted on each PR. This allows the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/.github/workflows/format.yml">scalafmt pipeline</a> to run at the same time the main build does. Furthermore, it uses <a href="https://scalameta.org/scalafmt/docs/installation.html#native-image">scalafmt-native</a> for improved runtime performance (typically it takes 5-10 seconds to check the entire project is formatted)</p>
 <p>This means that if you ever update the scalafmt version in the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/.scalafmt.conf#L1">configuration file</a> you also need to update it in the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/.github/workflows/format.yml#L26">scalafmt-pipeline</a>.</p>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/ci.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="application/index.html">Application</a></p>
+<p><strong>Next:</strong> <a href="doc-generation.html">Document Generation</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>

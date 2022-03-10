@@ -41,6 +41,7 @@
   <li><a href="overview.html" class="page">Overview</a></li>
   <li><a href="security.html" class="active page">Security</a></li>
   <li><a href="ci.html" class="page">CI - Continuous Integration</a></li>
+  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="application/index.html" class="page">Application</a></li>
   <li><a href="backup/index.html" class="page">Backup</a>
   <ul>
@@ -95,6 +96,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="overview.html" class="page">Overview</a></li>
   <li><a href="security.html" class="active page">Security</a></li>
   <li><a href="ci.html" class="page">CI - Continuous Integration</a></li>
+  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="application/index.html" class="page">Application</a></li>
   <li><a href="backup/index.html" class="page">Backup</a>
   <ul>
@@ -142,8 +144,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 </code></pre>
 <p>This will overwrite the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/dependency-check/dependency-check-report.html">current report file</a></p>
 <h3><a href="#suppressing-false-positives" name="suppressing-false-positives" class="anchor"><span class="anchor-link"></span></a>Suppressing false positives</h3>
-<p>Sometimes it is possible that a false positive get generated in the report. To add a false positive, first you need to open the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/dependency-check/dependency-check-report.html">report file</a> in a supported browser. In the list of found vulnerabilities there should be a suppress button which when clicked displays a popup containing an <code>XML</code> suppression entry.</p>
-<p>You can then add <code>&lt;suppress&gt;</code> tag entry to the existing <a href="https://github.com/aiven/guardian-for-apache-kafka/edit/main/dependency-check/suppression.xml">suppression-file</a></p>
+<p>Sometimes it is possible that a false positive get generated in the report. To add a false positive, first you need to open the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/dependency-check/dependency-check-report.html">report file</a> in a supported browser. In the list of found vulnerabilities there should be a suppress button which when clicked displays a popup containing an <code>XML</code> suppression entry. You then add that <code>&lt;suppress&gt;</code> tag entry to the existing <a href="https://github.com/aiven/guardian-for-apache-kafka/edit/main/dependency-check/suppression.xml">suppression-file</a> . Finally, regeneration the report again using <code>dependencyCheckAggregate</code></p>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/security.md">here</a>.
 </div>
