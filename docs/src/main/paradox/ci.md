@@ -26,7 +26,8 @@ In the sbt shell. For more information go [here](https://github.com/djspiewak/sb
 
 ## Scalafmt
 
-In addition and separately to [sbt-github-actions][sbt-github-actions] Guardian also has a [scalafmt][scalafmt-link]
+In addition and separately to [sbt-github-actions][sbt-github-actions-link] Guardian also has
+a [scalafmt][scalafmt-link]
 pipeline that checks the code is correctly formatted on each PR. This allows
 the [scalafmt pipeline](https://github.com/aiven/guardian-for-apache-kafka/blob/main/.github/workflows/format.yml) to
 run at the same time the main build does. Furthermore, it
