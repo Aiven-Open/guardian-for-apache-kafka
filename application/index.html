@@ -136,19 +136,19 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#application" name="application" class="anchor"><span class="anchor-link"></span></a>Application</h1>
-<p>Guardian also becomes packaged as an application that lets you run it using a CLI interface. Currently the binaries provided are</p>
+<p>Guardian also becomes packaged as various application/s that lets you run it using a CLI interface. Currently, the binaries provided are</p>
 <ul>
   <li>restore: A continuously running binary that performs the restore operation.</li>
   <li>backup: A binary which when executed allows you to restore an existing backup.</li>
 </ul>
 <p>The CLI follows POSIX guidelines which means you can use <code>--help</code> as an argument to provide information on all of the parameters.</p>
 <h2><a href="#package-formats" name="package-formats" class="anchor"><span class="anchor-link"></span></a>Package formats</h2>
-<p>Guardian is currently packaged using <a href="https://github.com/sbt/sbt-native-packager">sbt-native-packager</a> in the following formats by using the sbt shell.</p>
+<p>Guardian is currently packaged using <a href="https://github.com/sbt/sbt-native-packager">sbt-native-packager</a> to provide the following formats by using the sbt shell.</p>
 <ul>
   <li><code>rpm</code>
     <ul>
       <li>restore: <code>cliRestore/rpm:packageBin</code>. Created <code>rpm</code> file will be contained  in <code>cli-restore/target/rpm/RPMS/noarch/</code></li>
-      <li>backup: <code>cliBackup/rpm:packageBin</code>. Created <code>rpm</code> file will be contained in <code>cli-backup/target/rpm/RPMS/noarch/</code>  NOTE: In order to build packages you need to have the <code>rpm-tools</code> installed. Please consult your Linux  distribution for more info</li>
+      <li>backup: <code>cliBackup/rpm:packageBin</code>. Created <code>rpm</code> file will be contained in <code>cli-backup/target/rpm/RPMS/noarch/</code>  NOTE: In order to build packages you need to have the <a href="https://rpm.org/">rpm-tools</a> (specifically <code>rpmbuild</code>)  installed and available on <code>PATH</code>. Please consult your Linux distribution for more info</li>
     </ul>
   </li>
   <li><code>zip</code>
@@ -170,7 +170,10 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     </ul>
   </li>
 </ul>
-<p>Note that for these packages formats you need to have JRE installed on your system to run the package.</p>
+<p>Note that for these packages formats you need to have JRE installed on your system to run the package. For more details about packaging read the <a href="https://sbt-native-packager.readthedocs.io/en/latest/">docs</a></p>
+<h2><a href="#design" name="design" class="anchor"><span class="anchor-link"></span></a>Design</h2>
+<p>Each application is contained within a corresponding sbt submodule, i.e. the application for <code>backup</code> is contained within the <code>cli-backup</code> sbt submodule. The <code>core-cli</code> sbt submodule contains common cli arguments (i.e. <code>kafka-topics</code>).</p>
+<p>Scala packaging has been disabled for these submodules which means that when publishing/packaging Guardian it won&rsquo;t push any built <code>.jar</code> files. This is because its unnecessary since you are meant to run these applications as a binary and not include it as a library. By the same token this also means that the cli modules are built with global inlining using <code>&quot;-opt-inline-from:**&quot;</code>, see <a href="https://www.lightbend.com/blog/scala-inliner-optimizer">here</a> for more info.</p>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/application/index.md">here</a>.
 </div>
@@ -188,6 +191,7 @@ The source code for this page can be found <a href="https://github.com/aiven/gua
   <li><a href="../application/index.html#application" class="header">Application</a>
   <ul>
     <li><a href="../application/index.html#package-formats" class="header">Package formats</a></li>
+    <li><a href="../application/index.html#design" class="header">Design</a></li>
   </ul></li>
 </ul>
 </div>

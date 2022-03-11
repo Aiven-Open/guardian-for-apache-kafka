@@ -192,13 +192,17 @@ s3-config = {
     data-bucket = ${?S3_CONFIG_DATA_BUCKET}
     data-bucket-prefix = ${?S3_CONFIG_DATA_BUCKET_PREFIX}
 }</code></pre>
+<p>Scala API doc <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/s3/configs/S3.html" title="io.aiven.guardian.kafka.s3.configs.S3"><code>S3</code></a></span></p>
 <h2><a href="#explanation" name="explanation" class="anchor"><span class="anchor-link"></span></a>Explanation</h2>
 <ul>
   <li><code>s3-headers</code>: See <a href="https://doc.akka.io/api/alpakka/3.0/akka/stream/alpakka/s3/headers/index.html">documentation</a></li>
   <li><code>alpakka.s3</code>: See <a href="https://docs.akka.io/docs/alpakka/3.0/s3.html#configuration">documentation</a></li>
-  <li><code>s3-config</code>: Core S3 configuration about where to persist the data</li>
-  <li><code>data-bucket</code>: The main S3 bucket where data is backed up and where to restore data from</li>
-  <li><code>data-bucket-prefix</code>: S3 prefix configuration to be used when searching for the bucket</li>
+  <li><code>s3-config</code>: Core S3 configuration about where to persist the data
+    <ul>
+      <li><code>data-bucket</code>: The main S3 bucket where data is backed up and where to restore data from</li>
+      <li><code>data-bucket-prefix</code>: S3 prefix configuration to be used when searching for the bucket</li>
+    </ul>
+  </li>
 </ul>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/persistence/s3/configuration.md">here</a>.

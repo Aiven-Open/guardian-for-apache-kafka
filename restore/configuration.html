@@ -142,9 +142,10 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     from-when = ${?RESTORE_FROM_WHEN}
     override-topics = ${?RESTORE_OVERRIDE_TOPICS}
 }</code></pre>
+<p>Scala API doc <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/restore/configs/Restore.html" title="io.aiven.guardian.kafka.restore.configs.Restore"><code>Restore</code></a></span></p>
 <h2><a href="#explanation" name="explanation" class="anchor"><span class="anchor-link"></span></a>Explanation</h2>
 <ul>
-  <li><code>from-when</code>: An <code>ISO-8601</code> time that specifies from when topics need to be restored. Note that the time used is based  on the original Kafka timestamp, <strong>NOT</strong> the current time.</li>
+  <li><code>from-when</code>: An <code>ISO-8601</code> time that specifies from when topics need to be restored. Note that the time used is based  on the original Kafka timestamp and <strong>NOT</strong> the current time.</li>
   <li><code>override-topics</code>: A mapping of currently backed up topics to a new topic in the destination Kafka cluster</li>
 </ul>
 <div class="source-github">
