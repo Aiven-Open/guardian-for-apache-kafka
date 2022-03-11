@@ -355,6 +355,14 @@ ThisBuild / githubWorkflowTargetBranches := Seq("main")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.Equals(Ref.Branch("main")))
 
 ThisBuild / githubWorkflowPublish := Seq(WorkflowStep.Sbt(List("docs/ghpagesPushSite")))
+ThisBuild / githubWorkflowPublishPreamble := Seq(
+  WorkflowStep.Use(
+    ref = UseRef.Public("webfactory", "ssh-agent", "v0.5.4"),
+    params = Map(
+      "ssh-private-key" -> "${{ secrets.GH_PAGES_SSH_PRIVATE_KEY }}"
+    )
+  )
+)
 
 ThisBuild / githubWorkflowBuildPreamble := Seq(
   WorkflowStep.Sbt(List("scalafixAll --check"), name = Some("Linter: Scalafix checks"))
