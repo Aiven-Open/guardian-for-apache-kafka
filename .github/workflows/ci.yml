@@ -127,6 +127,10 @@ jobs:
           tar xf targets.tar
           rm targets.tar
 
+      - run: |
+          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+
       - uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.GH_PAGES_SSH_PRIVATE_KEY }}

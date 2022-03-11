@@ -356,6 +356,13 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq(RefPredicate.Equals(Ref.B
 
 ThisBuild / githubWorkflowPublish := Seq(WorkflowStep.Sbt(List("docs/ghpagesPushSite")))
 ThisBuild / githubWorkflowPublishPreamble := Seq(
+  // Taken from https://github.com/actions/checkout/issues/13#issue-481453396
+  WorkflowStep.Run(
+    commands = List(
+      "git config --global user.name \"$(git --no-pager log --format=format:'%an' -n 1)\"",
+      "git config --global user.email \"$(git --no-pager log --format=format:'%ae' -n 1)\""
+    )
+  ),
   WorkflowStep.Use(
     ref = UseRef.Public("webfactory", "ssh-agent", "v0.5.4"),
     params = Map(
