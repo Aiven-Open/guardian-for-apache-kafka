@@ -127,4 +127,8 @@ jobs:
           tar xf targets.tar
           rm targets.tar
 
+      - uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.GH_PAGES_SSH_PRIVATE_KEY }}
+
       - run: sbt ++${{ matrix.scala }} docs/ghpagesPushSite
