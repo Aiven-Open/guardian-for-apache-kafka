@@ -16,8 +16,9 @@ addSbtPlugin("org.scoverage"                     % "sbt-coveralls"            % 
 addSbtPlugin("net.vonbuchholtz"                  % "sbt-dependency-check"     % "4.0.0")
 
 // This is here to bump dependencies for sbt-paradox/sbt-site, see
-// https://github.com/sirthias/parboiled/issues/175 and https://github.com/sirthias/parboiled/issues/128
+// https://github.com/sirthias/parboiled/issues/175, https://github.com/sirthias/parboiled/issues/128 and
+// https://github.com/sirthias/parboiled/pull/195
 libraryDependencies ++= Seq(
-  "org.parboiled" %% "parboiled-scala" % "1.4.0",
-  "org.parboiled"  % "parboiled-java"  % "1.4.0"
+  "org.parboiled" %% "parboiled-scala" % "1.4.1",
+  "org.parboiled"  % "parboiled-java"  % "1.4.1"
 )
