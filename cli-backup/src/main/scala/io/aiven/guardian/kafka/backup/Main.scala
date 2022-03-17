@@ -73,9 +73,7 @@ class Entry(val initializedApp: AtomicReference[Option[App[_]]] = new AtomicRefe
                   block.withBootstrapServers(value.toList.mkString(","))
 
               Some(block).validNel
-            case None
-                if Options.checkConfigKeyIsDefined("akka.kafka.consumer.kafka-clients.bootstrap.servers") || Options
-                  .checkConfigKeyIsDefined("kafka-client.bootstrap.servers") =>
+            case None if Options.checkConfigKeyIsDefined("akka.kafka.consumer.kafka-clients.bootstrap.servers") =>
               None.validNel
             case _ => "bootstrap-servers is a mandatory value that needs to be configured".invalidNel
           }

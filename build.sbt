@@ -11,6 +11,7 @@ ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/c
 val akkaVersion                = "2.6.18"
 val akkaHttpVersion            = "10.2.9"
 val alpakkaKafkaVersion        = "3.0.0"
+val kafkaClientsVersion        = "3.0.0"
 val alpakkaVersion             = "3.0.4"
 val quillJdbcMonixVersion      = "3.7.2"
 val postgresqlJdbcVersion      = "42.3.3"
@@ -109,9 +110,13 @@ lazy val core = project
     librarySettings,
     name := s"$baseName-core",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka"          %% "akka-actor"                     % akkaVersion                % Provided,
-      "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Provided,
-      "com.typesafe.akka"          %% "akka-stream-kafka"              % alpakkaKafkaVersion,
+      "com.typesafe.akka" %% "akka-actor"        % akkaVersion % Provided,
+      "com.typesafe.akka" %% "akka-stream"       % akkaVersion % Provided,
+      "com.typesafe.akka" %% "akka-stream-kafka" % alpakkaKafkaVersion,
+      // Ideally we shouldn't be explicitly providing a kafka-clients version and instead getting the version
+      // transitively from akka-streams-kafka however there isn't a nice way to extract a transitive dependency
+      // for usage in linking to documentation.
+      "org.apache.kafka"            % "kafka-clients"                  % kafkaClientsVersion,
       "com.typesafe.scala-logging" %% "scala-logging"                  % scalaLoggingVersion,
       "com.github.pureconfig"      %% "pureconfig"                     % pureConfigVersion,
       "ch.qos.logback"              % "logback-classic"                % logbackClassicVersion,
@@ -312,16 +317,18 @@ lazy val docs = project
     git.remoteRepo               := scmInfo.value.get.connection.replace("scm:git:", ""),
     paradoxGroups                := Map("Language" -> Seq("Scala")),
     paradoxProperties ++= Map(
-      "akka.version"                        -> akkaVersion,
-      "akka-http.version"                   -> akkaHttpVersion,
-      "akka-streams-json.version"           -> akkaStreamsJson,
-      "pure-config.version"                 -> pureConfigVersion,
-      "decline.version"                     -> declineVersion,
-      "scala-logging.version"               -> scalaLoggingVersion,
-      "extref.akka.base_url"                -> s"https://doc.akka.io/docs/akka/${binaryVersion(akkaVersion)}/%s",
-      "extref.akka-stream-json.base_url"    -> s"https://github.com/mdedetrich/akka-streams-json",
-      "extref.alpakka.base_url"             -> s"https://doc.akka.io/api/alpakka/${binaryVersion(alpakkaVersion)}/%s",
-      "extref.alpakka-docs.base_url"        -> s"https://docs.akka.io/docs/alpakka/${binaryVersion(alpakkaVersion)}/%s",
+      "akka.version"                     -> akkaVersion,
+      "akka-http.version"                -> akkaHttpVersion,
+      "akka-streams-json.version"        -> akkaStreamsJson,
+      "pure-config.version"              -> pureConfigVersion,
+      "decline.version"                  -> declineVersion,
+      "scala-logging.version"            -> scalaLoggingVersion,
+      "extref.akka.base_url"             -> s"https://doc.akka.io/docs/akka/${binaryVersion(akkaVersion)}/%s",
+      "extref.akka-stream-json.base_url" -> s"https://github.com/mdedetrich/akka-streams-json",
+      "extref.alpakka.base_url"          -> s"https://doc.akka.io/api/alpakka/${binaryVersion(alpakkaVersion)}/%s",
+      "extref.alpakka-docs.base_url"     -> s"https://docs.akka.io/docs/alpakka/${binaryVersion(alpakkaVersion)}/%s",
+      "extref.alpakka-kafka-docs.base_url" -> s"https://docs.akka.io/docs/alpakka-kafka/${binaryVersion(alpakkaVersion)}/%s",
+      "extref.kafka-docs.base_url" -> s"https://kafka.apache.org/${binaryVersion(kafkaClientsVersion).replace(".", "")}/%s",
       "extref.pureconfig.base_url"          -> s"https://pureconfig.github.io/docs/",
       "scaladoc.io.aiven.guardian.base_url" -> s"/guardian-for-apache-kafka/${(Preprocess / siteSubdirName).value}/"
     )
