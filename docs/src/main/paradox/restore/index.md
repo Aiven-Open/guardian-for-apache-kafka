@@ -4,6 +4,8 @@ The restore module is responsible for streaming data from a backup storage locat
 circumstance of a disaster recovery. The restore is able to work in any format of backed up files created by Guardian's
 restore.
 
+@@project-info { projectId="coreRestore" }
+
 @@toc { depth=2 }
 
 @@@ index
