@@ -46,6 +46,7 @@
   <li><a href="../backup/index.html" class="active page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
+    <li><a href="../backup/design.html" class="page">Design</a></li>
   </ul></li>
   <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
@@ -101,6 +102,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="../backup/index.html" class="active page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
+    <li><a href="../backup/design.html" class="page">Design</a></li>
   </ul></li>
   <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
@@ -136,19 +138,24 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#backup" name="backup" class="anchor"><span class="anchor-link"></span></a>Backup</h1>
-<p>The backup module is responsible for backing up a specific set of Kafka topics into a persistent storage. The backup runs as a continuous stream that is split depending on time buckets which are configurable. The format for backups is in JSON consisting of a large JSON array filled with JSON objects that have the following format.</p>
-<pre class="prettyprint"><code class="language-json">{
-  &quot;topic&quot;: &quot;kafka topic&quot;,
-  &quot;partition&quot;: 0,
-  &quot;offset&quot;: 0,
-  &quot;key&quot;: &quot;a2V5&quot;,
-  &quot;value&quot;: &quot;dmFsdWU=&quot;,
-  &quot;timestamp&quot;: 0,
-  &quot;timestamp_type&quot;: 0
-}
-</code></pre>
-<p>The <code>key</code> and <code>value</code> are Base64 encoded byte arrays (in the above example <code>&quot;a2V5&quot;</code> decodes to the string <code>key</code> and <code>&quot;dmFsdWU=&quot;</code> decodes to the string <code>value</code>). This is due to the fact that the backup tool can make no assumptions on the format of the key or value, so we encode the raw byte arrays.</p>
-<p>One thing to note is that its possible for the last JSON object in the JSON array to be <code>null</code>, see for more info.</p>
+<p>The backup module is responsible for backing up a specific set of Kafka topics into a persistent storage. The backup runs as a continuous stream that is split depending on time buckets which are configurable.</p>
+<table class="project-info">
+<tr><th colspan="2">Project Info: Core Backup</th></tr>
+  <tr><th>Artifact</th><td><div>aiven.io</div>
+  <div>guardian-for-apache-kafka-core-backup</div>
+  <div>0.1.0-SNAPSHOT</div></td></tr>
+  <tr><th>JDK versions</th><td><div>Adopt OpenJDK 11</div><div>Adopt OpenJDK 17</div></td></tr>
+  <tr><th>Scala versions</th><td>2.12.15, 2.13.8</td></tr>
+  <tr><th>JPMS module name</th><td>io.aiven.guardian.kafka.backup</td></tr>
+  <tr><th>License</th><td><div><a href="https://opensource.org/licenses/Apache-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></div>
+  </td></tr>
+  
+  <tr><th>Home page</th><td><a href="https://github.com/aiven/akka-streams-json">https://github.com/aiven/akka-streams-json</a></td></tr>
+  <tr><th>Release notes</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka/releases" target="_blank" rel="noopener noreferrer">GitHub releases</a></td></tr>
+  <tr><th>Issues</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka/issues" target="_blank" rel="noopener noreferrer">Github issues</a></td></tr>
+  <tr><th>Sources</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka" target="_blank" rel="noopener noreferrer">https://github.com/aiven/guardian-for-apache-kafka</a></td></tr>
+</table>
+
 <div class="toc ">
 <ul>
   <li><a href="../backup/configuration.html" class="page">Configuration</a>
@@ -156,6 +163,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     <li><a href="../backup/configuration.html#reference" class="header">Reference</a></li>
     <li><a href="../backup/configuration.html#explanation" class="header">Explanation</a></li>
   </ul></li>
+  <li><a href="../backup/design.html" class="page">Design</a></li>
 </ul>
 </div>
 <div class="source-github">
