@@ -7,6 +7,7 @@ import cats.data.ValidatedNel
 import cats.implicits._
 import com.monovore.decline._
 import com.monovore.decline.time._
+import io.aiven.guardian.cli.arguments.PropertiesOpt._
 import io.aiven.guardian.cli.arguments.StorageOpt
 import io.aiven.guardian.cli.options.Options
 import io.aiven.guardian.kafka.configs.KafkaCluster
@@ -16,9 +17,11 @@ import org.apache.kafka.clients.producer.ProducerConfig
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 
 import java.time.OffsetDateTime
+import java.util.Properties
 import java.util.concurrent.atomic.AtomicReference
 
 class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReference(None))
@@ -89,7 +92,23 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
             )
             .orFalse
 
-        val kafkaProducerSettingsOpt
+        val producerPropertiesOpt = Opts
+          .option[Properties]("producer-properties",
+                              "Path to a java .properties file to be passed to the underlying KafkaClients producer"
+          )
+          .orNone
+
+        val propertiesConsumerSettingsOpt = producerPropertiesOpt.mapValidated {
+          case Some(value) =>
+            val block =
+              (block: ProducerSettings[Array[Byte], Array[Byte]]) => block.withProperties(value.asScala.toMap)
+
+            Some(block).validNel
+          case None =>
+            None.validNel
+        }
+
+        val bootstrapConsumerSettingsOpt
             : Opts[Option[ProducerSettings[Array[Byte], Array[Byte]] => ProducerSettings[Array[Byte], Array[Byte]]]] =
           (initialKafkaProducerSettingsOpt, singleMessagePerRequestOpt).tupled.map {
             case (producerSettings, true) =>
@@ -108,26 +127,35 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
             case (producerSettings, false) => producerSettings
           }
 
-        (Options.storageOpt, Options.kafkaClusterOpt, kafkaProducerSettingsOpt, s3Opt, restoreOpt).mapN {
-          (storage, kafkaCluster, kafkaProducerSettings, s3, restore) =>
-            val killSwitch = KillSwitches.shared("restore-kill-switch")
-            val app = storage match {
-              case StorageOpt.S3 =>
-                new S3App {
-                  override lazy val kafkaClusterConfig: KafkaCluster          = kafkaCluster
-                  override lazy val s3Config: S3                              = s3
-                  override lazy val restoreConfig: Restore                    = restore
-                  override lazy val maybeKillSwitch: Option[SharedKillSwitch] = Some(killSwitch)
-                  override lazy val kafkaProducer =
-                    new KafkaProducer(kafkaProducerSettings)(actorSystem, restoreConfig)
+        (Options.storageOpt,
+         Options.kafkaClusterOpt,
+         propertiesConsumerSettingsOpt,
+         bootstrapConsumerSettingsOpt,
+         s3Opt,
+         restoreOpt
+        ).mapN { (storage, kafkaCluster, propertiesConsumerSettings, bootstrapConsumerSettings, s3, restore) =>
+          val killSwitch = KillSwitches.shared("restore-kill-switch")
+          val app = storage match {
+            case StorageOpt.S3 =>
+              new S3App {
+                override lazy val kafkaClusterConfig: KafkaCluster          = kafkaCluster
+                override lazy val s3Config: S3                              = s3
+                override lazy val restoreConfig: Restore                    = restore
+                override lazy val maybeKillSwitch: Option[SharedKillSwitch] = Some(killSwitch)
+                override lazy val kafkaProducer: KafkaProducer = {
+                  val finalProducerSettings =
+                    (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
+
+                  new KafkaProducer(Some(finalProducerSettings))(actorSystem, restoreConfig)
                 }
-            }
-            initializedApp.set(Some(app))
-            Runtime.getRuntime.addShutdownHook(new Thread {
-              killSwitch.shutdown()
-              Await.result(app.actorSystem.terminate(), 5 minutes)
-            })
-            Await.result(app.run(), Duration.Inf)
+              }
+          }
+          initializedApp.set(Some(app))
+          Runtime.getRuntime.addShutdownHook(new Thread {
+            killSwitch.shutdown()
+            Await.result(app.actorSystem.terminate(), 5 minutes)
+          })
+          Await.result(app.run(), Duration.Inf)
         }
       }
     )

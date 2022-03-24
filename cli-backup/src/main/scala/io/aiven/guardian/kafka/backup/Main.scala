@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka.backup
 import akka.kafka.ConsumerSettings
 import cats.implicits._
 import com.monovore.decline._
+import io.aiven.guardian.cli.arguments.PropertiesOpt._
 import io.aiven.guardian.cli.arguments.StorageOpt
 import io.aiven.guardian.cli.options.Options
 import io.aiven.guardian.kafka.backup.configs.Backup
@@ -14,9 +15,11 @@ import io.aiven.guardian.kafka.s3.configs.S3
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
+import java.util.Properties
 import java.util.concurrent.atomic.AtomicReference
 
 class Entry(val initializedApp: AtomicReference[Option[App[_]]] = new AtomicReference(None))
@@ -64,7 +67,23 @@ class Entry(val initializedApp: AtomicReference[Option[App[_]]] = new AtomicRefe
           }
         }
 
-        val kafkaConsumerSettingsOpt
+        val consumerPropertiesOpt = Opts
+          .option[Properties]("consumer-properties",
+                              "Path to a java .properties file to be passed to the underlying KafkaClients consumer."
+          )
+          .orNone
+
+        val propertiesConsumerSettingsOpt = consumerPropertiesOpt.mapValidated {
+          case Some(value) =>
+            val block =
+              (block: ConsumerSettings[Array[Byte], Array[Byte]]) => block.withProperties(value.asScala.toMap)
+
+            Some(block).validNel
+          case None =>
+            None.validNel
+        }
+
+        val bootstrapConsumerSettingsOpt
             : Opts[Option[ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]]] =
           Options.bootstrapServersOpt.mapValidated {
             case Some(value) =>
@@ -78,23 +97,32 @@ class Entry(val initializedApp: AtomicReference[Option[App[_]]] = new AtomicRefe
             case _ => "bootstrap-servers is a mandatory value that needs to be configured".invalidNel
           }
 
-        (Options.storageOpt, Options.kafkaClusterOpt, kafkaConsumerSettingsOpt, s3Opt, backupOpt).mapN {
-          (storage, kafkaCluster, kafkaConsumerSettings, s3, backup) =>
-            val app = storage match {
-              case StorageOpt.S3 =>
-                new S3App {
-                  override lazy val kafkaClusterConfig: KafkaCluster = kafkaCluster
-                  override lazy val s3Config: S3                     = s3
-                  override lazy val backupConfig: Backup             = backup
-                  override lazy val kafkaClient: KafkaClient =
-                    new KafkaClient(kafkaConsumerSettings)(actorSystem, kafkaClusterConfig, backupConfig)
+        (Options.storageOpt,
+         Options.kafkaClusterOpt,
+         propertiesConsumerSettingsOpt,
+         bootstrapConsumerSettingsOpt,
+         s3Opt,
+         backupOpt
+        ).mapN { (storage, kafkaCluster, propertiesConsumerSettings, bootstrapConsumerSettings, s3, backup) =>
+          val app = storage match {
+            case StorageOpt.S3 =>
+              new S3App {
+                override lazy val kafkaClusterConfig: KafkaCluster = kafkaCluster
+                override lazy val s3Config: S3                     = s3
+                override lazy val backupConfig: Backup             = backup
+                override lazy val kafkaClient: KafkaClient = {
+                  val finalConsumerSettings =
+                    (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
+
+                  new KafkaClient(Some(finalConsumerSettings))(actorSystem, kafkaClusterConfig, backupConfig)
                 }
-            }
-            initializedApp.set(Some(app))
-            val control = app.run()
-            Runtime.getRuntime.addShutdownHook(new Thread {
-              Await.result(app.shutdown(control), 5 minutes)
-            })
+              }
+          }
+          initializedApp.set(Some(app))
+          val control = app.run()
+          Runtime.getRuntime.addShutdownHook(new Thread {
+            Await.result(app.shutdown(control), 5 minutes)
+          })
         }
       }
     )
