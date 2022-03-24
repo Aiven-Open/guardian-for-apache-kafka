@@ -15,7 +15,7 @@ trait MinioS3Test extends ForAllTestContainer with TestKitBase { this: Suite =>
   private val S3DummySecretKey = "DUMMY_SECRET_KEY"
 
   lazy val s3Settings: S3Settings = S3Settings()
-    .withEndpointUrl(s"http://${container.getHostAddress}")
+    .withEndpointUrl(container.getHostAddress)
     .withCredentialsProvider(
       StaticCredentialsProvider.create(AwsBasicCredentials.create(S3DummyAccessKey, S3DummySecretKey))
     )
