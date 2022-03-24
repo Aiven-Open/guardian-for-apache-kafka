@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka.restore
 import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.Attributes
 import akka.stream.SharedKillSwitch
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
@@ -28,6 +29,7 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends StrictLogging 
   implicit val kafkaClusterConfig: KafkaCluster
   implicit val system: ActorSystem
   val maybeKillSwitch: Option[SharedKillSwitch]
+  val maybeAttributes: Option[Attributes] = None
 
   def retrieveBackupKeys: Future[List[String]]
 
