@@ -13,11 +13,10 @@ import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.s3.configs.S3
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
-
 import java.time.temporal.ChronoUnit
 import java.util.Properties
 import java.util.concurrent.atomic.AtomicReference
@@ -120,9 +119,13 @@ class Entry(val initializedApp: AtomicReference[Option[App[_]]] = new AtomicRefe
           }
           initializedApp.set(Some(app))
           val control = app.run()
+          val p       = Promise[Unit]()
           Runtime.getRuntime.addShutdownHook(new Thread {
             Await.result(app.shutdown(control), 5 minutes)
+            p.trySuccess(())
           })
+          // Make sure that Main app never terminates
+          Await.result(p.future, Duration.Inf)
         }
       }
     )
