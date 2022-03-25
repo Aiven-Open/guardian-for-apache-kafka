@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka.backup
 import akka.kafka.ConsumerSettings
 import cats.implicits._
 import com.monovore.decline._
+import io.aiven.guardian.cli.MainUtils
 import io.aiven.guardian.cli.arguments.PropertiesOpt._
 import io.aiven.guardian.cli.arguments.StorageOpt
 import io.aiven.guardian.cli.options.Options
@@ -23,7 +24,7 @@ import java.time.temporal.ChronoUnit
 import java.util.Properties
 import java.util.concurrent.atomic.AtomicReference
 
-class Entry(val initializedApp: AtomicReference[Option[App[_]]] = new AtomicReference(None))
+class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]] = new AtomicReference(None))
     extends CommandApp(
       name = "guardian-backup",
       header = "Guardian cli Backup Tool",
@@ -119,15 +120,11 @@ class Entry(val initializedApp: AtomicReference[Option[App[_]]] = new AtomicRefe
                 }
               }
           }
-          initializedApp.set(Some(app))
           val control = app.run()
           val p       = Promise[Unit]()
-          Runtime.getRuntime.addShutdownHook(new Thread {
-            Await.result(app.shutdown(control), 5 minutes)
-            p.trySuccess(())
-          })
-          // Make sure that Main app never terminates
-          Await.result(p.future, Duration.Inf)
+          initializedApp.set(Some((app, p)))
+          Await.result(MainUtils.waitForShutdownSignal(p)(app.executionContext), Duration.Inf)
+          Await.result(app.shutdown(control), 5 minutes)
         }
       }
     )
