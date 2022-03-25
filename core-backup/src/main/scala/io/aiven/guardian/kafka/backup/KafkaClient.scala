@@ -73,7 +73,7 @@ class KafkaClient(
             chronoUnit.getDuration.toScala
         }
 
-        baseDuration + backupConfig.commitTimeoutBuffer
+        baseDuration + backupConfig.commitTimeoutBufferWindow
       }
       .withGroupId(
         backupConfig.kafkaGroupId

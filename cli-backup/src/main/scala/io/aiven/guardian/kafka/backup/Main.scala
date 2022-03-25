@@ -47,7 +47,7 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
 
         val commitTimeoutBufferOpt =
           Opts
-            .option[FiniteDuration]("commit-timeout-buffer",
+            .option[FiniteDuration]("commit-timeout-buffer-window",
                                     help =
                                       "A buffer that gets added onto the commit timeout configuration for the consumer"
             )

@@ -44,7 +44,7 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
       groupId,
       "--chrono-unit-slice",
       "hours",
-      "--commit-timeout-buffer",
+      "--commit-timeout-buffer-window",
       "1 second"
     )
 
