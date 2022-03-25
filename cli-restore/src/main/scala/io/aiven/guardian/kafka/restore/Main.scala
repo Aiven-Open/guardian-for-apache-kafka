@@ -159,7 +159,7 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
           }
           initializedApp.set(Some(app))
           Runtime.getRuntime.addShutdownHook(new Thread {
-            logger.warn("Shutdown of Guardian detected")
+            logger.info("Shutdown of Guardian detected")
             killSwitch.shutdown()
             Await.result(app.actorSystem.terminate(), 5 minutes)
           })

@@ -36,18 +36,20 @@ val flagsFor12 = Seq(
   "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
   "-Ywarn-inaccessible",
   "-Ywarn-infer-any",
+  "-language:existentials",
   "-opt-inline-from:<sources>",
   "-opt:l:method"
 )
 
 val flagsFor13 = Seq(
   "-Xlint:_",
-  "-opt-inline-from:<sources>",
-  "-opt:l:method",
   "-Xfatal-warnings",
   "-Ywarn-unused",
   "-Xlint:adapted-args",
-  "-Wconf:cat=unused:info"
+  "-Wconf:cat=unused:info",
+  "-language:existentials",
+  "-opt-inline-from:<sources>",
+  "-opt:l:method"
 )
 
 val librarySettings = Seq(

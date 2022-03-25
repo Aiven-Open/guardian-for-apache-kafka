@@ -1,17 +1,28 @@
 package io.aiven.guardian.kafka
 
+import akka.actor.ActorSystem
+import akka.testkit.TestKit
+import io.aiven.guardian.kafka.backup.S3App
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.{Backup => BackupConfig}
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.propspec.AnyPropSpec
+import org.scalatest.propspec.AnyPropSpecLike
 
 import scala.annotation.nowarn
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
 
 @nowarn("msg=method main in class CommandApp is deprecated")
-class CliSpec extends AnyPropSpec with Matchers {
+class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike with Matchers with ScalaFutures {
+  implicit val ec: ExecutionContext                    = system.dispatcher
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(5 minutes, 100 millis)
 
   property("Command line args are properly passed into application") {
     val groupId         = "my-consumer-group"
@@ -34,12 +45,23 @@ class CliSpec extends AnyPropSpec with Matchers {
       "hours"
     )
 
-    try backup.Main.main(args.toArray)
-    catch {
-      case _: Throwable =>
+    Future {
+      backup.Main.main(args.toArray)
+    }.recover { case _: Throwable =>
+      ()
     }
-    backup.Main.initializedApp.get() match {
-      case Some(s3App: backup.S3App) =>
+
+    def checkUntilMainInitialized(main: io.aiven.guardian.kafka.backup.Entry): Future[(backup.App[_], Promise[Unit])] =
+      main.initializedApp.get() match {
+        case Some((app, promise)) => Future.successful((app, promise))
+        case None                 => akka.pattern.after(100 millis)(checkUntilMainInitialized(main))
+      }
+
+    val (app, promise) = checkUntilMainInitialized(backup.Main).futureValue
+
+    promise.success(())
+    app match {
+      case s3App: S3App =>
         s3App.backupConfig mustEqual BackupConfig(groupId, ChronoUnitSlice(ChronoUnit.HOURS))
         s3App.kafkaClusterConfig mustEqual KafkaClusterConfig(Set(topic))
         s3App.kafkaClient.consumerSettings.getProperty("bootstrap.servers") mustEqual bootstrapServer
@@ -48,5 +70,4 @@ class CliSpec extends AnyPropSpec with Matchers {
         fail("Expected an App to be initialized")
     }
   }
-
 }
