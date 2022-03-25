@@ -14,6 +14,8 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.SourceWithContext
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.backup.configs.Backup
+import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
+import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -22,6 +24,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 import scala.collection.immutable
 import scala.concurrent.Future
+import scala.jdk.DurationConverters._
 
 import java.util.Base64
 
@@ -63,6 +66,15 @@ class KafkaClient(
       .withProperties(
         ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest"
       )
+      .withCommitTimeout {
+        val baseDuration = backupConfig.timeConfiguration match {
+          case PeriodFromFirst(duration) => duration
+          case ChronoUnitSlice(chronoUnit) =>
+            chronoUnit.getDuration.toScala
+        }
+
+        baseDuration + backupConfig.commitTimeoutBuffer
+      }
       .withGroupId(
         backupConfig.kafkaGroupId
       )

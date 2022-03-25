@@ -26,3 +26,6 @@ Scala API doc @apidoc[kafka.backup.configs.Backup]
         * `duration`: If configuration is `period-from-first` then this determines max period of time for each time
           slice.
         * `chrono-unit`: if configuration is `chrono-unit-slice` the `chrono-unit` determines
+    * `commit-timeout-buffer`: Guardian sets the commit timeout of the Kafka consumer based on the `time-configuration`
+      since Guardian does manual committing of cursors. The buffer gets added onto the `time-configuration` to give
+      some headroom for any theoretical delays.

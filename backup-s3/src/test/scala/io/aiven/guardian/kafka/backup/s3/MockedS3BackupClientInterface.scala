@@ -12,15 +12,19 @@ import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
 class MockedS3BackupClientInterface(
     kafkaData: Source[ReducedConsumerRecord, NotUsed],
     timeConfiguration: TimeConfiguration,
     s3Config: S3Config,
     maybeS3Settings: Option[S3Settings]
 )(implicit val s3Headers: S3Headers, system: ActorSystem)
-    extends BackupClient(maybeS3Settings)(new MockedKafkaClientInterface(kafkaData),
-                                          Backup(MockedBackupClientInterface.KafkaGroupId, timeConfiguration),
-                                          implicitly,
-                                          s3Config,
-                                          implicitly
+    extends BackupClient(maybeS3Settings)(
+      new MockedKafkaClientInterface(kafkaData),
+      Backup(MockedBackupClientInterface.KafkaGroupId, timeConfiguration, 10 seconds),
+      implicitly,
+      s3Config,
+      implicitly
     )
