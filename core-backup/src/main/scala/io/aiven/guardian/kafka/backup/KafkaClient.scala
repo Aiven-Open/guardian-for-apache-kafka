@@ -108,7 +108,7 @@ object KafkaClient {
       consumerRecord.topic(),
       consumerRecord.partition(),
       consumerRecord.offset(),
-      Base64.getEncoder.encodeToString(consumerRecord.key()),
+      Option(consumerRecord.key()).map(byteArray => Base64.getEncoder.encodeToString(byteArray)),
       Base64.getEncoder.encodeToString(consumerRecord.value()),
       consumerRecord.timestamp(),
       consumerRecord.timestampType()

@@ -188,8 +188,15 @@ trait S3Spec
     */
   def toProducerRecords(data: List[ReducedConsumerRecord]): List[ProducerRecord[Array[Byte], Array[Byte]]] = data.map {
     reducedConsumerRecord =>
-      val keyAsByteArray   = Base64.getDecoder.decode(reducedConsumerRecord.key)
       val valueAsByteArray = Base64.getDecoder.decode(reducedConsumerRecord.value)
-      new ProducerRecord[Array[Byte], Array[Byte]](reducedConsumerRecord.topic, keyAsByteArray, valueAsByteArray)
+      reducedConsumerRecord.key match {
+        case Some(key) =>
+          new ProducerRecord[Array[Byte], Array[Byte]](reducedConsumerRecord.topic,
+                                                       Base64.getDecoder.decode(key),
+                                                       valueAsByteArray
+          )
+        case None =>
+          new ProducerRecord[Array[Byte], Array[Byte]](reducedConsumerRecord.topic, valueAsByteArray)
+      }
   }
 }
