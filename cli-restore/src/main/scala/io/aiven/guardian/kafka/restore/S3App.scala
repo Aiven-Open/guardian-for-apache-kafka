@@ -1,6 +1,8 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.stream.{ActorAttributes, Attributes, Supervision}
+import akka.stream.ActorAttributes
+import akka.stream.Attributes
+import akka.stream.Supervision
 import akka.stream.alpakka.s3.S3Settings
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.restore.s3.RestoreClient

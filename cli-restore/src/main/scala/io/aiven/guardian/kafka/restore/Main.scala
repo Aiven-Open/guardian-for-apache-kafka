@@ -4,16 +4,16 @@ import akka.kafka.ProducerSettings
 import akka.stream.KillSwitches
 import akka.stream.SharedKillSwitch
 import cats.data.ValidatedNel
-import cats.implicits._
 import com.monovore.decline._
 import com.monovore.decline.time._
-import io.aiven.guardian.cli.arguments.PropertiesOpt._
+import com.typesafe.scalalogging.Logger
 import io.aiven.guardian.cli.arguments.StorageOpt
 import io.aiven.guardian.cli.options.Options
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.restore.configs.Restore
 import io.aiven.guardian.kafka.s3.configs.S3
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -29,6 +29,13 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
       name = "guardian-restore",
       header = "Guardian cli Backup Tool",
       main = {
+        val logger: Logger =
+          Logger(LoggerFactory.getLogger(getClass.getName))
+
+        // This is imported here because otherwise the reference to getClass above is ambiguous
+        import io.aiven.guardian.cli.arguments.PropertiesOpt._
+        import cats.implicits._
+
         val fromWhenOpt: Opts[Option[OffsetDateTime]] =
           Opts.option[OffsetDateTime]("from-when", help = "Only restore topics from a given time").orNone
 
@@ -152,6 +159,7 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
           }
           initializedApp.set(Some(app))
           Runtime.getRuntime.addShutdownHook(new Thread {
+            logger.warn("Shutdown of Guardian detected")
             killSwitch.shutdown()
             Await.result(app.actorSystem.terminate(), 5 minutes)
           })
