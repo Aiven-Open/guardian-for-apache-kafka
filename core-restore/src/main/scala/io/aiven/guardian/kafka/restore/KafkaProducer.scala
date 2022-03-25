@@ -34,10 +34,19 @@ class KafkaProducer(
           map.getOrElse(reducedConsumerRecord.topic, reducedConsumerRecord.topic)
         case None => reducedConsumerRecord.topic
       }
-      new ProducerRecord[Array[Byte], Array[Byte]](
-        topic,
-        Base64.getDecoder.decode(reducedConsumerRecord.key),
-        Base64.getDecoder.decode(reducedConsumerRecord.value)
-      )
+      val valueAsByteArray = Base64.getDecoder.decode(reducedConsumerRecord.value)
+      reducedConsumerRecord.key match {
+        case Some(key) =>
+          new ProducerRecord[Array[Byte], Array[Byte]](
+            topic,
+            Base64.getDecoder.decode(key),
+            valueAsByteArray
+          )
+        case None =>
+          new ProducerRecord[Array[Byte], Array[Byte]](
+            topic,
+            valueAsByteArray
+          )
+      }
     }
 }

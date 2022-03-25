@@ -24,7 +24,7 @@ import java.time.ZoneId
 final case class ReducedConsumerRecord(topic: String,
                                        partition: Int,
                                        offset: Long,
-                                       key: String,
+                                       key: Option[String],
                                        value: String,
                                        timestamp: Long,
                                        timestampType: TimestampType

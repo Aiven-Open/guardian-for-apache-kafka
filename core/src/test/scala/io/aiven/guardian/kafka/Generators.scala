@@ -30,7 +30,7 @@ object Generators {
     t,
     p,
     o,
-    k,
+    Some(k),
     value,
     ts,
     timestampType
