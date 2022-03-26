@@ -145,7 +145,6 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     poll-timeout = ${?AKKA_KAFKA_CONSUMER_POLL_TIMEOUT}
     stop-timeout = ${?AKKA_KAFKA_CONSUMER_STOP_TIMEOUT}
     close-timeout = ${?AKKA_KAFKA_CONSUMER_CLOSE_TIMEOUT}
-    commit-timeout = ${?AKKA_KAFKA_CONSUMER_COMMIT_TIMEOUT}
     commit-time-warning = ${?AKKA_KAFKA_CONSUMER_COMMIT_TIME_WARNING}
     commit-refresh-interval = ${?AKKA_KAFKA_CONSUMER_COMMIT_REFRESH_INTERVAL}
     use-dispatcher = ${?AKKA_KAFKA_CONSUMER_USE_DISPATCHER}
@@ -187,6 +186,8 @@ backup {
        duration = 1 hour
        duration = ${?BACKUP_TIME_CONFIGURATION_DURATION}
     }
+    commit-timeout-buffer-window = 10 seconds
+    commit-timeout-buffer-window = ${?BACKUP_COMMIT_TIMEOUT_BUFFER}
 }</code></pre>
 <p>Scala API doc <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/configs/Backup.html" title="io.aiven.guardian.kafka.backup.configs.Backup"><code>Backup</code></a></span></p>
 <h2><a href="#explanation" name="explanation" class="anchor"><span class="anchor-link"></span></a>Explanation</h2>
@@ -212,6 +213,7 @@ backup {
           <li><code>chrono-unit</code>: if configuration is <code>chrono-unit-slice</code> the <code>chrono-unit</code> determines</li>
         </ul>
       </li>
+      <li><code>commit-timeout-buffer-window</code>: Guardian sets the commit timeout of the Kafka consumer based on the <code>time-configuration</code>  since Guardian does manual committing of cursors. The buffer gets added onto the <code>time-configuration</code> to give  some headroom for any theoretical delays.</li>
     </ul>
   </li>
 </ul>
