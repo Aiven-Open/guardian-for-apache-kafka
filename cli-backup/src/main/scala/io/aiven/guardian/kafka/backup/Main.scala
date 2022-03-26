@@ -45,17 +45,26 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
         val timeConfigurationOpt: Opts[Option[TimeConfiguration]] =
           (periodFromFirstOpt orElse chronoUnitSliceOpt).orNone
 
+        val commitTimeoutBufferOpt =
+          Opts
+            .option[FiniteDuration]("commit-timeout-buffer-window",
+                                    help =
+                                      "A buffer that gets added onto the commit timeout configuration for the consumer"
+            )
+            .withDefault(10 seconds)
+
         val backupOpt =
-          (groupIdOpt, timeConfigurationOpt).tupled.mapValidated { case (maybeGroupId, maybeTimeConfiguration) =>
-            import io.aiven.guardian.kafka.backup.Config.backupConfig
-            (maybeGroupId, maybeTimeConfiguration) match {
-              case (Some(groupId), Some(timeConfiguration)) =>
-                Backup(groupId, timeConfiguration).validNel
-              case _ =>
-                Options
-                  .optionalPureConfigValue(() => backupConfig)
-                  .toValidNel("Backup config is a mandatory value that needs to be configured")
-            }
+          (groupIdOpt, timeConfigurationOpt, commitTimeoutBufferOpt).tupled.mapValidated {
+            case (maybeGroupId, maybeTimeConfiguration, commitTimeoutBuffer) =>
+              import io.aiven.guardian.kafka.backup.Config.backupConfig
+              (maybeGroupId, maybeTimeConfiguration) match {
+                case (Some(groupId), Some(timeConfiguration)) =>
+                  Backup(groupId, timeConfiguration, commitTimeoutBuffer).validNel
+                case _ =>
+                  Options
+                    .optionalPureConfigValue(() => backupConfig)
+                    .toValidNel("Backup config is a mandatory value that needs to be configured")
+              }
           }
 
         val s3Opt = Options.dataBucketOpt.mapValidated { maybeDataBucket =>

@@ -18,6 +18,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 
 @nowarn("msg=method main in class CommandApp is deprecated")
 class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike with Matchers with ScalaFutures {
@@ -42,7 +43,9 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
       "--kafka-group-id",
       groupId,
       "--chrono-unit-slice",
-      "hours"
+      "hours",
+      "--commit-timeout-buffer-window",
+      "1 second"
     )
 
     Future {
@@ -62,7 +65,10 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
     promise.success(())
     app match {
       case s3App: S3App =>
-        s3App.backupConfig mustEqual BackupConfig(groupId, ChronoUnitSlice(ChronoUnit.HOURS))
+        s3App.backupConfig mustEqual BackupConfig(groupId,
+                                                  ChronoUnitSlice(ChronoUnit.HOURS),
+                                                  FiniteDuration(1, TimeUnit.SECONDS)
+        )
         s3App.kafkaClusterConfig mustEqual KafkaClusterConfig(Set(topic))
         s3App.kafkaClient.consumerSettings.getProperty("bootstrap.servers") mustEqual bootstrapServer
         s3App.s3Config.dataBucket mustEqual dataBucket

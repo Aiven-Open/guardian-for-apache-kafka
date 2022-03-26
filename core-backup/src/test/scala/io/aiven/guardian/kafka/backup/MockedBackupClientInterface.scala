@@ -15,7 +15,9 @@ import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
 import scala.collection.immutable
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
+import scala.language.postfixOps
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -74,7 +76,8 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
 
   override implicit lazy val backupConfig: Backup = Backup(
     KafkaGroupId,
-    timeConfiguration
+    timeConfiguration,
+    10 seconds
   )
 
   /** Override this type to define the result of backing up data to a datasource

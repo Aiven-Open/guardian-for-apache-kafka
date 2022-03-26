@@ -82,8 +82,9 @@ class RealS3RestoreClientSpec
         val asProducerRecords = toProducerRecords(data)
         val baseSource        = toSource(asProducerRecords, 30 seconds)
 
-        implicit val config: S3Config     = s3Config
-        implicit val backupConfig: Backup = Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 minute))
+        implicit val config: S3Config = s3Config
+        implicit val backupConfig: Backup =
+          Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 minute), 10 seconds)
 
         val backupClient =
           new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
