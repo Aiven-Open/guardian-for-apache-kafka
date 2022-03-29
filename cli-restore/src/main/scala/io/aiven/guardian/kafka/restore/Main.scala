@@ -7,6 +7,7 @@ import cats.data.ValidatedNel
 import com.monovore.decline._
 import com.monovore.decline.time._
 import com.typesafe.scalalogging.Logger
+import io.aiven.guardian.cli.MainUtils
 import io.aiven.guardian.cli.arguments.StorageOpt
 import io.aiven.guardian.cli.options.Options
 import io.aiven.guardian.kafka.configs.KafkaCluster
@@ -29,8 +30,7 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
       name = "guardian-restore",
       header = "Guardian cli Backup Tool",
       main = {
-        val logger: Logger =
-          Logger(LoggerFactory.getLogger(getClass.getName))
+        val logClassName: String = getClass.getName
 
         // This is imported here because otherwise the reference to getClass above is ambiguous
         import io.aiven.guardian.cli.arguments.PropertiesOpt._
@@ -134,36 +134,41 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
             case (producerSettings, false) => producerSettings
           }
 
-        (Options.storageOpt,
+        (Options.logbackFileOpt,
+         Options.storageOpt,
          Options.kafkaClusterOpt,
          propertiesConsumerSettingsOpt,
          bootstrapConsumerSettingsOpt,
          s3Opt,
          restoreOpt
-        ).mapN { (storage, kafkaCluster, propertiesConsumerSettings, bootstrapConsumerSettings, s3, restore) =>
-          val killSwitch = KillSwitches.shared("restore-kill-switch")
-          val app = storage match {
-            case StorageOpt.S3 =>
-              new S3App {
-                override lazy val kafkaClusterConfig: KafkaCluster          = kafkaCluster
-                override lazy val s3Config: S3                              = s3
-                override lazy val restoreConfig: Restore                    = restore
-                override lazy val maybeKillSwitch: Option[SharedKillSwitch] = Some(killSwitch)
-                override lazy val kafkaProducer: KafkaProducer = {
-                  val finalProducerSettings =
-                    (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
+        ).mapN {
+          (logbackFile, storage, kafkaCluster, propertiesConsumerSettings, bootstrapConsumerSettings, s3, restore) =>
+            logbackFile.foreach(path => MainUtils.setLogbackFile(path, LoggerFactory.getILoggerFactory))
+            lazy val logger: Logger =
+              Logger(LoggerFactory.getLogger(logClassName))
+            val killSwitch = KillSwitches.shared("restore-kill-switch")
+            val app = storage match {
+              case StorageOpt.S3 =>
+                new S3App {
+                  override lazy val kafkaClusterConfig: KafkaCluster          = kafkaCluster
+                  override lazy val s3Config: S3                              = s3
+                  override lazy val restoreConfig: Restore                    = restore
+                  override lazy val maybeKillSwitch: Option[SharedKillSwitch] = Some(killSwitch)
+                  override lazy val kafkaProducer: KafkaProducer = {
+                    val finalProducerSettings =
+                      (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
 
-                  new KafkaProducer(Some(finalProducerSettings))(actorSystem, restoreConfig)
+                    new KafkaProducer(Some(finalProducerSettings))(actorSystem, restoreConfig)
+                  }
                 }
-              }
-          }
-          initializedApp.set(Some(app))
-          Runtime.getRuntime.addShutdownHook(new Thread {
-            logger.info("Shutdown of Guardian detected")
-            killSwitch.shutdown()
-            Await.result(app.actorSystem.terminate(), 5 minutes)
-          })
-          Await.result(app.run(), Duration.Inf)
+            }
+            initializedApp.set(Some(app))
+            Runtime.getRuntime.addShutdownHook(new Thread {
+              logger.info("Shutdown of Guardian detected")
+              killSwitch.shutdown()
+              Await.result(app.actorSystem.terminate(), 5 minutes)
+            })
+            Await.result(app.run(), Duration.Inf)
         }
       }
     )

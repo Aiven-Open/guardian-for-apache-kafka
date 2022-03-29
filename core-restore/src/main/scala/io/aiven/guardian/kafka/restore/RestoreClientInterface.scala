@@ -8,7 +8,7 @@ import akka.stream.SharedKillSwitch
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.ExtensionsMethods._
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.codecs.Circe._
@@ -23,7 +23,7 @@ import scala.concurrent.Future
 
 import java.time.OffsetDateTime
 
-trait RestoreClientInterface[T <: KafkaProducerInterface] extends StrictLogging {
+trait RestoreClientInterface[T <: KafkaProducerInterface] extends LazyLogging {
   implicit val kafkaProducerInterface: T
   implicit val restoreConfig: Restore
   implicit val kafkaClusterConfig: KafkaCluster

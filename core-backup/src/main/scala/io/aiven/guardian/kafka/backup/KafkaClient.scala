@@ -12,7 +12,7 @@ import akka.kafka.scaladsl.Committer
 import akka.kafka.scaladsl.Consumer
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.SourceWithContext
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
@@ -49,7 +49,7 @@ class KafkaClient(
     ] = None
 )(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster, backupConfig: Backup)
     extends KafkaClientInterface
-    with StrictLogging {
+    with LazyLogging {
   override type CursorContext        = CommittableOffset
   override type Control              = Consumer.Control
   override type BatchedCursorContext = CommittableOffsetBatch

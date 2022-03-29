@@ -4,7 +4,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl._
 import akka.util.ByteString
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.Errors
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
@@ -27,7 +27,7 @@ import java.time.temporal._
   * @tparam T
   *   The underlying `kafkaClientInterface` type
   */
-trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
+trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
   implicit val kafkaClientInterface: T
   implicit val backupConfig: Backup
   implicit val system: ActorSystem
@@ -415,8 +415,10 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends StrictLogging {
         {
           case (_, start: Start) =>
             implicit val ec: ExecutionContext = system.dispatcher
+            logger.debug(s"Calling getCurrentUploadState with key:${start.key}")
             for {
               uploadStateResult <- getCurrentUploadState(start.key)
+              _ = logger.debug(s"Received $uploadStateResult from getCurrentUploadState with key:${start.key}")
               _ <- (uploadStateResult.previous, uploadStateResult.current) match {
                      case (Some(previous), None) =>
                        terminateSource.runWith(backupToStorageTerminateSink(previous)).map(Some.apply)

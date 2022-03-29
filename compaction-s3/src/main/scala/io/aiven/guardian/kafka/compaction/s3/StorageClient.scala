@@ -5,7 +5,7 @@ import akka.stream.alpakka.s3.BucketAccess
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Source
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.compaction.StorageInterface
 import io.aiven.guardian.kafka.compaction.s3.models.StorageConfig
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
@@ -16,7 +16,7 @@ import scala.annotation.nowarn
 class StorageClient(bucketName: String, prefix: Option[String], s3Headers: S3Headers)(implicit
     storageConfig: StorageConfig
 ) extends StorageInterface
-    with StrictLogging {
+    with LazyLogging {
 
   /** Retrieve Kafka data from a given storage source
     *

@@ -1,10 +1,20 @@
 package io.aiven.guardian.cli
 
+import ch.qos.logback.classic.joran.JoranConfigurator
+import ch.qos.logback.core.Context
+import org.slf4j.ILoggerFactory
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.concurrent.blocking
 import scala.io.StdIn
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Using
+
+import java.nio.file.Files
+import java.nio.file.Path
 
 object MainUtils {
 
@@ -29,5 +39,19 @@ object MainUtils {
     }
     promise.future
   }
+
+  /** Allows you to override the default logback.xml file with a custom one
+    * @see
+    *   https://stackoverflow.com/a/21886322/1519631
+    */
+  def setLogbackFile(path: Path, loggerContext: ILoggerFactory): Unit =
+    Using(Files.newInputStream(path)) { inputStream =>
+      val configurator = new JoranConfigurator
+      configurator.setContext(loggerContext.asInstanceOf[Context])
+      configurator.doConfigure(inputStream)
+    } match {
+      case Failure(exception) => throw exception
+      case Success(value)     => value
+    }
 
 }

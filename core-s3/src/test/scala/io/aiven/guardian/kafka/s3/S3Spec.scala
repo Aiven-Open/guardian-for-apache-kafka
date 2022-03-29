@@ -11,7 +11,7 @@ import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.testkit.TestKitBase
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.TestUtils
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
@@ -39,7 +39,7 @@ trait S3Spec
     with ScalaCheckPropertyChecks
     with ScalaFutures
     with Config
-    with StrictLogging {
+    with LazyLogging {
 
   // See https://stackoverflow.com/a/38834773
   case object RealS3Available

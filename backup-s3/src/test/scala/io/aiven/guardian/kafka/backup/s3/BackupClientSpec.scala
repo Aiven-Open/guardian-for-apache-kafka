@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.codecs.Circe._
@@ -25,7 +25,7 @@ import scala.language.postfixOps
 
 import java.time.OffsetDateTime
 
-trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with StrictLogging {
+trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with LazyLogging {
 
   val ThrottleElements: Int          = 100
   val ThrottleAmount: FiniteDuration = 1 millis
