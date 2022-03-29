@@ -9,6 +9,8 @@ import io.aiven.guardian.cli.arguments.StorageOpt
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import pureconfig.error.ConfigReaderException
 
+import java.nio.file.Path
+
 trait Options {
   val storageOpt: Opts[StorageOpt] =
     Opts.option[StorageOpt]("storage", help = "Which type of storage to persist kafka topics")
@@ -21,6 +23,9 @@ trait Options {
 
   val bootstrapServersOpt: Opts[Option[NonEmptyList[String]]] =
     Opts.options[String]("kafka-bootstrap-servers", help = "Kafka bootstrap servers").orNone
+
+  val logbackFileOpt: Opts[Option[Path]] =
+    Opts.option[Path]("logback-file", help = "Specify logback.xml configuration to override default").orNone
 
   def optionalPureConfigValue[T](value: () => T): Option[T] =
     try Some(value())

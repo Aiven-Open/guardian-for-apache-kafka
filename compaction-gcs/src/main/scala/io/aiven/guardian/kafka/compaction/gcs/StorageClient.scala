@@ -3,7 +3,7 @@ package io.aiven.guardian.kafka.compaction.gcs
 import akka.NotUsed
 import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
 import akka.stream.scaladsl.Source
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.compaction.StorageInterface
 import io.aiven.guardian.kafka.compaction.gcs.models.StorageConfig
 import io.aiven.guardian.kafka.gcs.errors.GCSErrors
@@ -13,7 +13,7 @@ import scala.annotation.nowarn
 
 class StorageClient(bucketName: String, maybePrefix: Option[String])(implicit storageConfig: StorageConfig)
     extends StorageInterface
-    with StrictLogging {
+    with LazyLogging {
 
   /** Retrieve Kafka data from a given storage source
     *

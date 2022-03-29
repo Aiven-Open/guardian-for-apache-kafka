@@ -15,7 +15,7 @@ import akka.stream.alpakka.s3.UploadPartResponse
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl._
 import akka.util.ByteString
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.BackupClientInterface
 import io.aiven.guardian.kafka.backup.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
@@ -34,7 +34,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
     s3Config: S3Config,
     s3Headers: S3Headers
 ) extends BackupClientInterface[T]
-    with StrictLogging {
+    with LazyLogging {
   import BackupClient._
 
   override def empty: () => Future[Option[MultipartUploadResult]] = () => Future.successful(None)

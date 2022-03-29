@@ -13,6 +13,7 @@ import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.s3.configs.S3
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.Await
 import scala.concurrent.Promise
@@ -108,32 +109,35 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
             case _ => "bootstrap-servers is a mandatory value that needs to be configured".invalidNel
           }
 
-        (Options.storageOpt,
+        (Options.logbackFileOpt,
+         Options.storageOpt,
          Options.kafkaClusterOpt,
          propertiesConsumerSettingsOpt,
          bootstrapConsumerSettingsOpt,
          s3Opt,
          backupOpt
-        ).mapN { (storage, kafkaCluster, propertiesConsumerSettings, bootstrapConsumerSettings, s3, backup) =>
-          val app = storage match {
-            case StorageOpt.S3 =>
-              new S3App {
-                override lazy val kafkaClusterConfig: KafkaCluster = kafkaCluster
-                override lazy val s3Config: S3                     = s3
-                override lazy val backupConfig: Backup             = backup
-                override lazy val kafkaClient: KafkaClient = {
-                  val finalConsumerSettings =
-                    (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
+        ).mapN {
+          (logbackFile, storage, kafkaCluster, propertiesConsumerSettings, bootstrapConsumerSettings, s3, backup) =>
+            logbackFile.foreach(path => MainUtils.setLogbackFile(path, LoggerFactory.getILoggerFactory))
+            val app = storage match {
+              case StorageOpt.S3 =>
+                new S3App {
+                  override lazy val kafkaClusterConfig: KafkaCluster = kafkaCluster
+                  override lazy val s3Config: S3                     = s3
+                  override lazy val backupConfig: Backup             = backup
+                  override lazy val kafkaClient: KafkaClient = {
+                    val finalConsumerSettings =
+                      (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
 
-                  new KafkaClient(Some(finalConsumerSettings))(actorSystem, kafkaClusterConfig, backupConfig)
+                    new KafkaClient(Some(finalConsumerSettings))(actorSystem, kafkaClusterConfig, backupConfig)
+                  }
                 }
-              }
-          }
-          val control = app.run()
-          val p       = Promise[Unit]()
-          initializedApp.set(Some((app, p)))
-          Await.result(MainUtils.waitForShutdownSignal(p)(app.executionContext), Duration.Inf)
-          Await.result(app.shutdown(control), 5 minutes)
+            }
+            val control = app.run()
+            val p       = Promise[Unit]()
+            initializedApp.set(Some((app, p)))
+            Await.result(MainUtils.waitForShutdownSignal(p)(app.executionContext), Duration.Inf)
+            Await.result(app.shutdown(control), 5 minutes)
         }
       }
     )
