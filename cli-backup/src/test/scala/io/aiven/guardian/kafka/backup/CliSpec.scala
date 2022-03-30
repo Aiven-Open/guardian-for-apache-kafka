@@ -2,6 +2,7 @@ package io.aiven.guardian.kafka.backup
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
+import io.aiven.guardian.kafka.Cancellable
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.{Backup => BackupConfig}
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
@@ -47,11 +48,7 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
       "1 second"
     )
 
-    Future {
-      Main.main(args.toArray)
-    }.recover { case _: Throwable =>
-      ()
-    }
+    val cancellable = Cancellable(Main.main(args.toArray))
 
     def checkUntilMainInitialized(main: io.aiven.guardian.kafka.backup.Entry): Future[(App[_], Promise[Unit])] =
       main.initializedApp.get() match {
@@ -61,7 +58,9 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
 
     val (app, promise) = checkUntilMainInitialized(Main).futureValue
 
+    cancellable.cancel()
     promise.success(())
+
     app match {
       case s3App: S3App =>
         s3App.backupConfig mustEqual BackupConfig(groupId,
