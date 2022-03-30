@@ -1,4 +1,4 @@
-package io.aiven.guardian.kafka
+package io.aiven.guardian.kafka.restore
 
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
 import io.aiven.guardian.kafka.restore.configs.{Restore => RestoreConfig}
@@ -46,12 +46,12 @@ class CliSpec extends AnyPropSpec with Matchers {
       "--single-message-per-kafka-request"
     )
 
-    try restore.Main.main(args.toArray)
+    try Main.main(args.toArray)
     catch {
       case _: Throwable =>
     }
-    restore.Main.initializedApp.get() match {
-      case Some(s3App: restore.S3App) =>
+    Main.initializedApp.get() match {
+      case Some(s3App: S3App) =>
         s3App.restoreConfig mustEqual RestoreConfig(Some(fromWhen),
                                                     Some(
                                                       Map(
