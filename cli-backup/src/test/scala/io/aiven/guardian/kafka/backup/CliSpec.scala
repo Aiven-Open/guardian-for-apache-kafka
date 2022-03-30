@@ -1,8 +1,7 @@
-package io.aiven.guardian.kafka
+package io.aiven.guardian.kafka.backup
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
-import io.aiven.guardian.kafka.backup.S3App
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.{Backup => BackupConfig}
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
@@ -49,18 +48,18 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
     )
 
     Future {
-      backup.Main.main(args.toArray)
+      Main.main(args.toArray)
     }.recover { case _: Throwable =>
       ()
     }
 
-    def checkUntilMainInitialized(main: io.aiven.guardian.kafka.backup.Entry): Future[(backup.App[_], Promise[Unit])] =
+    def checkUntilMainInitialized(main: io.aiven.guardian.kafka.backup.Entry): Future[(App[_], Promise[Unit])] =
       main.initializedApp.get() match {
         case Some((app, promise)) => Future.successful((app, promise))
         case None                 => akka.pattern.after(100 millis)(checkUntilMainInitialized(main))
       }
 
-    val (app, promise) = checkUntilMainInitialized(backup.Main).futureValue
+    val (app, promise) = checkUntilMainInitialized(Main).futureValue
 
     promise.success(())
     app match {
