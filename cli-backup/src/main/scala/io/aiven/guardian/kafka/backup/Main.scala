@@ -133,9 +133,9 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
                   }
                 }
             }
-            val control = app.run()
-            val p       = Promise[Unit]()
+            val p = Promise[Unit]()
             initializedApp.set(Some((app, p)))
+            val control = app.run()
             Await.result(MainUtils.waitForShutdownSignal(p)(app.executionContext), Duration.Inf)
             Await.result(app.shutdown(control), 5 minutes)
         }
