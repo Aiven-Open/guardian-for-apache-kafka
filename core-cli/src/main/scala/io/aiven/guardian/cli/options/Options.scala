@@ -19,7 +19,7 @@ trait Options {
     Opts.option[String]("s3-data-bucket", help = "S3 Bucket for storage of main backup data").orNone
 
   val topicsOpt: Opts[Option[NonEmptyList[String]]] =
-    Opts.options[String]("kafka-topics", help = "Kafka topics to backup").orNone
+    Opts.options[String]("kafka-topics", help = "Kafka topics to operate on").orNone
 
   val bootstrapServersOpt: Opts[Option[NonEmptyList[String]]] =
     Opts.options[String]("kafka-bootstrap-servers", help = "Kafka bootstrap servers").orNone
