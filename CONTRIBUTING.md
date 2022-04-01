@@ -85,6 +85,22 @@ are named
 in sub-directories named `target`
 * `reload` will reload sbt which is used when the [sbt][sbt-link] build definition is changed
 
+## Testing
+
+As mentioned before testing is completely handled using sbt, there are no custom shell scripts that are required to set
+up environments unless otherwise noted in
+the [testing docs](https://aiven.github.io/guardian-for-apache-kafka/testing/index.html) (typically when tests run
+against actual services such as S3)
+
+### Docker
+
+For integration tests Guardian for Apache Kafka uses docker to spin up services. For MacOS the best way to install
+docker is from the [official website](https://www.docker.com/products/docker-desktop/) whereas if you are running Linux
+then consult your distribution/package manager/repository.
+
+Since Guardian for Apache Kafka uses [testcontainers](https://www.testcontainers.org/) you don't need to worry about
+starting/stopping the docker instances manually, this is automatically handled when you run the relevant test/s.
+
 ## sbt - documentation
 
 Documentation is also built within SBT, i.e.
