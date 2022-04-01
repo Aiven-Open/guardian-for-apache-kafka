@@ -13,6 +13,7 @@ to ensure that the tool runs reliably and as desired with large datasets in diff
 * [security](security.md)
 * [ci](ci.md)
 * [doc-generation](doc-generation.md)
+* [testing](testing/index.md)
 * [application](application/index.md)
 * [backup](backup/index.md)
 * [persistence](persistence/index.md)

@@ -332,6 +332,7 @@ lazy val docs = project
       "extref.alpakka-kafka-docs.base_url" -> s"https://docs.akka.io/docs/alpakka-kafka/${binaryVersion(alpakkaVersion)}/%s",
       "extref.kafka-docs.base_url" -> s"https://kafka.apache.org/${binaryVersion(kafkaClientsVersion).replace(".", "")}/%s",
       "extref.pureconfig.base_url"          -> s"https://pureconfig.github.io/docs/",
+      "extref.scalatest.base_url"           -> s"https://www.scalatest.org/scaladoc/$scalaTestVersion/org/scalatest/%s",
       "scaladoc.io.aiven.guardian.base_url" -> s"/guardian-for-apache-kafka/${(Preprocess / siteSubdirName).value}/"
     )
   )
