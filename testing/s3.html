@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Persistence Modules · Guardian for Apache Kafka Documentation</title>
+<title>S3 - Testing · Guardian for Apache Kafka Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='docs'/>
-<link rel="canonical" href="https://github.com/aiven/akka-streams-jsonpersistence/index.html"/>
+<link rel="canonical" href="https://github.com/aiven/akka-streams-jsontesting/s3.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../js/page.js"></script>
@@ -44,7 +44,7 @@
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="../testing/index.html" class="page">Testing</a>
   <ul>
-    <li><a href="../testing/s3.html" class="page">S3 - Testing</a></li>
+    <li><a href="../testing/s3.html" class="active page">S3 - Testing</a></li>
   </ul></li>
   <li><a href="../application/index.html" class="page">Application</a></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
@@ -52,7 +52,7 @@
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
     <li><a href="../backup/design.html" class="page">Design</a></li>
   </ul></li>
-  <li><a href="../persistence/index.html" class="active page">Persistence Modules</a>
+  <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
@@ -104,7 +104,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="../testing/index.html" class="page">Testing</a>
   <ul>
-    <li><a href="../testing/s3.html" class="page">S3 - Testing</a></li>
+    <li><a href="../testing/s3.html" class="active page">S3 - Testing</a></li>
   </ul></li>
   <li><a href="../application/index.html" class="page">Application</a></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
@@ -112,7 +112,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
     <li><a href="../backup/design.html" class="page">Design</a></li>
   </ul></li>
-  <li><a href="../persistence/index.html" class="active page">Persistence Modules</a>
+  <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
@@ -137,7 +137,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="../index.html">Guardian for Apache Kafka Documentation</a></li>
-  <li>Persistence Modules</li>
+  <li><a href="../testing/index.html">Testing</a></li>
+  <li>S3 - Testing</li>
 </ul>
 </div>
 </div>
@@ -145,30 +146,38 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#persistence-modules" name="persistence-modules" class="anchor"><span class="anchor-link"></span></a>Persistence Modules</h1>
-<p>Guardian for Apache Kafka has a modular architecture that provides support for different persistence backups.</p>
-<div class="toc ">
-<ul>
-  <li><a href="../persistence/design.html" class="page">Design</a>
-  <ul>
-    <li><a href="../persistence/design.html#backupclientinterface" class="header">BackupClientInterface</a></li>
-    <li><a href="../persistence/design.html#restoreclientinterface" class="header">RestoreClientInterface</a></li>
-  </ul></li>
-  <li><a href="../persistence/s3/index.html" class="page">S3</a>
-  <ul>
-    <li><a href="../persistence/s3/configuration.html" class="page">S3</a></li>
-  </ul></li>
-</ul>
-</div>
+<h1><a href="#s3-testing" name="s3-testing" class="anchor"><span class="anchor-link"></span></a>S3 - Testing</h1>
+<p>For tests that run against the <a href="https://aws.amazon.com/s3/">AWS S3 service</a> you need to provide the relevant credentials to S3. The most typical way to provide these credentials is with the usage of environment variables, e.g.</p>
+<pre class="prettyprint"><code class="language-shell">export ALPAKKA_S3_AWS_CREDENTIALS_PROVIDER=static
+export ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID=&quot;my key&quot;
+export ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY=&quot;my secret&quot;
+export ALPAKKA_S3_REGION_PROVIDER=static
+export ALPAKKA_S3_REGION_DEFAULT_REGION=eu-central-1
+</code></pre>
+<h2><a href="#tagging-s3-tests" name="tagging-s3-tests" class="anchor"><span class="anchor-link"></span></a>Tagging S3 Tests</h2>
+<p>Due to a current limitation where there is no way to expose Github secrets to PR&rsquo;s made from external forks, tests which run against S3 need to be <a href="https://www.scalatest.org/scaladoc/3.2.11/org/scalatest/Tag.html">Tagged</a> using <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/core-s3/src/test/scala/io/aiven/guardian/kafka/s3/S3Spec.scala#L45-L48">RealS3Available</a> .</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/persistence/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/testing/s3.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="../persistence/design.html">Design</a></p>
+<p><strong>Next:</strong> <a href="../application/index.html">Application</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../testing/s3.html#s3-testing" class="header">S3 - Testing</a>
+  <ul>
+    <li><a href="../testing/s3.html#tagging-s3-tests" class="header">Tagging S3 Tests</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 

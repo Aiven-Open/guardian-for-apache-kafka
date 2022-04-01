@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Persistence Modules · Guardian for Apache Kafka Documentation</title>
+<title>Testing · Guardian for Apache Kafka Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='docs'/>
-<link rel="canonical" href="https://github.com/aiven/akka-streams-jsonpersistence/index.html"/>
+<link rel="canonical" href="https://github.com/aiven/akka-streams-jsontesting/index.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../js/page.js"></script>
@@ -42,7 +42,7 @@
   <li><a href="../security.html" class="page">Security</a></li>
   <li><a href="../ci.html" class="page">CI - Continuous Integration</a></li>
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
-  <li><a href="../testing/index.html" class="page">Testing</a>
+  <li><a href="../testing/index.html" class="active page">Testing</a>
   <ul>
     <li><a href="../testing/s3.html" class="page">S3 - Testing</a></li>
   </ul></li>
@@ -52,7 +52,7 @@
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
     <li><a href="../backup/design.html" class="page">Design</a></li>
   </ul></li>
-  <li><a href="../persistence/index.html" class="active page">Persistence Modules</a>
+  <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
@@ -102,7 +102,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="../security.html" class="page">Security</a></li>
   <li><a href="../ci.html" class="page">CI - Continuous Integration</a></li>
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
-  <li><a href="../testing/index.html" class="page">Testing</a>
+  <li><a href="../testing/index.html" class="active page">Testing</a>
   <ul>
     <li><a href="../testing/s3.html" class="page">S3 - Testing</a></li>
   </ul></li>
@@ -112,7 +112,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
     <li><a href="../backup/design.html" class="page">Design</a></li>
   </ul></li>
-  <li><a href="../persistence/index.html" class="active page">Persistence Modules</a>
+  <li><a href="../persistence/index.html" class="page">Persistence Modules</a>
   <ul>
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
@@ -137,7 +137,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="../index.html">Guardian for Apache Kafka Documentation</a></li>
-  <li>Persistence Modules</li>
+  <li>Testing</li>
 </ul>
 </div>
 </div>
@@ -145,30 +145,48 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#persistence-modules" name="persistence-modules" class="anchor"><span class="anchor-link"></span></a>Persistence Modules</h1>
-<p>Guardian for Apache Kafka has a modular architecture that provides support for different persistence backups.</p>
+<h1><a href="#testing" name="testing" class="anchor"><span class="anchor-link"></span></a>Testing</h1>
+<p>As much as possible, Guardian for Apache Kafka aims to provide as little friction as possible to run tests (ideally you should be able to run tests directly and only in SBT). As an example this means avoiding handwritten shell scripts to set up environments since this typically doesn&rsquo;t play well with IDE integrations such as <a href="https://www.jetbrains.com/idea/">Intellij IDEA</a> or <a href="https://scalameta.org/metals/">Metals</a> integrated SBT test. runner.</p>
+<h2><a href="#scalatest" name="scalatest" class="anchor"><span class="anchor-link"></span></a>ScalaTest</h2>
+<p>Guardian for Apache Kafka uses <a href="https://www.scalatest.org/">scalatest</a> as its testing framework. The primary reasons for using this testing framework are</p>
+<ul>
+  <li>It&rsquo;s the most supported testing framework in Scala, so much so that its considered a critical dependency whenever a  new Scala release is made</li>
+  <li>It provides very handy utilities for testing asynchronous code, for example a  <a href="https://www.scalatest.org/scaladoc/3.2.11/org/scalatest/concurrent/AbstractPatienceConfiguration$PatienceConfig.html">PatienceConfig</a>  that provides efficient polling of Scala futures with configurable scalable timeouts and intervals.</li>
+  <li>Akka provides <a href="https://doc.akka.io/docs/akka/2.6/testing.html#asynchronous-testing-testkit">Testkit</a> with direct integration into ScalaTest  for easy testing of akka-streams.</li>
+</ul>
+<h2><a href="#testcontainers" name="testcontainers" class="anchor"><span class="anchor-link"></span></a>TestContainers</h2>
+<p><a href="https://www.testcontainers.org/">testcontainers</a> along with the Scala wrapper <a href="https://github.com/testcontainers/testcontainers-scala">testcontainers-scala</a> is used to automate the spinning up of <a href="https://www.docker.com/">docker</a> whenever the relevant test is run. As long as you have docker installed on your system you souldn&rsquo;t have to worry about anhything.</p>
 <div class="toc ">
 <ul>
-  <li><a href="../persistence/design.html" class="page">Design</a>
+  <li><a href="../testing/s3.html" class="page">S3 - Testing</a>
   <ul>
-    <li><a href="../persistence/design.html#backupclientinterface" class="header">BackupClientInterface</a></li>
-    <li><a href="../persistence/design.html#restoreclientinterface" class="header">RestoreClientInterface</a></li>
-  </ul></li>
-  <li><a href="../persistence/s3/index.html" class="page">S3</a>
-  <ul>
-    <li><a href="../persistence/s3/configuration.html" class="page">S3</a></li>
+    <li><a href="../testing/s3.html#tagging-s3-tests" class="header">Tagging S3 Tests</a></li>
   </ul></li>
 </ul>
 </div>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/persistence/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/testing/index.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="../persistence/design.html">Design</a></p>
+<p><strong>Next:</strong> <a href="../testing/s3.html">S3 - Testing</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../testing/index.html#testing" class="header">Testing</a>
+  <ul>
+    <li><a href="../testing/index.html#scalatest" class="header">ScalaTest</a></li>
+    <li><a href="../testing/index.html#testcontainers" class="header">TestContainers</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 
