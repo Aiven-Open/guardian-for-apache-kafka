@@ -337,7 +337,7 @@ lazy val docs = project
     )
   )
 
-ThisBuild / homepage := Some(url("https://github.com/aiven/akka-streams-json"))
+ThisBuild / homepage := Some(url("https://github.com/aiven/guardian-for-apache-kafka"))
 
 ThisBuild / scmInfo := Some(
   ScmInfo(url("https://github.com/aiven/guardian-for-apache-kafka"),
