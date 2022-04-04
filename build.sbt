@@ -13,6 +13,7 @@ val akkaHttpVersion            = "10.2.9"
 val alpakkaKafkaVersion        = "3.0.0"
 val kafkaClientsVersion        = "3.1.0"
 val alpakkaVersion             = "3.0.4"
+val futilesVersion             = "2.0.2"
 val quillJdbcMonixVersion      = "3.7.2"
 val postgresqlJdbcVersion      = "42.3.3"
 val scalaLoggingVersion        = "3.9.4"
@@ -123,6 +124,7 @@ lazy val core = project
       "com.github.pureconfig"      %% "pureconfig"                     % pureConfigVersion,
       "ch.qos.logback"              % "logback-classic"                % logbackClassicVersion,
       "org.mdedetrich"             %% "akka-stream-circe"              % akkaStreamsJson,
+      "com.markatta"               %% "futiles"                        % futilesVersion,
       "com.typesafe.akka"          %% "akka-actor"                     % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Test,
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,

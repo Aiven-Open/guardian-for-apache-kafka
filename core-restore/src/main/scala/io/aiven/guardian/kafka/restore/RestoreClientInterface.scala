@@ -15,6 +15,7 @@ import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.restore.configs.Restore
+import markatta.futiles.Traversal.traverseSequentially
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.typelevel.jawn.AsyncParser
 
@@ -103,7 +104,7 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends LazyLogging {
 
     for {
       keys <- finalKeys
-      _    <- Utils.runSequentially(keys.map(key => () => restoreKey(key)))
+      _    <- traverseSequentially(keys)(restoreKey)
     } yield Done
   }
 
