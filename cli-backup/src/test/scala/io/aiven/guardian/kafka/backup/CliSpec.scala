@@ -2,10 +2,10 @@ package io.aiven.guardian.kafka.backup
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
-import io.aiven.guardian.kafka.Cancellable
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.{Backup => BackupConfig}
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
+import markatta.futiles.CancellableFuture
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.propspec.AnyPropSpecLike
@@ -48,7 +48,9 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
       "1 second"
     )
 
-    val cancellable = Cancellable(Main.main(args.toArray))
+    val cancellable = CancellableFuture {
+      Main.main(args.toArray)
+    }
 
     def checkUntilMainInitialized(main: io.aiven.guardian.kafka.backup.Entry): Future[(App[_], Promise[Unit])] =
       main.initializedApp.get() match {
