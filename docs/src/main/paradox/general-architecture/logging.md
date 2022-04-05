@@ -7,8 +7,8 @@ the `logback.xml` in your `/src/main/resources` folder). Note that the Guardian 
 provide.
 
 If you want examples of `logback.xml` configuration you can have a look at the
-official [logback page](https://logback.qos.ch/manual/configuration.html) but you can also the existing `logback.xml`
-use for the [cli](https://github.com/aiven/guardian-for-apache-kafka/blob/main/core-cli/src/main/resources/logback.xml)
+official [logback page](https://logback.qos.ch/manual/configuration.html) but you can also use existing `logback.xml`'s
+from either the [cli](https://github.com/aiven/guardian-for-apache-kafka/blob/main/core-cli/src/main/resources/logback.xml)
 or the
 [tests](https://github.com/aiven/guardian-for-apache-kafka/blob/main/core/src/test/resources/logback.xml) as a
 reference.
