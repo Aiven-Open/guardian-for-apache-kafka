@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Restore · Guardian for Apache Kafka Documentation</title>
+<title>Design · Guardian for Apache Kafka Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='docs'/>
-<link rel="canonical" href="https://github.com/aiven/guardian-for-apache-kafkarestore/index.html"/>
+<link rel="canonical" href="https://github.com/aiven/guardian-for-apache-kafkaapplication/design.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../js/page.js"></script>
@@ -52,7 +52,7 @@
   </ul></li>
   <li><a href="../application/index.html" class="page">Application</a>
   <ul>
-    <li><a href="../application/design.html" class="page">Design</a></li>
+    <li><a href="../application/design.html" class="active page">Design</a></li>
     <li><a href="../application/packaging.html" class="page">Packaging</a></li>
     <li><a href="../application/logging.html" class="page">Logging</a></li>
   </ul></li>
@@ -66,7 +66,7 @@
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
   </ul></li>
-  <li><a href="../restore/index.html" class="active page">Restore</a>
+  <li><a href="../restore/index.html" class="page">Restore</a>
   <ul>
     <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
@@ -121,7 +121,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   </ul></li>
   <li><a href="../application/index.html" class="page">Application</a>
   <ul>
-    <li><a href="../application/design.html" class="page">Design</a></li>
+    <li><a href="../application/design.html" class="active page">Design</a></li>
     <li><a href="../application/packaging.html" class="page">Packaging</a></li>
     <li><a href="../application/logging.html" class="page">Logging</a></li>
   </ul></li>
@@ -135,7 +135,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
   </ul></li>
-  <li><a href="../restore/index.html" class="active page">Restore</a>
+  <li><a href="../restore/index.html" class="page">Restore</a>
   <ul>
     <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
@@ -155,7 +155,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="../index.html">Guardian for Apache Kafka Documentation</a></li>
-  <li>Restore</li>
+  <li><a href="../application/index.html">Application</a></li>
+  <li>Design</li>
 </ul>
 </div>
 </div>
@@ -163,43 +164,15 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#restore" name="restore" class="anchor"><span class="anchor-link"></span></a>Restore</h1>
-<p>The restore module is responsible for streaming data from a backup storage location into a fresh new cluster in the circumstance of a disaster recovery. The restore is able to work in any format of backed up files created by Guardian&rsquo;s restore.</p>
-<table class="project-info">
-<tr><th colspan="2">Project Info: Core Restore</th></tr>
-  <tr><th>Artifact</th><td><div>aiven.io</div>
-  <div>guardian-for-apache-kafka-core-restore</div>
-  <div>0.1.0-SNAPSHOT</div></td></tr>
-  <tr><th>JDK versions</th><td><div>Adopt OpenJDK 11</div><div>Adopt OpenJDK 17</div></td></tr>
-  <tr><th>Scala versions</th><td>2.12.15, 2.13.8</td></tr>
-  <tr><th>JPMS module name</th><td>io.aiven.guardian.kafka.restore</td></tr>
-  <tr><th>License</th><td><div><a href="https://opensource.org/licenses/Apache-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></div>
-  </td></tr>
-  
-  <tr><th>Home page</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka">https://github.com/aiven/guardian-for-apache-kafka</a></td></tr>
-  <tr><th>API documentation</th><td>
-  <div><a href="https://aiven.github.io/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/restore/index.html" target="_blank" rel="noopener noreferrer">API (Scaladoc)</a></div>
-  </td></tr>
-  <tr><th>Release notes</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka/releases" target="_blank" rel="noopener noreferrer">GitHub releases</a></td></tr>
-  <tr><th>Issues</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka/issues" target="_blank" rel="noopener noreferrer">Github issues</a></td></tr>
-  <tr><th>Sources</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka" target="_blank" rel="noopener noreferrer">https://github.com/aiven/guardian-for-apache-kafka</a></td></tr>
-</table>
-
-<div class="toc ">
-<ul>
-  <li><a href="../restore/configuration.html" class="page">Configuration</a>
-  <ul>
-    <li><a href="../restore/configuration.html#reference" class="header">Reference</a></li>
-    <li><a href="../restore/configuration.html#explanation" class="header">Explanation</a></li>
-  </ul></li>
-</ul>
-</div>
+<h1><a href="#design" name="design" class="anchor"><span class="anchor-link"></span></a>Design</h1>
+<p>Each application is contained within a corresponding sbt submodule, i.e. the application for <code>backup</code> is contained within the <code>cli-backup</code> sbt submodule. The <code>core-cli</code> sbt submodule contains common cli arguments (i.e. <code>kafka-topics</code>).</p>
+<p>Scala packaging has been disabled for these submodules which means that when publishing/packaging Guardian it won&rsquo;t push any built <code>.jar</code> files. This is because its unnecessary since you are meant to run these applications as a binary and not include it as a library. By the same token this also means that the cli modules are built with global inlining using <code>&quot;-opt-inline-from:**&quot;</code>, see <a href="https://www.lightbend.com/blog/scala-inliner-optimizer">here</a> for more info.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/restore/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/application/design.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="../restore/configuration.html">Configuration</a></p>
+<p><strong>Next:</strong> <a href="../application/packaging.html">Packaging</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>

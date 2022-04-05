@@ -42,11 +42,20 @@
   <li><a href="../security.html" class="page">Security</a></li>
   <li><a href="../ci.html" class="page">CI - Continuous Integration</a></li>
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
+  <li><a href="../general-architecture/index.html" class="page">General Architecture</a>
+  <ul>
+    <li><a href="../general-architecture/logging.html" class="page">Logging</a></li>
+  </ul></li>
   <li><a href="../testing/index.html" class="page">Testing</a>
   <ul>
     <li><a href="../testing/s3.html" class="page">S3 - Testing</a></li>
   </ul></li>
-  <li><a href="../application/index.html" class="active page">Application</a></li>
+  <li><a href="../application/index.html" class="active page">Application</a>
+  <ul>
+    <li><a href="../application/design.html" class="page">Design</a></li>
+    <li><a href="../application/packaging.html" class="page">Packaging</a></li>
+    <li><a href="../application/logging.html" class="page">Logging</a></li>
+  </ul></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
@@ -102,11 +111,20 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="../security.html" class="page">Security</a></li>
   <li><a href="../ci.html" class="page">CI - Continuous Integration</a></li>
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
+  <li><a href="../general-architecture/index.html" class="page">General Architecture</a>
+  <ul>
+    <li><a href="../general-architecture/logging.html" class="page">Logging</a></li>
+  </ul></li>
   <li><a href="../testing/index.html" class="page">Testing</a>
   <ul>
     <li><a href="../testing/s3.html" class="page">S3 - Testing</a></li>
   </ul></li>
-  <li><a href="../application/index.html" class="active page">Application</a></li>
+  <li><a href="../application/index.html" class="active page">Application</a>
+  <ul>
+    <li><a href="../application/design.html" class="page">Design</a></li>
+    <li><a href="../application/packaging.html" class="page">Packaging</a></li>
+    <li><a href="../application/logging.html" class="page">Logging</a></li>
+  </ul></li>
   <li><a href="../backup/index.html" class="page">Backup</a>
   <ul>
     <li><a href="../backup/configuration.html" class="page">Configuration</a></li>
@@ -152,61 +170,22 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li>backup: A binary which when executed allows you to restore an existing backup.</li>
 </ul>
 <p>The CLI follows POSIX guidelines which means you can use <code>--help</code> as an argument to provide information on all of the parameters.</p>
-<h2><a href="#package-formats" name="package-formats" class="anchor"><span class="anchor-link"></span></a>Package formats</h2>
-<p>Guardian is currently packaged using <a href="https://github.com/sbt/sbt-native-packager">sbt-native-packager</a> to provide the following formats by using the sbt shell.</p>
+<div class="toc ">
 <ul>
-  <li><code>rpm</code>
-    <ul>
-      <li>restore: <code>cliRestore/rpm:packageBin</code>. Created <code>rpm</code> file will be contained  in <code>cli-restore/target/rpm/RPMS/noarch/</code></li>
-      <li>backup: <code>cliBackup/rpm:packageBin</code>. Created <code>rpm</code> file will be contained in <code>cli-backup/target/rpm/RPMS/noarch/</code>  NOTE: In order to build packages you need to have the <a href="https://rpm.org/">rpm-tools</a> (specifically <code>rpmbuild</code>)  installed and available on <code>PATH</code>. Please consult your Linux distribution for more info</li>
-    </ul>
-  </li>
-  <li><code>zip</code>
-    <ul>
-      <li>restore: <code>cliRestore/universal:packageBin</code>. Created <code>zip</code> file will be contained  in <code>cli-restore/target/universal/</code></li>
-      <li>backup: <code>cliBackup/universal:packageBin</code>. Created <code>zip</code> file will be contained in <code>cli-backup/target/universal/</code></li>
-    </ul>
-  </li>
-  <li><code>tar</code>
-    <ul>
-      <li>restore: <code>cliRestore/universal:packageZipTarball</code>. Created <code>tar</code> file will be contained  in <code>cli-restore/target/universal/</code></li>
-      <li>backup: <code>cliBackup/universal:packageZipTarball</code>. Created <code>tar</code> file will be contained  in <code>cli-backup/target/universal/</code></li>
-    </ul>
-  </li>
-  <li><code>Xz</code>
-    <ul>
-      <li>restore: <code>cliRestore/universal:packageXzTarball</code>. Created <code>xz</code> file will be contained  in <code>cli-restore/target/universal/</code></li>
-      <li>backup: <code>cliBackup/universal:packageXzTarball</code>. Created <code>xz</code> file will be contained  in <code>cli-backup/target/universal/</code></li>
-    </ul>
-  </li>
+  <li><a href="../application/design.html" class="page">Design</a></li>
+  <li><a href="../application/packaging.html" class="page">Packaging</a></li>
+  <li><a href="../application/logging.html" class="page">Logging</a></li>
 </ul>
-<p>Note that for these packages formats you need to have JRE installed on your system to run the package. For more details about packaging read the <a href="https://sbt-native-packager.readthedocs.io/en/latest/">docs</a></p>
-<h2><a href="#design" name="design" class="anchor"><span class="anchor-link"></span></a>Design</h2>
-<p>Each application is contained within a corresponding sbt submodule, i.e. the application for <code>backup</code> is contained within the <code>cli-backup</code> sbt submodule. The <code>core-cli</code> sbt submodule contains common cli arguments (i.e. <code>kafka-topics</code>).</p>
-<p>Scala packaging has been disabled for these submodules which means that when publishing/packaging Guardian it won&rsquo;t push any built <code>.jar</code> files. This is because its unnecessary since you are meant to run these applications as a binary and not include it as a library. By the same token this also means that the cli modules are built with global inlining using <code>&quot;-opt-inline-from:**&quot;</code>, see <a href="https://www.lightbend.com/blog/scala-inliner-optimizer">here</a> for more info.</p>
+</div>
 <div class="source-github">
 The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/application/index.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="../backup/index.html">Backup</a></p>
+<p><strong>Next:</strong> <a href="../application/design.html">Design</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
-<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
-<div class="page-nav">
-<div class="nav-title">On this page:</div>
-<div class="nav-toc">
-<ul>
-  <li><a href="../application/index.html#application" class="header">Application</a>
-  <ul>
-    <li><a href="../application/index.html#package-formats" class="header">Package formats</a></li>
-    <li><a href="../application/index.html#design" class="header">Design</a></li>
-  </ul></li>
-</ul>
-</div>
-</div>
-</nav>
 </div>
 </div>
 

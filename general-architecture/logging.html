@@ -2,11 +2,11 @@
 <html class="no-js" lang="en">
 
 <head>
-<title>Restore · Guardian for Apache Kafka Documentation</title>
+<title>Logging · Guardian for Apache Kafka Documentation</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content='docs'/>
-<link rel="canonical" href="https://github.com/aiven/guardian-for-apache-kafkarestore/index.html"/>
+<link rel="canonical" href="https://github.com/aiven/guardian-for-apache-kafkageneral-architecture/logging.html"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../lib/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="../js/page.js"></script>
@@ -44,7 +44,7 @@
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="../general-architecture/index.html" class="page">General Architecture</a>
   <ul>
-    <li><a href="../general-architecture/logging.html" class="page">Logging</a></li>
+    <li><a href="../general-architecture/logging.html" class="active page">Logging</a></li>
   </ul></li>
   <li><a href="../testing/index.html" class="page">Testing</a>
   <ul>
@@ -66,7 +66,7 @@
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
   </ul></li>
-  <li><a href="../restore/index.html" class="active page">Restore</a>
+  <li><a href="../restore/index.html" class="page">Restore</a>
   <ul>
     <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
@@ -113,7 +113,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
   <li><a href="../doc-generation.html" class="page">Document Generation</a></li>
   <li><a href="../general-architecture/index.html" class="page">General Architecture</a>
   <ul>
-    <li><a href="../general-architecture/logging.html" class="page">Logging</a></li>
+    <li><a href="../general-architecture/logging.html" class="active page">Logging</a></li>
   </ul></li>
   <li><a href="../testing/index.html" class="page">Testing</a>
   <ul>
@@ -135,7 +135,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
     <li><a href="../persistence/design.html" class="page">Design</a></li>
     <li><a href="../persistence/s3/index.html" class="page">S3</a></li>
   </ul></li>
-  <li><a href="../restore/index.html" class="active page">Restore</a>
+  <li><a href="../restore/index.html" class="page">Restore</a>
   <ul>
     <li><a href="../restore/configuration.html" class="page">Configuration</a></li>
   </ul></li>
@@ -155,7 +155,8 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="nav-breadcrumbs">
 <ul>
   <li><a href="../index.html">Guardian for Apache Kafka Documentation</a></li>
-  <li>Restore</li>
+  <li><a href="../general-architecture/index.html">General Architecture</a></li>
+  <li>Logging</li>
 </ul>
 </div>
 </div>
@@ -163,46 +164,37 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 
 <div class="page-content row">
 <div class="small-12 large-9 column" id="docs">
-<h1><a href="#restore" name="restore" class="anchor"><span class="anchor-link"></span></a>Restore</h1>
-<p>The restore module is responsible for streaming data from a backup storage location into a fresh new cluster in the circumstance of a disaster recovery. The restore is able to work in any format of backed up files created by Guardian&rsquo;s restore.</p>
-<table class="project-info">
-<tr><th colspan="2">Project Info: Core Restore</th></tr>
-  <tr><th>Artifact</th><td><div>aiven.io</div>
-  <div>guardian-for-apache-kafka-core-restore</div>
-  <div>0.1.0-SNAPSHOT</div></td></tr>
-  <tr><th>JDK versions</th><td><div>Adopt OpenJDK 11</div><div>Adopt OpenJDK 17</div></td></tr>
-  <tr><th>Scala versions</th><td>2.12.15, 2.13.8</td></tr>
-  <tr><th>JPMS module name</th><td>io.aiven.guardian.kafka.restore</td></tr>
-  <tr><th>License</th><td><div><a href="https://opensource.org/licenses/Apache-2.0" target="_blank" rel="noopener noreferrer">Apache-2.0</a></div>
-  </td></tr>
-  
-  <tr><th>Home page</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka">https://github.com/aiven/guardian-for-apache-kafka</a></td></tr>
-  <tr><th>API documentation</th><td>
-  <div><a href="https://aiven.github.io/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/restore/index.html" target="_blank" rel="noopener noreferrer">API (Scaladoc)</a></div>
-  </td></tr>
-  <tr><th>Release notes</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka/releases" target="_blank" rel="noopener noreferrer">GitHub releases</a></td></tr>
-  <tr><th>Issues</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka/issues" target="_blank" rel="noopener noreferrer">Github issues</a></td></tr>
-  <tr><th>Sources</th><td><a href="https://github.com/aiven/guardian-for-apache-kafka" target="_blank" rel="noopener noreferrer">https://github.com/aiven/guardian-for-apache-kafka</a></td></tr>
-</table>
-
-<div class="toc ">
-<ul>
-  <li><a href="../restore/configuration.html" class="page">Configuration</a>
-  <ul>
-    <li><a href="../restore/configuration.html#reference" class="header">Reference</a></li>
-    <li><a href="../restore/configuration.html#explanation" class="header">Explanation</a></li>
-  </ul></li>
-</ul>
-</div>
+<h1><a href="#logging" name="logging" class="anchor"><span class="anchor-link"></span></a>Logging</h1>
+<p>Guardian for Apache Kafka uses <a href="https://logback.qos.ch/index.html">logback</a> to perform logging. This means if you are using the modules as libraries you need to provide a <code>logback.xml</code> in your classpath (typically this is done by putting the <code>logback.xml</code> in your <code>/src/main/resources</code> folder). Note that the Guardian modules do not provide a default <code>logback.xml</code> for deployed artifacts since this is typically the responsibility of an application to configure and provide.</p>
+<p>If you want examples of <code>logback.xml</code> configuration you can have a look at the official <a href="https://logback.qos.ch/manual/configuration.html">logback page</a> but you can also the existing <code>logback.xml</code> use for the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/core-cli/src/main/resources/logback.xml">cli</a> or the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/core/src/test/resources/logback.xml">tests</a> as a reference.</p><div class="callout warning "><div class="callout-title">Warning</div>
+<p>As documented at <a href="https://doc.akka.io/docs/akka/2.6/logging.html#logback-configuration">akka logback configuration</a> it is highly recommended to use an <code>AsyncAppender</code> in your configuration as this offsets the logging to a background thread otherwise you will end up blocking the core akka/akka-streams library whenever a log is made.</p></div>
+<h2><a href="#logback-adapter-for-akka-akka-streams" name="logback-adapter-for-akka-akka-streams" class="anchor"><span class="anchor-link"></span></a>Logback adapter for akka/akka-streams</h2>
+<p>By default, akka/akka-streams uses its own asynchronous logger however they provide a <a href="https://doc.akka.io/docs/akka/2.6/logging.html#slf4j">logging adapter</a> which has already been preconfigured for use in Guardian.</p>
+<h2><a href="#cli-application" name="cli-application" class="anchor"><span class="anchor-link"></span></a>CLI/Application</h2>
+<p>Note that unlike the core libraries, the CLI application does provide a default <code>logback.xml</code>. For more details read <a href="../application/logging.html">application logging</a>.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/restore/index.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/general-architecture/logging.md">here</a>.
 </div>
 
 <div class="nav-next">
-<p><strong>Next:</strong> <a href="../restore/configuration.html">Configuration</a></p>
+<p><strong>Next:</strong> <a href="../testing/index.html">Testing</a></p>
 </div>
 </div>
 <div class="large-3 show-for-large column" data-sticky-container>
+<nav class="sidebar sticky" data-sticky data-anchor="docs" data-sticky-on="large">
+<div class="page-nav">
+<div class="nav-title">On this page:</div>
+<div class="nav-toc">
+<ul>
+  <li><a href="../general-architecture/logging.html#logging" class="header">Logging</a>
+  <ul>
+    <li><a href="../general-architecture/logging.html#logback-adapter-for-akka-akka-streams" class="header">Logback adapter for akka/akka-streams</a></li>
+    <li><a href="../general-architecture/logging.html#cli-application" class="header">CLI/Application</a></li>
+  </ul></li>
+</ul>
+</div>
+</div>
+</nav>
 </div>
 </div>
 
