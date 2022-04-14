@@ -347,6 +347,8 @@ ThisBuild / scmInfo := Some(
   )
 )
 
+ThisBuild / startYear := Some(2021)
+
 ThisBuild / developers := List(
   Developer("jlprat", "Josep Prat", "josep.prat@aiven.io", url("https://github.com/jlprat")),
   Developer("mdedetrich", "Matthew de Detrich", "matthew.dedetrich@aiven.io", url("https://github.com/mdedetrich")),
