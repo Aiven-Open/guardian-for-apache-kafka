@@ -18,5 +18,5 @@ class MinioContainer(accessKey: String, secretKey: String)
     ) {
 
   def getHostAddress: String =
-    s"http://${container.getContainerIpAddress}:${container.getMappedPort(9000)}"
+    s"http://${container.getHost}:${container.getMappedPort(9000)}"
 }
