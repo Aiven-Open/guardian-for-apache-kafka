@@ -32,7 +32,7 @@ trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with 
   val ThrottleElements: Int          = 100
   val ThrottleAmount: FiniteDuration = 1 millis
 
-  property("backup method completes flow correctly for all valid Kafka events", RealS3Available) {
+  property("backup method completes flow correctly for all valid Kafka events") {
     forAll(kafkaDataWithTimePeriodsGen(), s3ConfigGen(useVirtualDotHost, bucketPrefix)) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
         logger.info(s"Data bucket is ${s3Config.dataBucket}")

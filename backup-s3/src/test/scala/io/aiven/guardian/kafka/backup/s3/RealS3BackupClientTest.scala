@@ -96,7 +96,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }).runWith(Sink.seq)
   }
 
-  property("basic flow without interruptions using PeriodFromFirst works correctly", RealS3Available) {
+  property("basic flow without interruptions using PeriodFromFirst works correctly") {
     forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -173,7 +173,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property("suspend/resume using PeriodFromFirst creates separate object after resume point", RealS3Available) {
+  property("suspend/resume using PeriodFromFirst creates separate object after resume point") {
     forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -292,7 +292,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property("suspend/resume for same object using ChronoUnitSlice works correctly", RealS3Available) {
+  property("suspend/resume for same object using ChronoUnitSlice works correctly") {
     forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -387,10 +387,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property(
-    "Backup works with multiple keys",
-    RealS3Available
-  ) {
+  property("Backup works with multiple keys") {
     forAll(kafkaDataWithTimePeriodsGen(min = 30000, max = 30000),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -470,10 +467,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property(
-    "Concurrent backups using real Kafka cluster with a single key",
-    RealS3Available
-  ) {
+  property("Concurrent backups using real Kafka cluster with a single key") {
     forAll(
       kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
       s3ConfigGen(useVirtualDotHost, bucketPrefix),
@@ -595,10 +589,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property(
-    "Concurrent backups using real Kafka cluster with a multiple keys",
-    RealS3Available
-  ) {
+  property("Concurrent backups using real Kafka cluster with a multiple keys") {
     forAll(
       kafkaDataWithTimePeriodsGen(min = 30000, max = 30000),
       s3ConfigGen(useVirtualDotHost, bucketPrefix),

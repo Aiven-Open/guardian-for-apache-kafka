@@ -2,15 +2,12 @@ package io.aiven.guardian.kafka.s3
 
 import com.softwaremill.diffx.ShowConfig
 import com.typesafe.scalalogging.LazyLogging
-import io.aiven.guardian.kafka.TestUtils
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.pekko.PekkoHttpTestKit
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.pekko
 import org.scalactic.Prettifier
 import org.scalactic.SizeLimit
-import org.scalatest.Ignore
-import org.scalatest.Tag
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.propspec.AnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -45,12 +42,6 @@ trait S3Spec
     with ScalaFutures
     with Config
     with LazyLogging {
-
-  // See https://stackoverflow.com/a/38834773
-  case object RealS3Available
-      extends Tag(
-        if (TestUtils.checkEnvVarAvailable("ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID")) "" else classOf[Ignore].getName
-      )
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(20 minutes, 100 millis)
