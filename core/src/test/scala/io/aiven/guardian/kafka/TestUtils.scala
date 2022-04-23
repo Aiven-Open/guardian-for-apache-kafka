@@ -98,15 +98,4 @@ object TestUtils {
     recurseUntilHitTimeUnit(previousEnum, buffer)
   }
 
-  def checkEnvVarAvailable(env: String): Boolean =
-    try
-      sys.env.get(env) match {
-        case Some(value) if value.isBlank => false
-        case Some(_)                      => true
-        case None                         => false
-      }
-    catch {
-      case _: NoSuchElementException => false
-    }
-
 }
