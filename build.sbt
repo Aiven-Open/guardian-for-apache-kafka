@@ -223,7 +223,8 @@ lazy val cliBackup = project
   .in(file("cli-backup"))
   .settings(
     cliSettings,
-    name := s"$baseName-cli-backup"
+    name                 := s"$baseName-cli-backup",
+    executableScriptName := "guardian-backup"
   )
   .dependsOn(coreCli   % "compile->compile;test->test",
              backupS3  % "compile->compile;test->test",
@@ -262,7 +263,8 @@ lazy val cliCompaction = project
   .in(file("cli-compaction"))
   .settings(
     cliSettings,
-    name := s"$baseName-cli-compaction"
+    name                 := s"$baseName-cli-compaction",
+    executableScriptName := "guardian-compaction"
   )
   .dependsOn(coreCli, compactionS3, compactionGCS)
   .enablePlugins(JavaAppPackaging)
@@ -297,7 +299,8 @@ lazy val cliRestore = project
   .in(file("cli-restore"))
   .settings(
     cliSettings,
-    name := s"$baseName-cli-restore"
+    name                 := s"$baseName-cli-restore",
+    executableScriptName := "guardian-restore"
   )
   .dependsOn(coreCli    % "compile->compile;test->test",
              restoreS3  % "compile->compile;test->test",
