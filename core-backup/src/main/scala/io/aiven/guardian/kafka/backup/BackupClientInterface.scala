@@ -18,6 +18,7 @@ import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.jdk.DurationConverters._
+import scala.util._
 
 import java.time._
 import java.time.format.DateTimeFormatter
@@ -416,7 +417,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
           case (_, start: Start) =>
             implicit val ec: ExecutionContext = system.dispatcher
             logger.debug(s"Calling getCurrentUploadState with key:${start.key}")
-            for {
+            val f = for {
               uploadStateResult <- getCurrentUploadState(start.key)
               _ = logger.debug(s"Received $uploadStateResult from getCurrentUploadState with key:${start.key}")
               _ <- (uploadStateResult.previous, uploadStateResult.current) match {
@@ -425,6 +426,18 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
                      case _ => Future.successful(None)
                    }
             } yield prepareStartOfStream(uploadStateResult, start)
+
+            // TODO This is temporary until https://github.com/aiven/guardian-for-apache-kafka/issues/221 is resolved.
+            // Since SubFlow currently doesn't respect supervision strategy any exceptions thrown are just suppressed
+            // and causes the stream to loop indefinitely so lets at least log the exception so users know whats going
+            // on
+            f.onComplete {
+              case Failure(e) =>
+                logger.error("Unhandled exception in stream", e)
+              case Success(_) =>
+            }
+
+            f
           case _ => throw Errors.ExpectedStartOfSource
         },
         empty
