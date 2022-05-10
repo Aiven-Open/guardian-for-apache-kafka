@@ -429,7 +429,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
 
             // TODO This is temporary until https://github.com/aiven/guardian-for-apache-kafka/issues/221 is resolved.
             // Since SubFlow currently doesn't respect supervision strategy any exceptions thrown are just suppressed
-            // and causes the stream to loop indefinitely so lets at least log the exception so users know whats going
+            // and causes the stream to loop indefinitely so lets at least log the exception so users know what's going
             // on
             f.onComplete {
               case Failure(e) =>
