@@ -2,6 +2,7 @@ package io.aiven.guardian.kafka.backup
 
 import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.SubstreamCancelStrategy
 import akka.stream.scaladsl._
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
@@ -362,11 +363,9 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
     val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
 
     val split = withBackupStreamPositions
-      .splitAfter { case sourceElement =>
-        sourceElement match {
-          case End => true
-          case _   => false
-        }
+      .splitAfter(SubstreamCancelStrategy.propagate) {
+        case End => true
+        case _   => false
       }
 
     val substreams = split
@@ -428,9 +427,9 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
             } yield prepareStartOfStream(uploadStateResult, start)
 
             // TODO This is temporary until https://github.com/aiven/guardian-for-apache-kafka/issues/221 is resolved.
-            // Since SubFlow currently doesn't respect supervision strategy any exceptions thrown are just suppressed
-            // and causes the stream to loop indefinitely so lets at least log the exception so users know what's going
-            // on
+            // Since SubFlow currently ignores any given supervision strategy we have to use a
+            // SubstreamCancelStrategy.propagate however the exception message is still hence why we need to manually
+            // log it.
             f.onComplete {
               case Failure(e) =>
                 logger.error("Unhandled exception in stream", e)
