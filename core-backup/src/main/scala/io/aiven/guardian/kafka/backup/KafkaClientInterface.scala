@@ -19,6 +19,11 @@ trait KafkaClientInterface {
     */
   type Control
 
+  /** The type that represents the result of the `combine` parameter that is supplied to
+    * [[akka.stream.scaladsl.Source.toMat]]
+    */
+  type MatCombineResult
+
   /** The type that represents the result of batching a `CursorContext`
     */
   type BatchedCursorContext
@@ -32,6 +37,12 @@ trait KafkaClientInterface {
     *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
     */
   def commitCursor: Sink[BatchedCursorContext, Future[Done]]
+
+  /** @return
+    *   The result of this function gets directly passed into the `combine` parameter of
+    *   [[akka.stream.scaladsl.Source.toMat]]
+    */
+  def matCombine: (Control, Future[Done]) => MatCombineResult
 
   /** How to batch an immutable iterable of `CursorContext` into a `BatchedCursorContext`
     * @param cursors
