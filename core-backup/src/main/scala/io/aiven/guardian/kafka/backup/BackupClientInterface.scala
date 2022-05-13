@@ -359,7 +359,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
     *   The `KafkaClientInterface.Control` which depends on the implementation of `T` (typically this is used to control
     *   the underlying stream).
     */
-  def backup: RunnableGraph[kafkaClientInterface.Control] = {
+  def backup: RunnableGraph[kafkaClientInterface.MatCombineResult] = {
     val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
 
     val split = withBackupStreamPositions
@@ -445,7 +445,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
       )
       .mergeSubstreamsWithParallelism(1)
 
-    subFlowSink.toMat(Sink.ignore)(Keep.left)
+    subFlowSink.toMat(Sink.ignore)(kafkaClientInterface.matCombine)
   }
 }
 
