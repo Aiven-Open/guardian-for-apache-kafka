@@ -22,9 +22,9 @@ trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this
 
   /** Timeout constant to wait for both Akka Streams plus initialization of consumer/kafka cluster
     */
-  val KafkaInitializationTimeoutConstant: FiniteDuration = AkkaStreamInitializationConstant + (2.5 seconds)
+  val KafkaInitializationTimeoutConstant: FiniteDuration = AkkaStreamInitializationConstant + 2.5 seconds
 
-  override lazy val container: KafkaContainer = new KafkaContainer()
+  override lazy val container: KafkaContainer = new KafkaContainer
 
   def baseKafkaConfig: Some[ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]] =
     Some(

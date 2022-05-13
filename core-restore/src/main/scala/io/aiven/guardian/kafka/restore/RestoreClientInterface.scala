@@ -59,7 +59,7 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends LazyLogging {
                      case 0 => sorted
                      case -1 =>
                        sorted.lastOption match {
-                         case Some((key, value)) =>
+                         case Some(key, value) =>
                            // Its still technically possible that the last key can contain a picked value.
                            List((key, value))
                          case _ => List.empty

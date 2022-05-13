@@ -16,7 +16,7 @@ import java.util.Properties
 object PropertiesOpt {
   implicit val propertiesArgument: Argument[Properties] = new Argument[Properties] {
     override def read(string: String): ValidatedNel[String, Properties] = {
-      val prop = new Properties()
+      val prop = new Properties
       Using(new BufferedReader(new FileReader(string))) { reader =>
         prop.load(reader)
       } match {

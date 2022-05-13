@@ -8,7 +8,7 @@ import scala.concurrent.Future
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class MockedKafkaProducerInterface() extends KafkaProducerInterface {
-  val producedData: ConcurrentLinkedQueue[ReducedConsumerRecord] = new ConcurrentLinkedQueue[ReducedConsumerRecord]()
+  val producedData: ConcurrentLinkedQueue[ReducedConsumerRecord] = new ConcurrentLinkedQueue[ReducedConsumerRecord]
 
   override def getSink: Sink[ReducedConsumerRecord, Future[Done]] =
     Sink.foreach[ReducedConsumerRecord] { reducedConsumerRecord =>

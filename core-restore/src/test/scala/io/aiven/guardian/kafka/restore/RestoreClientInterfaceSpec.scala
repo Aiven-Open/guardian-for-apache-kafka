@@ -70,7 +70,7 @@ class RestoreClientInterfaceSpec
       val result = calculatedFuture.futureValue
 
       Inspectors.forEvery(result.drop(1)) { key =>
-        (Utils.keyToOffsetDateTime(key) >= pickedTime) must be(true)
+        Utils.keyToOffsetDateTime(key) >= pickedTime must be(true)
       }
 
     }

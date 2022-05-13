@@ -54,8 +54,8 @@ class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike
 
     def checkUntilMainInitialized(main: io.aiven.guardian.kafka.backup.Entry): Future[(App[_], Promise[Unit])] =
       main.initializedApp.get() match {
-        case Some((app, promise)) => Future.successful((app, promise))
-        case None                 => akka.pattern.after(100 millis)(checkUntilMainInitialized(main))
+        case Some(app, promise) => Future.successful((app, promise))
+        case None               => akka.pattern.after(100 millis)(checkUntilMainInitialized(main))
       }
 
     val (app, promise) = checkUntilMainInitialized(Main).futureValue

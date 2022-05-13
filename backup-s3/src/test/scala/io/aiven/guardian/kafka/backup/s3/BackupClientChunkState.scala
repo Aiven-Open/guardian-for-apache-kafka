@@ -22,7 +22,7 @@ class BackupClientChunkState[T <: KafkaClientInterface](maybeS3Settings: Option[
     s3Config: S3Config,
     s3Headers: S3Headers
 ) extends BackupClient[T](maybeS3Settings) {
-  val processedChunks: ConcurrentLinkedQueue[SuccessfulUploadPart] = new ConcurrentLinkedQueue[SuccessfulUploadPart]()
+  val processedChunks: ConcurrentLinkedQueue[SuccessfulUploadPart] = new ConcurrentLinkedQueue[SuccessfulUploadPart]
 
   override val successSink
       : Sink[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext]), Future[Done]] =

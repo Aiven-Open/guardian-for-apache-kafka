@@ -81,7 +81,7 @@ class BackupClientInterfaceSpec
 
         Inspectors.forEvery(withBeforeAndAfter) { case (before, after) =>
           val periodAsMillis = kafkaDataWithTimePeriod.periodSlice.toMillis
-          ((before.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis) mustNot equal(
+          (before.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis mustNot equal(
             (after.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis
           )
         }

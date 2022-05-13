@@ -23,7 +23,7 @@ import java.sql.Connection
   * @param materializer
   * @param conn
   */
-class PostgresJDBCDatabase()(implicit executionContext: ExecutionContext, materializer: Materializer, conn: Connection)
+class PostgresJDBCDatabase(implicit executionContext: ExecutionContext, materializer: Materializer, conn: Connection)
     extends DatabaseInterface {
 
   /** Inserts data into a Postgres Database using the COPY method (see

@@ -36,10 +36,10 @@ object Generators {
     timestampType
   )
 
-  private val keyOffsetMap = new ConcurrentHashMap[String, AtomicLong]().asScala
+  private val keyOffsetMap = new ConcurrentHashMap[String, AtomicLong].asScala
 
   def createOffsetsByKey(key: String): Long = {
-    val returned = keyOffsetMap.getOrElseUpdate(key, new AtomicLong())
+    val returned = keyOffsetMap.getOrElseUpdate(key, new AtomicLong)
     returned.incrementAndGet()
   }
 

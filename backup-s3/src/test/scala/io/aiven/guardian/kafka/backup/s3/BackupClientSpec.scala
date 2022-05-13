@@ -42,7 +42,7 @@ trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with 
         )
 
         val delay =
-          (ThrottleAmount * (kafkaDataWithTimePeriod.data.size / ThrottleElements) * 1.2) + (10 millis) match {
+          ThrottleAmount * (kafkaDataWithTimePeriod.data.size / ThrottleElements) * 1.2 + 10 millis match {
             case fd: FiniteDuration   => fd
             case _: Duration.Infinite => throw new Exception("Expected Finite Duration")
           }
@@ -90,7 +90,7 @@ trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with 
 
         kafkaDataWithTimePeriod.data.containsSlice(observed) mustEqual true
         if (observed.nonEmpty) {
-          observed.head mustMatchTo (kafkaDataWithTimePeriod.data.head)
+          observed.head mustMatchTo kafkaDataWithTimePeriod.data.head
         }
     }
   }

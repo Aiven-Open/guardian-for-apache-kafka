@@ -36,7 +36,7 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     * `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
     * have finished writing to it
     */
-  val backedUpData: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)]()
+  val backedUpData: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)]
 
   /** This method is intended to be called after you have written to it during a test.
     * @param terminate

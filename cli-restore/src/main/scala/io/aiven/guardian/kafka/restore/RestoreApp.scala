@@ -8,5 +8,5 @@ import io.aiven.guardian.kafka.{Config => KafkaConfig}
 
 trait RestoreApp extends RestoreConfig with KafkaConfig with AkkaSettings {
   val maybeKillSwitch: Option[SharedKillSwitch]
-  implicit lazy val kafkaProducer: KafkaProducer = new KafkaProducer()
+  implicit lazy val kafkaProducer: KafkaProducer = new KafkaProducer
 }

@@ -57,9 +57,9 @@ val librarySettings = Seq(
   crossScalaVersions := List("2.12.15", "2.13.8"),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, n)) if n == 13 =>
+      case Some(2, n) if n == 13 =>
         flagsFor13
-      case Some((2, n)) if n == 12 =>
+      case Some(2, n) if n == 12 =>
         flagsFor12
     }
   }

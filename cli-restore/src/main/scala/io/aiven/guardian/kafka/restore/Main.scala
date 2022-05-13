@@ -173,4 +173,4 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
       }
     )
 
-object Main extends Entry()
+object Main extends Entry

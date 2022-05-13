@@ -166,7 +166,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
             withDivisions
           )(Concat(_))
         // This case only occurs if a Source has a single element so we just directly return it
-        case (Seq(((singleReducedConsumerRecord, _), singleContext)), _) =>
+        case (Seq((singleReducedConsumerRecord, _), singleContext), _) =>
           Source.single(Element(singleReducedConsumerRecord, singleContext))
         case (rest, _) =>
           throw Errors.UnhandledStreamCase(rest)
@@ -190,7 +190,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
       ] =
     kafkaClientInterface.getSource.asSource.prefixAndTail(1).flatMapConcat { case (head, rest) =>
       head.headOption match {
-        case Some((firstReducedConsumerRecord, firstCursorContext)) =>
+        case Some(firstReducedConsumerRecord, firstCursorContext) =>
           val firstTimestamp = firstReducedConsumerRecord.toOffsetDateTime
 
           Source.combine(
@@ -279,16 +279,16 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
           List((dropCommaFromEndOfJsonArray(before) ++ after, context))
         case Seq((before, Some(beforeContext)), (after, Some(afterContext))) =>
           List((before, beforeContext), (after, afterContext))
-        case Seq((single, Some(context))) =>
+        case Seq(single, Some(context)) =>
           List((single, context))
         case rest =>
           throw Errors.UnhandledStreamCase(rest)
       }
 
     head match {
-      case Seq((byteString, Some(cursorContext))) =>
+      case Seq(byteString, Some(cursorContext)) =>
         Source.combine(
-          Source.single((List((byteString, cursorContext)))),
+          Source.single(List((byteString, cursorContext))),
           restTransformed
         )(Concat(_))
       case rest =>
@@ -330,7 +330,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
               .fromTuples(
                 Flow[(ByteString, ByteStringContext)]
                   .flatMapPrefix(1) {
-                    case Seq((byteString, start: Start)) =>
+                    case Seq(byteString, start: Start) =>
                       val withoutStartOfJsonArray = byteString.drop(1)
                       Flow[(ByteString, ByteStringContext)].prepend(
                         Source.single((withoutStartOfJsonArray, start))

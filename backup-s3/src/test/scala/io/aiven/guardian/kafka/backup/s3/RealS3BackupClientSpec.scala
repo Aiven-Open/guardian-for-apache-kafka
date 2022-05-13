@@ -138,7 +138,7 @@ class RealS3BackupClientSpec
             .withAttributes(s3Attrs)
             .runWith(Sink.head)
             .flatMap {
-              case Some((downloadSource, _)) =>
+              case Some(downloadSource, _) =>
                 downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
               case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
             }
@@ -235,7 +235,7 @@ class RealS3BackupClientSpec
                              .withAttributes(s3Attrs)
                              .runWith(Sink.head)
                              .flatMap {
-                               case Some((downloadSource, _)) =>
+                               case Some(downloadSource, _) =>
                                  downloadSource
                                    .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
                                    .runWith(Sink.seq)
@@ -246,7 +246,7 @@ class RealS3BackupClientSpec
                               .withAttributes(s3Attrs)
                               .runWith(Sink.head)
                               .flatMap {
-                                case Some((downloadSource, _)) =>
+                                case Some(downloadSource, _) =>
                                   downloadSource
                                     .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
                                     .runWith(Sink.seq)
@@ -372,7 +372,7 @@ class RealS3BackupClientSpec
                         .withAttributes(s3Attrs)
                         .runWith(Sink.head)
                         .flatMap {
-                          case Some((downloadSource, _)) =>
+                          case Some(downloadSource, _) =>
                             downloadSource
                               .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
                               .runWith(Sink.seq)

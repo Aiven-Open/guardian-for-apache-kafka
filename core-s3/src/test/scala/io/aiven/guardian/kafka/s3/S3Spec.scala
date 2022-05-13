@@ -66,7 +66,7 @@ trait S3Spec
     */
   lazy val bucketPrefix: Option[String] = None
 
-  private val bucketsToCleanup = new ConcurrentLinkedQueue[String]()
+  private val bucketsToCleanup = new ConcurrentLinkedQueue[String]
 
   /** Whether to enable cleanup of buckets after tests are run and if so the initial delay to wait after the test
     */

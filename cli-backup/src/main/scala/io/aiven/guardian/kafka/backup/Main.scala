@@ -142,4 +142,4 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
       }
     )
 
-object Main extends Entry()
+object Main extends Entry
