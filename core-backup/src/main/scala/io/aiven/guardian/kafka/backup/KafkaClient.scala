@@ -52,6 +52,7 @@ class KafkaClient(
     with LazyLogging {
   override type CursorContext        = CommittableOffset
   override type Control              = Consumer.Control
+  override type MatCombineResult     = Consumer.DrainingControl[Done]
   override type BatchedCursorContext = CommittableOffsetBatch
 
   import KafkaClient._
@@ -101,6 +102,13 @@ class KafkaClient(
     *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
     */
   override def commitCursor: Sink[CommittableOffsetBatch, Future[Done]] = Committer.sink(committerSettings)
+
+  /** @return
+    *   The result of this function gets directly passed into the `combine` parameter of
+    *   [[akka.stream.scaladsl.Source.toMat]]
+    */
+  override def matCombine: (Consumer.Control, Future[Done]) => Consumer.DrainingControl[Done] =
+    Consumer.DrainingControl[Done].apply
 
   /** How to batch an immutable iterable of `CursorContext` into a `BatchedCursorContext`
     * @param cursors

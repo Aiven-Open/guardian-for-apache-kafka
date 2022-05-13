@@ -2,9 +2,7 @@ package io.aiven.guardian.kafka.backup
 
 import akka.Done
 import akka.NotUsed
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.SourceWithContext
+import akka.stream.scaladsl._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
 import scala.collection.immutable
@@ -34,6 +32,11 @@ class MockedKafkaClientInterface(kafkaData: Source[ReducedConsumerRecord, NotUse
     */
   override type Control = Future[NotUsed]
 
+  /** The type that represents the result of the `combine` parameter that is supplied to
+    * [[akka.stream.scaladsl.Source.toMat]]
+    */
+  override type MatCombineResult = Future[NotUsed]
+
   /** The type that represents the result of batching a `CursorContext`
     */
   override type BatchedCursorContext = Long
@@ -47,6 +50,12 @@ class MockedKafkaClientInterface(kafkaData: Source[ReducedConsumerRecord, NotUse
         (reducedConsumerRecord, reducedConsumerRecord.offset)
       })
       .mapMaterializedValue(Future.successful)
+
+  /** @return
+    *   The result of this function gets directly passed into the `combine` parameter of
+    *   [[akka.stream.scaladsl.Source.toMat]]
+    */
+  override def matCombine: (Future[NotUsed], Future[Done]) => Future[NotUsed] = Keep.left
 
   /** @return
     *   A `Sink` that allows you to commit a `CursorContext` to Kafka to signify you have processed a message
