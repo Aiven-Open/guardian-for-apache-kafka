@@ -30,8 +30,6 @@ trait App[T <: KafkaClientInterface] extends LazyLogging {
 
   def shutdown(control: Consumer.Control): Future[Done] = {
     logger.info("Shutdown of Guardian detected")
-    // Ideally we should be using drainAndShutdown however this isn't possible due to
-    // https://github.com/aiven/guardian-for-apache-kafka/issues/80
-    control.stop().flatMap(_ => control.shutdown())
+    control.shutdown()
   }
 }
