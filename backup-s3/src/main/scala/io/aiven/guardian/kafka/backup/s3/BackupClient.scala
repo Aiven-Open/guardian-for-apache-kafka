@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka.backup.s3
 import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.SinkShape
 import akka.stream.alpakka.s3.FailedUploadPart
 import akka.stream.alpakka.s3.ListMultipartUploadResultUploads
 import akka.stream.alpakka.s3.MultipartUploadResult
@@ -126,29 +127,39 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
   private[s3] def successSink
       : Sink[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext]), Future[Done]] =
     kafkaClientInterface.commitCursor
-      .contramap[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext])] { case (_, cursors) =>
-        kafkaClientInterface.batchCursorContext(cursors)
+      .contramap[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext])] {
+        case (part, cursors) =>
+          logger.info(
+            s"Committing kafka cursor for uploadId:${part.multipartUpload.uploadId} key: ${part.multipartUpload.key} and S3 part: ${part.partNumber}"
+          )
+          kafkaClientInterface.batchCursorContext(cursors)
       }
 
   private[s3] def kafkaBatchSink
-      : Sink[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext]), NotUsed] = {
-
-    val success = Flow[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])]
-      .collectType[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext])]
-      .wireTap { data =>
-        val (part, _) = data
-        logger.info(
-          s"Committing kafka cursor for uploadId:${part.multipartUpload.uploadId} key: ${part.multipartUpload.key} and S3 part: ${part.partNumber}"
+      : Sink[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext]), NotUsed] =
+    // See https://doc.akka.io/docs/akka/current/stream/operators/Partition.html for an explanation on Partition
+    Sink.fromGraph(GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+      val partition = builder.add(
+        new Partition[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])](
+          outputPorts = 2,
+          {
+            case (_: SuccessfulUploadPart, _) => 0
+            case (_: FailedUploadPart, _)     => 1
+          },
+          eagerCancel = true
         )
-      }
-      .toMat(successSink)(Keep.none)
-
-    val failure = Flow[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])]
-      .collectType[(FailedUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext])]
-      .toMat(failureSink)(Keep.none)
-
-    Sink.combine(success, failure)(Broadcast(_))
-  }
+      )
+      partition.out(0) ~> successSink
+        .contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
+          case (response, value) => (response.asInstanceOf[SuccessfulUploadPart], value)
+        }
+      partition.out(1) ~> failureSink
+        .contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
+          case (response, value) => (response.asInstanceOf[FailedUploadPart], value)
+        }
+      SinkShape(partition.in)
+    })
 
   override def backupToStorageTerminateSink(
       previousState: PreviousState
