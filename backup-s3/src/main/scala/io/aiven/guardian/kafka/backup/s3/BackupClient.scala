@@ -137,7 +137,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
 
   private[s3] def kafkaBatchSink
       : Sink[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext]), NotUsed] =
-    // Taken from https://doc.akka.io/docs/akka/current/stream/operators/Partition.html
+    // See https://doc.akka.io/docs/akka/current/stream/operators/Partition.html for an explanation on Partition
     Sink.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
       val partition = builder.add(
