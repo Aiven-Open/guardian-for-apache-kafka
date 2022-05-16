@@ -44,50 +44,80 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
 
   override type State = CurrentS3State
 
-  private def extractStateFromUpload(keys: Seq[ListMultipartUploadResultUploads], current: Boolean)(implicit
-      executionContext: ExecutionContext
-  ): Future[Some[(CurrentS3State, String)]] = {
-    val listMultipartUploads = keys match {
-      case Seq(single) =>
-        if (current)
-          logger.info(
-            s"Found previous uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
-          )
-        else
-          logger.info(
-            s"Found current uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
-          )
-        single
-      case rest =>
-        val last = rest.maxBy(_.initiated)(Ordering[Instant])
-        if (current)
-          logger.warn(
-            s"Found multiple currently cancelled uploads for key: ${last.key} and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
-          )
-        else
-          logger.warn(
-            s"Found multiple previously cancelled uploads for key: ${last.key} and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
-          )
-        last
-    }
-    val uploadId = listMultipartUploads.uploadId
-    val key      = listMultipartUploads.key
-    val baseList = S3.listParts(s3Config.dataBucket, key, listMultipartUploads.uploadId)
+  private[backup] def checkObjectExists(key: String)(implicit executionContext: ExecutionContext): Future[Boolean] = {
+    // Note that S3.download doesn't immediately download the file, it first checks if it exists and returns a
+    // not yet started `Source`if it does exist (in other words we aren't unnecessarily downloading the file)
+    val base = S3.download(s3Config.dataBucket, key)
 
     for {
-      parts <- maybeS3Settings
-                 .fold(baseList)(s3Settings => baseList.withAttributes(S3Attributes.settings(s3Settings)))
-                 .runWith(Sink.seq)
-
-      finalParts = parts.lastOption match {
-                     case Some(part) if part.size >= akka.stream.alpakka.s3.scaladsl.S3.MinChunkSize =>
-                       parts
-                     case _ =>
-                       // We drop the last part here since its broken
-                       parts.dropRight(1)
-                   }
-    } yield Some((CurrentS3State(uploadId, finalParts.map(_.toPart)), key))
+      result <- maybeS3Settings
+                  .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
+                  .runWith(Sink.headOption)
+    } yield result.exists(_.isDefined)
   }
+
+  private def extractStateFromUpload(uploads: Seq[ListMultipartUploadResultUploads], current: Boolean)(implicit
+      executionContext: ExecutionContext
+  ): Future[Option[(CurrentS3State, String)]] =
+    for {
+      uploadsWithExists <- Future.sequence(uploads.map { upload =>
+                             checkObjectExists(upload.key).map(exists => (upload, exists))
+                           })
+      filteredUploads = uploadsWithExists
+                          .filter {
+                            case (_, false) => true
+                            case (upload, true) =>
+                              logger.warn(
+                                s"Found already existing stale upload with id: ${upload.uploadId} and key: ${upload.key}, ignoring"
+                              )
+                              false
+                          }
+                          .map { case (upload, _) => upload }
+      result <- if (filteredUploads.isEmpty)
+                  Future.successful(None)
+                else {
+                  val listMultipartUploads = filteredUploads match {
+                    case Seq(single) =>
+                      if (current)
+                        logger.info(
+                          s"Found previous uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
+                        )
+                      else
+                        logger.info(
+                          s"Found current uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
+                        )
+                      single
+                    case rest =>
+                      val last = rest.maxBy(_.initiated)(Ordering[Instant])
+                      if (current)
+                        logger.warn(
+                          s"Found multiple currently cancelled uploads for key: ${last.key} and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
+                        )
+                      else
+                        logger.warn(
+                          s"Found multiple previously cancelled uploads for key: ${last.key} and bucket: ${s3Config.dataBucket}, picking uploadId: ${last.uploadId}"
+                        )
+                      last
+                  }
+                  val uploadId = listMultipartUploads.uploadId
+                  val key      = listMultipartUploads.key
+                  val baseList = S3.listParts(s3Config.dataBucket, key, listMultipartUploads.uploadId)
+
+                  for {
+                    parts <- maybeS3Settings
+                               .fold(baseList)(s3Settings => baseList.withAttributes(S3Attributes.settings(s3Settings)))
+                               .runWith(Sink.seq)
+
+                    finalParts = parts.lastOption match {
+                                   case Some(part) if part.size >= akka.stream.alpakka.s3.scaladsl.S3.MinChunkSize =>
+                                     parts
+                                   case _ =>
+                                     // We drop the last part here since its broken
+                                     parts.dropRight(1)
+                                 }
+                  } yield Some((CurrentS3State(uploadId, finalParts.map(_.toPart)), key))
+                }
+    } yield result
 
   def getCurrentUploadState(key: String): Future[UploadStateResult] = {
     implicit val ec: ExecutionContext = system.dispatcher
