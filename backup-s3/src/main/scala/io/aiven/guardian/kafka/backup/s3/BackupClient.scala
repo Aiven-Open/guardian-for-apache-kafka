@@ -80,11 +80,11 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
                     case Seq(single) =>
                       if (current)
                         logger.info(
-                          s"Found previous uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
+                          s"Found current uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
                         )
                       else
                         logger.info(
-                          s"Found current uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
+                          s"Found previous uploadId: ${single.uploadId} and bucket: ${s3Config.dataBucket} with key: ${single.key}"
                         )
                       single
                     case rest =>
