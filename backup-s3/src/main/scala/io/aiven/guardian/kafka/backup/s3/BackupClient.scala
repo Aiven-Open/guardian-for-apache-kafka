@@ -4,15 +4,7 @@ import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.SinkShape
-import akka.stream.alpakka.s3.FailedUploadPart
-import akka.stream.alpakka.s3.ListMultipartUploadResultUploads
-import akka.stream.alpakka.s3.MultipartUploadResult
-import akka.stream.alpakka.s3.Part
-import akka.stream.alpakka.s3.S3Attributes
-import akka.stream.alpakka.s3.S3Headers
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.SuccessfulUploadPart
-import akka.stream.alpakka.s3.UploadPartResponse
+import akka.stream.alpakka.s3._
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl._
 import akka.util.ByteString
@@ -54,10 +46,38 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
     } yield result.exists(_.isDefined)
   }
 
+  /** @return
+    *   If an in progress multipart upload exists for the key than returns that result in a [[Some]] otherwise it
+    *   returns an empty [[None]].
+    */
+  private[backup] def getPartsFromUpload(key: String, uploadId: String)(implicit
+      executionContext: ExecutionContext
+  ): Future[Option[Seq[ListPartsResultParts]]] = {
+    val baseList = S3.listParts(s3Config.dataBucket, key, uploadId)
+
+    maybeS3Settings
+      .fold(baseList)(s3Settings => baseList.withAttributes(S3Attributes.settings(s3Settings)))
+      .runWith(Sink.seq)
+      .map(x => Some(x))
+      .recover {
+        // Its possible for S3 to return an in progress multipart upload for an upload that has already been finished.
+        // This exception is thrown in such a case so lets recover and act as if there was no multipart uploads in progress
+        // for this key.
+        case e: S3Exception
+            if e.getMessage.contains(
+              "The specified upload does not exist. The upload ID may be invalid, or the upload may have been aborted or completed."
+            ) =>
+          logger.warn(s"Last upload with uploadId: $uploadId and key: $key doesn't actually exist", e)
+          None
+      }
+  }
+
   private def extractStateFromUpload(uploads: Seq[ListMultipartUploadResultUploads], current: Boolean)(implicit
       executionContext: ExecutionContext
   ): Future[Option[(CurrentS3State, String)]] =
     for {
+      // Its possible for S3 to return an in progress multipart upload even though the upload has already been finished
+      // so lets filter out any multipart uploads that already happen to exist as objects in S3
       uploadsWithExists <- Future.sequence(uploads.map { upload =>
                              checkObjectExists(upload.key).map(exists => (upload, exists))
                            })
@@ -66,7 +86,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
                             case (_, false) => true
                             case (upload, true) =>
                               logger.warn(
-                                s"Found already existing stale upload with id: ${upload.uploadId} and key: ${upload.key}, ignoring"
+                                s"Found already existing stale upload with uploadId: ${upload.uploadId} and key: ${upload.key}, ignoring"
                               )
                               false
                           }
@@ -99,21 +119,19 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
                   }
                   val uploadId = listMultipartUploads.uploadId
                   val key      = listMultipartUploads.key
-                  val baseList = S3.listParts(s3Config.dataBucket, key, listMultipartUploads.uploadId)
 
                   for {
-                    parts <- maybeS3Settings
-                               .fold(baseList)(s3Settings => baseList.withAttributes(S3Attributes.settings(s3Settings)))
-                               .runWith(Sink.seq)
-
-                    finalParts = parts.lastOption match {
-                                   case Some(part) if part.size >= akka.stream.alpakka.s3.scaladsl.S3.MinChunkSize =>
-                                     parts
-                                   case _ =>
-                                     // We drop the last part here since its broken
-                                     parts.dropRight(1)
-                                 }
-                  } yield Some((CurrentS3State(uploadId, finalParts.map(_.toPart)), key))
+                    maybeParts <- getPartsFromUpload(key, uploadId)
+                  } yield maybeParts.map { parts =>
+                    val finalParts = parts.lastOption match {
+                      case Some(part) if part.size >= akka.stream.alpakka.s3.scaladsl.S3.MinChunkSize =>
+                        parts
+                      case _ =>
+                        // We drop the last part here since its broken
+                        parts.dropRight(1)
+                    }
+                    (CurrentS3State(uploadId, finalParts.map(_.toPart)), key)
+                  }
                 }
     } yield result
 
@@ -158,7 +176,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
       .contramap[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext])] {
         case (part, cursors) =>
           logger.info(
-            s"Committing kafka cursor for uploadId:${part.multipartUpload.uploadId} key: ${part.multipartUpload.key} and S3 part: ${part.partNumber}"
+            s"Committing kafka cursor for uploadId: ${part.multipartUpload.uploadId} key: ${part.multipartUpload.key} and S3 part: ${part.partNumber}"
           )
           kafkaClientInterface.batchCursorContext(cursors)
       }
@@ -192,24 +210,49 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
   override def backupToStorageTerminateSink(
       previousState: PreviousState
   ): Sink[ByteString, Future[BackupResult]] = {
-    logger.info(
-      s"Terminating and completing previous backup with key: ${previousState.previousKey} and uploadId:${previousState.state.uploadId}"
-    )
-    val sink = S3
-      .resumeMultipartUploadWithHeaders(
-        s3Config.dataBucket,
-        previousState.previousKey,
-        previousState.state.uploadId,
-        previousState.state.parts,
-        s3Headers = s3Headers,
-        chunkingParallelism = 1
-      )
+    implicit val ec: ExecutionContext = system.dispatcher
 
-    val base = sink.mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
+    // Due to eventual consistency its possible to upload a part for a in progress multipart upload for an upload that
+    // has in fact already finished. If this is the case then lets just recover from the expected error in S3 in
+    // addition to checking if the upload has already been turned into an S3 object.
+    RestartSink.withBackoff(
+      s3Config.errorRestartSettings
+    ) { () =>
+      Sink.lazyFutureSink { () =>
+        for {
+          exists <- checkObjectExists(previousState.previousKey)
+        } yield
+        // The backupToStorageTerminateSink gets called in response to finding in progress multipart uploads. If an S3 object exists
+        // the same key that means that in fact the upload has already been completed so in this case lets not do anything
+        if (exists) {
+          logger.warn(
+            s"Previous upload with uploadId: ${previousState.state.uploadId} and key: ${previousState.previousKey} doesn't actually exist, skipping terminating"
+          )
+          Sink.ignore
+        } else {
+          logger.info(
+            s"Terminating and completing previous backup with key: ${previousState.previousKey} and uploadId: ${previousState.state.uploadId}"
+          )
+          val sink = S3
+            .resumeMultipartUploadWithHeaders(
+              s3Config.dataBucket,
+              previousState.previousKey,
+              previousState.state.uploadId,
+              previousState.state.parts,
+              s3Headers = s3Headers,
+              chunkingParallelism = 1
+            )
 
-    maybeS3Settings
-      .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
-  }
+          val base =
+            sink.mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
+
+          maybeS3Settings
+            .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
+        }
+
+      }
+    }
+  }.mapMaterializedValue(_ => Future.successful(None))
 
   override def backupToStorageSink(key: String,
                                    currentState: Option[CurrentS3State]
