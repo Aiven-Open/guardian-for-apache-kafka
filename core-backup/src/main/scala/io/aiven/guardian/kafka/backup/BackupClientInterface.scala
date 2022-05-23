@@ -288,7 +288,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
     head match {
       case Seq((byteString, Some(cursorContext))) =>
         Source.combine(
-          Source.single((List((byteString, cursorContext)))),
+          Source.single(List((byteString, cursorContext))),
           restTransformed
         )(Concat(_))
       case rest =>
