@@ -67,7 +67,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
             if e.getMessage.contains(
               "The specified upload does not exist. The upload ID may be invalid, or the upload may have been aborted or completed."
             ) =>
-          logger.warn(s"Last upload with uploadId: $uploadId and key: $key doesn't actually exist", e)
+          logger.debug(s"Last upload with uploadId: $uploadId and key: $key doesn't actually exist", e)
           None
       }
   }
@@ -85,7 +85,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
                           .filter {
                             case (_, false) => true
                             case (upload, true) =>
-                              logger.warn(
+                              logger.debug(
                                 s"Found already existing stale upload with uploadId: ${upload.uploadId} and key: ${upload.key}, ignoring"
                               )
                               false
@@ -225,7 +225,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
         // The backupToStorageTerminateSink gets called in response to finding in progress multipart uploads. If an S3 object exists
         // the same key that means that in fact the upload has already been completed so in this case lets not do anything
         if (exists) {
-          logger.warn(
+          logger.debug(
             s"Previous upload with uploadId: ${previousState.state.uploadId} and key: ${previousState.previousKey} doesn't actually exist, skipping terminating"
           )
           Sink.ignore
