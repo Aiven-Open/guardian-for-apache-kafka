@@ -45,9 +45,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
   override type State = CurrentS3State
 
   private[backup] def checkObjectExists(key: String)(implicit executionContext: ExecutionContext): Future[Boolean] = {
-    // Note that S3.download doesn't immediately download the file, it first checks if it exists and returns a
-    // not yet started `Source`if it does exist (in other words we aren't unnecessarily downloading the file)
-    val base = S3.download(s3Config.dataBucket, key)
+    val base = S3.getObjectMetadata(s3Config.dataBucket, key)
 
     for {
       result <- maybeS3Settings
