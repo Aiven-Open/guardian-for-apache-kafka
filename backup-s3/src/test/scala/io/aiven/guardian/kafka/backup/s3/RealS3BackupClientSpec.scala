@@ -7,14 +7,16 @@ import akka.stream.SharedKillSwitch
 import akka.stream.alpakka.s3.S3Settings
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.Source
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.akka.AnyPropTestKit
-import io.aiven.guardian.kafka.Generators.KafkaDataInChunksWithTimePeriod
-import io.aiven.guardian.kafka.Generators.kafkaDataWithMinSizeGen
+import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.TestUtils._
+import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.KafkaClient
 import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
+import io.aiven.guardian.kafka.backup.MockedKafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
@@ -406,4 +408,82 @@ class RealS3BackupClientSpec
       downloadedGroupedAsKey mustMatchTo inputAsKey
     }
   }
+
+  property(
+    "Creating many objects in a small period of time works despite S3's in progress multipart upload eventual consistency issues",
+    RealS3Available
+  ) {
+    forAll(kafkaDataWithTimePeriodsGen(100, 100, 1000, tailingSentinelValue = true),
+           s3ConfigGen(useVirtualDotHost, bucketPrefix)
+    ) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
+      val data = kafkaDataWithTimePeriod.data
+
+      val topics = data.map(_.topic).toSet
+
+      implicit val kafkaClusterConfig: KafkaCluster = KafkaCluster(topics)
+
+      implicit val config: S3Config = s3Config
+      implicit val backupConfig: Backup =
+        Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 second), 10 seconds)
+
+      val backupClient =
+        new BackupClient(Some(s3Settings))(new MockedKafkaClientInterface(Source(data)),
+                                           implicitly,
+                                           implicitly,
+                                           implicitly,
+                                           implicitly
+        )
+
+      val calculatedFuture = for {
+        _ <- createBucket(s3Config.dataBucket)
+        _ = backupClient.backup.run()
+        bucketContents <- akka.pattern.after(10 seconds)(
+                            S3.listBucket(s3Config.dataBucket, None).withAttributes(s3Attrs).runWith(Sink.seq)
+                          )
+        keysSorted = bucketContents.map(_.key).sortBy(Utils.keyToOffsetDateTime)
+        downloaded <-
+          Future
+            .sequence(keysSorted.map { key =>
+              S3.download(s3Config.dataBucket, key)
+                .withAttributes(s3Attrs)
+                .runWith(Sink.head)
+                .flatMap {
+                  case Some((downloadSource, _)) =>
+                    downloadSource
+                      .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                      .runWith(Sink.seq)
+                  case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
+                }
+
+            })
+            .map(_.flatten)
+
+      } yield downloaded.flatten.collect { case Some(reducedConsumerRecord) =>
+        reducedConsumerRecord
+      }
+
+      val downloaded = calculatedFuture.futureValue
+
+      // Only care about ordering when it comes to key
+      val downloadedGroupedAsKey = downloaded
+        .groupBy(_.key)
+        .view
+        .mapValues { reducedConsumerRecords =>
+          reducedConsumerRecords.map(_.value)
+        }
+        .toMap
+
+      val inputAsKey = data
+        .dropRight(1) // Drop the generated sentinel value which we don't care about
+        .groupBy(_.key)
+        .view
+        .mapValues { reducedConsumerRecords =>
+          reducedConsumerRecords.map(_.value)
+        }
+        .toMap
+
+      downloadedGroupedAsKey mustMatchTo inputAsKey
+    }
+  }
+
 }

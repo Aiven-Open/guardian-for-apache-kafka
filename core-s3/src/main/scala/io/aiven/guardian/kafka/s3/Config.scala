@@ -1,6 +1,7 @@
 package io.aiven.guardian.kafka
 package s3
 
+import akka.stream.RestartSettings
 import akka.stream.alpakka.s3.MetaHeaders
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.headers.CannedAcl
@@ -12,8 +13,10 @@ import pureconfig.ConfigCursor
 import pureconfig.ConfigReader
 import pureconfig.ConfigReader._
 import pureconfig.ConfigSource
+import pureconfig.error.UserValidationFailed
 
 import scala.annotation.nowarn
+import scala.concurrent.duration.FiniteDuration
 
 trait Config {
 
@@ -86,6 +89,46 @@ trait Config {
     }
 
   implicit lazy val s3Headers: S3Headers = ConfigSource.default.at("s3-headers").loadOrThrow[S3Headers]
+
+  // See https://pureconfig.github.io/docs/error-handling.html#validations-in-custom-readers for details
+  // on custom validation
+  private val restartSettingsBase = ConfigReader.forProduct5(
+    "min-backoff",
+    "max-backoff",
+    "random-factor",
+    "max-restarts",
+    "max-restarts-within"
+  ) {
+    (minBackoff: FiniteDuration,
+     maxBackoff: FiniteDuration,
+     randomFactor: Double,
+     maxRestarts: Option[Int],
+     maxRestartsWithin: Option[FiniteDuration]
+    ) =>
+      (minBackoff, maxBackoff, randomFactor, maxRestarts, maxRestartsWithin)
+  }
+
+  implicit val restartSettingsConfigReader: ConfigReader[RestartSettings] =
+    ConfigReader.fromCursor[RestartSettings] { cur =>
+      restartSettingsBase.from(cur).flatMap {
+        case (_, _, _, Some(_), None) =>
+          cur.failed(
+            UserValidationFailed(
+              "Both max-restarts and max-restarts-within need to exist if defining a maximum restarts configuration, max-restarts-within is missing"
+            )
+          )
+        case (_, _, _, None, Some(_)) =>
+          cur.failed(
+            UserValidationFailed(
+              "Both max-restarts and max-restarts-within need to exist if defining a maximum restarts configuration, max-restarts is missing"
+            )
+          )
+        case (minBackoff, maxBackoff, randomFactor, Some(maxRestarts), Some(maxRestartsWithin)) =>
+          Right(RestartSettings(minBackoff, maxBackoff, randomFactor).withMaxRestarts(maxRestarts, maxRestartsWithin))
+        case (minBackoff, maxBackoff, randomFactor, None, None) =>
+          Right(RestartSettings(minBackoff, maxBackoff, randomFactor))
+      }
+    }
 
   @nowarn("cat=lint-byname-implicit")
   implicit lazy val s3Config: S3 = {
