@@ -1,9 +1,12 @@
 package io.aiven.guardian.kafka.s3
 
+import akka.stream.RestartSettings
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.scalacheck.Gen
 
 import scala.annotation.nowarn
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 object Generators {
   val MaxBucketLength: Int = 63
@@ -108,8 +111,14 @@ object Generators {
     } yield bucketName
   }
 
+  val restartSetting: RestartSettings = RestartSettings(
+    5 millis,
+    10 seconds,
+    0.2
+  )
+
   def s3ConfigGen(useVirtualDotHost: Boolean, prefix: Option[String] = None): Gen[S3Config] = for {
     dataBucket <- bucketNameGen(useVirtualDotHost, prefix)
-  } yield S3Config(dataBucket)
+  } yield S3Config(dataBucket, restartSetting)
 
 }
