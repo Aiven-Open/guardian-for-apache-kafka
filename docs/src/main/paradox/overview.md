@@ -9,7 +9,7 @@ to ensure that the tool runs as desired with large datasets in different scenari
 
 The core modules are compiled against:
 
-* Akka Streams $akka.version$+ (@extref:[Reference](akka:stream/index.html), [Github](https://github.com/akka/akka))
+* Akka Streams $akka.version$+ (@extref:[Reference](akka-docs:stream/index.html), [Github](https://github.com/akka/akka))
 * Akka Streams Json $akka-streams-json.version$+ ([Github](https://github.com/mdedetrich/akka-streams-json))
 * PureConfig $pure-config.version$+ ([Reference](https://pureconfig.github.io/docs/), [Github](https://github.com/pureconfig/pureconfig))
 * ScalaLogging $scala-logging.version$+ ([Github](https://github.com/lightbend/scala-logging))

@@ -1,6 +1,7 @@
 package io.aiven.guardian.kafka.backup
 
 import akka.kafka.ConsumerSettings
+import akka.stream.RestartSettings
 import cats.implicits._
 import com.monovore.decline._
 import io.aiven.guardian.cli.MainUtils
@@ -14,6 +15,7 @@ import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.s3.configs.S3
 import org.slf4j.LoggerFactory
+import pureconfig.ConfigSource
 
 import scala.concurrent.Await
 import scala.concurrent.Promise
@@ -71,7 +73,14 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
         val s3Opt = Options.dataBucketOpt.mapValidated { maybeDataBucket =>
           import io.aiven.guardian.kafka.s3.Config
           maybeDataBucket match {
-            case Some(value) => S3(dataBucket = value).validNel
+            case Some(value) =>
+              import Config._
+              S3(
+                dataBucket = value,
+                // TODO Also make restart settings configurable by cli?
+                errorRestartSettings =
+                  ConfigSource.default.at("s3-config.error-restart-settings").loadOrThrow[RestartSettings]
+              ).validNel
             case _ =>
               Options
                 .optionalPureConfigValue(() => Config.s3Config)
