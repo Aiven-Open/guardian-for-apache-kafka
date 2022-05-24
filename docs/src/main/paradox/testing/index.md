@@ -16,7 +16,7 @@ using this testing framework are
 * It provides very handy utilities for testing asynchronous code, for example a
   @extref:[PatienceConfig](scalatest:concurrent/AbstractPatienceConfiguration$PatienceConfig.html)
   that provides efficient polling of Scala futures with configurable scalable timeouts and intervals.
-* Akka provides @extref:[Testkit](akka:testing.html#asynchronous-testing-testkit) with direct integration into ScalaTest
+* Akka provides @extref:[Testkit](akka-docs:testing.html#asynchronous-testing-testkit) with direct integration into ScalaTest
   for easy testing of akka-streams.
 
 ## TestContainers
