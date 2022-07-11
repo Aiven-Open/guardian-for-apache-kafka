@@ -213,7 +213,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
   ): Sink[ByteString, Future[BackupResult]] = {
     implicit val ec: ExecutionContext = system.dispatcher
 
-    // Due to eventual consistency its possible to upload a part for a in progress multipart upload for an upload that
+    // Due to eventual consistency its possible to upload a part for an in progress multipart upload for an upload that
     // has in fact already finished. If this is the case then lets just recover from the expected error in S3 in
     // addition to checking if the upload has already been turned into an S3 object.
     RestartSink.withBackoff(
@@ -221,11 +221,16 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
     ) { () =>
       Sink.lazyFutureSink { () =>
         for {
-          exists <- checkObjectExists(previousState.previousKey)
+          objectExists <- checkObjectExists(previousState.previousKey)
+          multipartUploadIsEmpty <- if (!objectExists) {
+                                      getPartsFromUpload(previousState.previousKey, previousState.state.uploadId).map(
+                                        _.isEmpty
+                                      )(ExecutionContext.parasitic)
+                                    } else Future.successful(false)
         } yield
         // The backupToStorageTerminateSink gets called in response to finding in progress multipart uploads. If an S3 object exists
-        // the same key that means that in fact the upload has already been completed so in this case lets not do anything
-        if (exists) {
+        // OR there are no parts for the key that means that in fact the upload has already been completed so in this case lets not do anything
+        if (objectExists || multipartUploadIsEmpty) {
           logger.debug(
             s"Previous upload with uploadId: ${previousState.state.uploadId} and key: ${previousState.previousKey} doesn't actually exist, skipping terminating"
           )
