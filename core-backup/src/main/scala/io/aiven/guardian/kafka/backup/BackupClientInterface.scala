@@ -422,7 +422,9 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
                 _ = logger.debug(s"Received $uploadStateResult from getCurrentUploadState with key:${start.key}")
                 _ <- (uploadStateResult.previous, uploadStateResult.current) match {
                        case (Some(previous), None) =>
-                         terminateSource.runWith(backupToStorageTerminateSink(previous)).map(Some.apply)
+                         terminateSource
+                           .runWith(backupToStorageTerminateSink(previous))
+                           .map(Some.apply)(ExecutionContext.parasitic)
                        case _ => Future.successful(None)
                      }
               } yield prepareStartOfStream(uploadStateResult, start)
