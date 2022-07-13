@@ -39,11 +39,12 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
   private[backup] def checkObjectExists(key: String)(implicit executionContext: ExecutionContext): Future[Boolean] = {
     val base = S3.getObjectMetadata(s3Config.dataBucket, key)
 
-    for {
-      result <- maybeS3Settings
-                  .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
-                  .runWith(Sink.headOption)
-    } yield result.exists(_.isDefined)
+    maybeS3Settings
+      .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
+      .runWith(Sink.headOption)
+      .map(
+        _.exists(_.isDefined)
+      )(ExecutionContext.parasitic)
   }
 
   /** @return
@@ -58,7 +59,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
     maybeS3Settings
       .fold(baseList)(s3Settings => baseList.withAttributes(S3Attributes.settings(s3Settings)))
       .runWith(Sink.seq)
-      .map(x => Some(x))
+      .map(x => Some(x))(ExecutionContext.parasitic)
       .recover {
         // Its possible for S3 to return an in progress multipart upload for an upload that has already been finished.
         // This exception is thrown in such a case so lets recover and act as if there was no multipart uploads in progress
