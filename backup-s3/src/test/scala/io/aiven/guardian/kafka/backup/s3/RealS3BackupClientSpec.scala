@@ -418,10 +418,6 @@ class RealS3BackupClientSpec
     ) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
       val data = kafkaDataWithTimePeriod.data
 
-      val topics = data.map(_.topic).toSet
-
-      implicit val kafkaClusterConfig: KafkaCluster = KafkaCluster(topics)
-
       implicit val config: S3Config = s3Config
       implicit val backupConfig: Backup =
         Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 second), 10 seconds)
