@@ -36,7 +36,7 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
 
   override type State = CurrentS3State
 
-  private[backup] def checkObjectExists(key: String)(implicit executionContext: ExecutionContext): Future[Boolean] = {
+  private[backup] def checkObjectExists(key: String): Future[Boolean] = {
     val base = S3.getObjectMetadata(s3Config.dataBucket, key)
 
     maybeS3Settings
