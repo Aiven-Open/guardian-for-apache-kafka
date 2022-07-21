@@ -146,7 +146,18 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
         maybeS3Settings
           .fold(baseListMultipart)(s3Settings => baseListMultipart.withAttributes(S3Attributes.settings(s3Settings)))
           .runWith(Sink.seq)
-      (currentKeys, previousKeys) = incompleteUploads.partition(_.key == key)
+      incompleteUploadsWithExistingParts <-
+        Future
+          .sequence(
+            incompleteUploads.map(upload =>
+              getPartsFromUpload(upload.key, upload.uploadId)
+                .map(result => (upload, result))(ExecutionContext.parasitic)
+            )
+          )
+          .map(_.collect {
+            case (upload, Some(parts)) if parts.nonEmpty => upload
+          })(ExecutionContext.parasitic)
+      (currentKeys, previousKeys) = incompleteUploadsWithExistingParts.partition(_.key == key)
       current <- if (currentKeys.nonEmpty)
                    extractStateFromUpload(currentKeys, current = true)
                  else
