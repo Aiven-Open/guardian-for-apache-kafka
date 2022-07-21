@@ -136,17 +136,36 @@ object Generators {
     * @param padTimestampsMillis
     *   The amount of padding (in milliseconds) between consecutive timestamps. If set to 0 then all timestamps will
     *   differ by a single millisecond. Defaults to 10 millis.
+    * @param tailingSentinelValue
+    *   Whether to add a value at the end of the ReducedConsumerRecords that will have a massively large timestamp so
+    *   that it will typically be skipped when backing up data
     */
   def kafkaDataWithTimePeriodsGen(min: Int = 2,
                                   max: Int = 100,
                                   padTimestampsMillis: Int = 10,
                                   periodSliceFunction: List[ReducedConsumerRecord] => Gen[FiniteDuration] =
                                     randomPeriodSliceBetweenMinMax,
-                                  condition: Option[List[ReducedConsumerRecord] => Boolean] = None
+                                  condition: Option[List[ReducedConsumerRecord] => Boolean] = None,
+                                  tailingSentinelValue: Boolean = false
   ): Gen[KafkaDataWithTimePeriod] = for {
     records  <- kafkaDateGen(min, max, padTimestampsMillis, condition)
     duration <- periodSliceFunction(records)
-  } yield KafkaDataWithTimePeriod(records, duration)
+  } yield {
+    val finalRecords = if (tailingSentinelValue) {
+      val last = records.last
+      records ::: List(
+        ReducedConsumerRecord(last.topic,
+                              last.partition,
+                              last.offset + 1,
+                              None,
+                              Base64.getEncoder.encodeToString(Array.empty),
+                              System.currentTimeMillis(),
+                              TimestampType.CREATE_TIME
+        )
+      )
+    } else records
+    KafkaDataWithTimePeriod(finalRecords, duration)
+  }
 
   def kafkaDataWithTimePeriodsAndPickedRecordGen(
       min: Int = 2,

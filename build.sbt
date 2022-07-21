@@ -16,16 +16,16 @@ val alpakkaVersion             = "3.0.4"
 val futilesVersion             = "2.0.2"
 val quillJdbcMonixVersion      = "3.7.2"
 val postgresqlJdbcVersion      = "42.3.4"
-val scalaLoggingVersion        = "3.9.4"
+val scalaLoggingVersion        = "3.9.5"
 val logbackClassicVersion      = "1.2.11"
-val declineVersion             = "2.2.0"
+val declineVersion             = "2.3.0"
 val pureConfigVersion          = "0.17.1"
 val scalaTestVersion           = "3.2.12"
 val scalaTestScalaCheckVersion = "3.2.12.0-RC2"
 val akkaStreamsJson            = "0.8.3"
 val diffxVersion               = "0.7.1"
-val testContainersVersion      = "0.40.7"
-val testContainersJavaVersion  = "1.17.1"
+val testContainersVersion      = "0.40.9"
+val testContainersJavaVersion  = "1.17.3"
 val scalaCheckVersion          = "1.15.5-1-SNAPSHOT"
 val scalaCheckOpsVersion       = "2.8.1"
 val enumeratumVersion          = "1.7.0"
@@ -330,7 +330,8 @@ lazy val docs = project
       "pure-config.version"              -> pureConfigVersion,
       "decline.version"                  -> declineVersion,
       "scala-logging.version"            -> scalaLoggingVersion,
-      "extref.akka.base_url"             -> s"https://doc.akka.io/docs/akka/${binaryVersion(akkaVersion)}/%s",
+      "extref.akka.base_url"             -> s"https://doc.akka.io/api/akka/${binaryVersion(akkaVersion)}/%s",
+      "extref.akka-docs.base_url"        -> s"https://doc.akka.io/docs/akka/${binaryVersion(akkaVersion)}/%s",
       "extref.akka-stream-json.base_url" -> s"https://github.com/mdedetrich/akka-streams-json",
       "extref.alpakka.base_url"          -> s"https://doc.akka.io/api/alpakka/${binaryVersion(alpakkaVersion)}/%s",
       "extref.alpakka-docs.base_url"     -> s"https://docs.akka.io/docs/alpakka/${binaryVersion(alpakkaVersion)}/%s",

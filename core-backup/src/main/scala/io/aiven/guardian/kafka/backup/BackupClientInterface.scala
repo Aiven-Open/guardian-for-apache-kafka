@@ -288,7 +288,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
     head match {
       case Seq((byteString, Some(cursorContext))) =>
         Source.combine(
-          Source.single((List((byteString, cursorContext)))),
+          Source.single(List((byteString, cursorContext))),
           restTransformed
         )(Concat(_))
       case rest =>
@@ -359,7 +359,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
     *   The `KafkaClientInterface.Control` which depends on the implementation of `T` (typically this is used to control
     *   the underlying stream).
     */
-  def backup: RunnableGraph[kafkaClientInterface.Control] = {
+  def backup: RunnableGraph[kafkaClientInterface.MatCombineResult] = {
     val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
 
     val split = withBackupStreamPositions
@@ -409,41 +409,45 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
       }
 
     @nowarn("msg=method lazyInit in object Sink is deprecated")
-    val subFlowSink = substreams.to(
-      // See https://stackoverflow.com/questions/68774425/combine-prefixandtail1-with-sink-lazysink-for-subflow-created-by-splitafter/68776660?noredirect=1#comment121558518_68776660
-      Sink.lazyInit(
-        {
-          case (_, start: Start) =>
-            implicit val ec: ExecutionContext = system.dispatcher
-            logger.debug(s"Calling getCurrentUploadState with key:${start.key}")
-            val f = for {
-              uploadStateResult <- getCurrentUploadState(start.key)
-              _ = logger.debug(s"Received $uploadStateResult from getCurrentUploadState with key:${start.key}")
-              _ <- (uploadStateResult.previous, uploadStateResult.current) match {
-                     case (Some(previous), None) =>
-                       terminateSource.runWith(backupToStorageTerminateSink(previous)).map(Some.apply)
-                     case _ => Future.successful(None)
-                   }
-            } yield prepareStartOfStream(uploadStateResult, start)
+    val subFlowSink = substreams
+      .alsoTo(
+        // See https://stackoverflow.com/questions/68774425/combine-prefixandtail1-with-sink-lazysink-for-subflow-created-by-splitafter/68776660?noredirect=1#comment121558518_68776660
+        Sink.lazyInit(
+          {
+            case (_, start: Start) =>
+              implicit val ec: ExecutionContext = system.dispatcher
+              logger.debug(s"Calling getCurrentUploadState with key:${start.key}")
+              val f = for {
+                uploadStateResult <- getCurrentUploadState(start.key)
+                _ = logger.debug(s"Received $uploadStateResult from getCurrentUploadState with key:${start.key}")
+                _ <- (uploadStateResult.previous, uploadStateResult.current) match {
+                       case (Some(previous), None) =>
+                         terminateSource
+                           .runWith(backupToStorageTerminateSink(previous))
+                           .map(Some.apply)(ExecutionContext.parasitic)
+                       case _ => Future.successful(None)
+                     }
+              } yield prepareStartOfStream(uploadStateResult, start)
 
-            // TODO This is temporary until https://github.com/aiven/guardian-for-apache-kafka/issues/221 is resolved.
-            // Since SubFlow currently ignores any given supervision strategy we have to use a
-            // SubstreamCancelStrategy.propagate however the exception message is still hence why we need to manually
-            // log it.
-            f.onComplete {
-              case Failure(e) =>
-                logger.error("Unhandled exception in stream", e)
-              case Success(_) =>
-            }
+              // TODO This is temporary until https://github.com/aiven/guardian-for-apache-kafka/issues/221 is resolved.
+              // Since SubFlow currently ignores any given supervision strategy we have to use a
+              // SubstreamCancelStrategy.propagate however the exception message is still hence why we need to manually
+              // log it.
+              f.onComplete {
+                case Failure(e) =>
+                  logger.error("Unhandled exception in stream", e)
+                case Success(_) =>
+              }
 
-            f
-          case _ => throw Errors.ExpectedStartOfSource
-        },
-        empty
+              f
+            case _ => throw Errors.ExpectedStartOfSource
+          },
+          empty
+        )
       )
-    )
+      .mergeSubstreamsWithParallelism(1)
 
-    subFlowSink
+    subFlowSink.toMat(Sink.ignore)(kafkaClientInterface.matCombine)
   }
 }
 
