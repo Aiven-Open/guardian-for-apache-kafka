@@ -8,10 +8,8 @@ provide.
 
 If you want examples of `logback.xml` configuration you can have a look at the
 official [logback page](https://logback.qos.ch/manual/configuration.html) but you can also use existing `logback.xml`'s
-from either the [cli](https://github.com/aiven/guardian-for-apache-kafka/blob/main/core-cli/src/main/resources/logback.xml)
-or the
-[tests](https://github.com/aiven/guardian-for-apache-kafka/blob/main/core/src/test/resources/logback.xml) as a
-reference.
+from either the @github[cli](/core-cli/src/main/resources/logback.xml) or the
+@github[tests](/core/src/test/resources/logback.xml) as a reference.
 
 @@@ warning
 
