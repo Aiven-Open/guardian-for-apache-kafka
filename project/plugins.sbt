@@ -1,5 +1,5 @@
 addSbtPlugin("org.scalameta"                     % "sbt-scalafmt"             % "2.4.6")
-addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox"              % "0.9.2")
+addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox"              % "0.10.2")
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-apidoc"       % "0.10+12-1d5b87db")
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-project-info" % "2.0.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-unidoc"               % "0.5.0")

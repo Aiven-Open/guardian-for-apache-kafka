@@ -15,15 +15,13 @@ You can use the sbt shell to generate a report at any time using
 dependencyCheckAggregate
 ```
 
-This will overwrite the [current report file][dependency-check-report-link]
+This will overwrite the @github[current report file](/dependency-check/dependency-check-report.html)
 
 ### Suppressing false positives
 
 Sometimes it is possible that a false positive get generated in the report. To add a false positive, first you need to
-open the [report file][dependency-check-report-link] in a supported browser. In the list of found vulnerabilities there
+open the @github[report file](/dependency-check/dependency-check-report.html) in a supported browser. In the list of found vulnerabilities there
 should be a suppress button which when clicked displays a popup containing an `XML` suppression entry. You then add
 that `<suppress>` tag entry to the
 existing [suppression-file](https://github.com/aiven/guardian-for-apache-kafka/edit/main/dependency-check/suppression.xml)
 . Finally, regenerate the report again using sbt's `dependencyCheckAggregate`
-
-[dependency-check-report-link]: https://github.com/aiven/guardian-for-apache-kafka/blob/main/dependency-check/dependency-check-report.html

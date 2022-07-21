@@ -17,14 +17,13 @@ using [github pages][github-pages-link]. In addition various other plugins are u
 ## Design
 
 [sbt-paradox][sbt-paradox-link] generates documentation using standard [Markdown](https://www.markdownguide.org/). The
-documentation can be found in the [docs-folder](https://github.com/aiven/guardian-for-apache-kafka/tree/main/docs). Note
-that this folder also corresponds to a sbt-module which is also named `docs` which also means that commands related to
-documentation are run in that sbt sub-project (i.e. `docs/makeSite` generates the documentation site).
+documentation can be found in the @github[docs-folder](/docs). Note that this folder also corresponds to a sbt-module
+which is also named `docs` which also means that commands related to documentation are run in that sbt sub-project
+(i.e. `docs/makeSite` generates the documentation site).
 
 Guardian also uses [scaladoc][scaladoc-link] which is already included within Scala compiler/SBT to generate Scala API
-documentation.
-[scaladoc][scaladoc-link] is analogous to Java's own [javadoc](https://en.wikipedia.org/wiki/Javadoc) which generates
-API documentation that is written within the code itself.
+documentation. [scaladoc][scaladoc-link] is analogous to Java's own [javadoc](https://en.wikipedia.org/wiki/Javadoc)
+which generates API documentation that is written within the code itself.
 
 One advantage of using [sbt-paradox][sbt-paradox-link] and its various plugins as the main driver for documentation
 generation is it that checks at document generation (i.e. compile time) that the docs are well-formed. This checking
