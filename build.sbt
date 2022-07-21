@@ -31,6 +31,9 @@ val scalaCheckOpsVersion       = "2.8.1"
 val enumeratumVersion          = "1.7.0"
 val organizeImportsVersion     = "0.6.0"
 
+// See https://github.com/akka/akka-http/pull/3995 and https://github.com/akka/akka-http/pull/3995#issuecomment-1026978593
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
+
 val flagsFor12 = Seq(
   "-Xlint:_",
   "-Ywarn-infer-any",
