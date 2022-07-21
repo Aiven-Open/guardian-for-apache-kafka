@@ -165,16 +165,16 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#security" name="security" class="anchor"><span class="anchor-link"></span></a>Security</h1>
 <h2><a href="#owasp-report" name="owasp-report" class="anchor"><span class="anchor-link"></span></a>OWASP Report</h2>
-<p>Guardian uses <a href="https://github.com/albuch/sbt-dependency-check">sbt-dependency-check</a> to generate a <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/dependency-check/dependency-check-report.html">dependency-check-report</a> which checks direct and transitive dependencies for vulnerabilities against <a href="https://nvd.nist.gov/">NVD</a> in the form of a HTML file that can be viewed in a standard browser.</p>
+<p>Guardian uses <a href="https://github.com/albuch/sbt-dependency-check">sbt-dependency-check</a> to generate a [dependency-check-report][dependency-check-report-link] which checks direct and transitive dependencies for vulnerabilities against <a href="https://nvd.nist.gov/">NVD</a> in the form of a HTML file that can be viewed in a standard browser.</p>
 <h3><a href="#generating-a-report" name="generating-a-report" class="anchor"><span class="anchor-link"></span></a>Generating a report</h3>
 <p>You can use the sbt shell to generate a report at any time using</p>
 <pre><code>dependencyCheckAggregate
 </code></pre>
-<p>This will overwrite the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/dependency-check/dependency-check-report.html">current report file</a></p>
+<p>This will overwrite the <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/dependency-check/dependency-check-report.html">current report file</a></p>
 <h3><a href="#suppressing-false-positives" name="suppressing-false-positives" class="anchor"><span class="anchor-link"></span></a>Suppressing false positives</h3>
-<p>Sometimes it is possible that a false positive get generated in the report. To add a false positive, first you need to open the <a href="https://github.com/aiven/guardian-for-apache-kafka/blob/main/dependency-check/dependency-check-report.html">report file</a> in a supported browser. In the list of found vulnerabilities there should be a suppress button which when clicked displays a popup containing an <code>XML</code> suppression entry. You then add that <code>&lt;suppress&gt;</code> tag entry to the existing <a href="https://github.com/aiven/guardian-for-apache-kafka/edit/main/dependency-check/suppression.xml">suppression-file</a> . Finally, regenerate the report again using sbt&rsquo;s <code>dependencyCheckAggregate</code></p>
+<p>Sometimes it is possible that a false positive get generated in the report. To add a false positive, first you need to open the <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/dependency-check/dependency-check-report.html">report file</a> in a supported browser. In the list of found vulnerabilities there should be a suppress button which when clicked displays a popup containing an <code>XML</code> suppression entry. You then add that <code>&lt;suppress&gt;</code> tag entry to the existing <a href="https://github.com/aiven/guardian-for-apache-kafka/edit/main/dependency-check/suppression.xml">suppression-file</a> . Finally, regenerate the report again using sbt&rsquo;s <code>dependencyCheckAggregate</code></p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/security.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/docs/src/main/paradox/security.md">here</a>.
 </div>
 
 <div class="nav-next">

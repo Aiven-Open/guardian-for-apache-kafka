@@ -168,7 +168,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <p>Each application is contained within a corresponding sbt submodule, i.e. the application for <code>backup</code> is contained within the <code>cli-backup</code> sbt submodule. The <code>core-cli</code> sbt submodule contains common cli arguments (i.e. <code>kafka-topics</code>).</p>
 <p>Scala packaging has been disabled for these submodules which means that when publishing/packaging Guardian it won&rsquo;t push any built <code>.jar</code> files. This is because its unnecessary since you are meant to run these applications as a binary and not include it as a library. By the same token this also means that the cli modules are built with global inlining using <code>&quot;-opt-inline-from:**&quot;</code>, see <a href="https://www.lightbend.com/blog/scala-inliner-optimizer">here</a> for more info.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/application/design.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/docs/src/main/paradox/application/design.md">here</a>.
 </div>
 
 <div class="nav-next">

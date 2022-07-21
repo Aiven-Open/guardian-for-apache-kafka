@@ -172,7 +172,7 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h2><a href="#restoreclientinterface" name="restoreclientinterface" class="anchor"><span class="anchor-link"></span></a>RestoreClientInterface</h2>
 <p>The <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/restore/RestoreClientInterface.html" title="io.aiven.guardian.kafka.restore.RestoreClientInterface"><code>RestoreClientInterface</code></a></span> implements restoration from an existing backup. Implementing this is quite simple, you need to define <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/restore/RestoreClientInterface.html" title="io.aiven.guardian.kafka.restore.RestoreClientInterface"><code>RestoreClientInterface.retrieveBackupKeys</code></a></span> which returns all valid keys to restore (i.e. don&rsquo;t include currently in progress backup keys) and <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/restore/RestoreClientInterface.html" title="io.aiven.guardian.kafka.restore.RestoreClientInterface"><code>RestoreClientInterface.downloadFlow</code></a></span> which is an akka-stream <code>Flow</code> that takes a <code>String</code> which is the key and outputs the content of that key.</p>
 <div class="source-github">
-The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/master/docs/src/main/paradox/persistence/design.md">here</a>.
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/docs/src/main/paradox/persistence/design.md">here</a>.
 </div>
 
 <div class="nav-next">
