@@ -258,4 +258,12 @@ object Generators {
                    .map(_.mkString)
              }
   } yield topic
+
+  /** Generator for a valid Kafka consumer group that can be used in actual Kafka clusters
+    */
+  lazy val kafkaConsumerGroupGen: Gen[String] = for {
+    size    <- Gen.choose(1, 50)
+    groupId <- Gen.listOfN(size, Gen.alphaChar)
+  } yield groupId.mkString
+
 }

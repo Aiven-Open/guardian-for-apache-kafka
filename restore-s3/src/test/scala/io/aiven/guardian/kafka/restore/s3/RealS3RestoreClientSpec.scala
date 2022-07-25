@@ -15,7 +15,6 @@ import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.TestUtils._
 import io.aiven.guardian.kafka.backup.KafkaClient
-import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.backup.s3.BackupClient
@@ -65,11 +64,14 @@ class RealS3RestoreClientSpec
   override lazy val enableCleanup: Option[FiniteDuration] = Some(5 seconds)
 
   property("Round-trip with backup and restore", RealS3Available) {
-    forAll(kafkaDataWithMinSizeRenamedTopicsGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
-           s3ConfigGen(useVirtualDotHost, bucketPrefix)
+    forAll(
+      kafkaDataWithMinSizeRenamedTopicsGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
+      s3ConfigGen(useVirtualDotHost, bucketPrefix),
+      kafkaConsumerGroupGen
     ) {
       (kafkaDataInChunksWithTimePeriodRenamedTopics: KafkaDataInChunksWithTimePeriodRenamedTopics,
-       s3Config: S3Config
+       s3Config: S3Config,
+       kafkaConsumerGroup: String
       ) =>
         implicit val restoreConfig: RestoreConfig =
           RestoreConfig(None, Some(kafkaDataInChunksWithTimePeriodRenamedTopics.renamedTopics))
@@ -84,7 +86,7 @@ class RealS3RestoreClientSpec
 
         implicit val config: S3Config = s3Config
         implicit val backupConfig: Backup =
-          Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 minute), 10 seconds)
+          Backup(kafkaConsumerGroup, PeriodFromFirst(1 minute), 10 seconds)
 
         val backupClient =
           new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
@@ -127,9 +129,7 @@ class RealS3RestoreClientSpec
               .withBootstrapServers(
                 container.bootstrapServers
               )
-              .withGroupId(
-                MockedBackupClientInterface.KafkaGroupId
-              )
+              .withGroupId(kafkaConsumerGroup)
           restoreResultConsumerSource =
             Consumer
               .plainSource(restoreResultConsumerTopicSettings,
