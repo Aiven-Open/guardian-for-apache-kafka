@@ -436,6 +436,7 @@ class RealS3BackupClientSpec
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
     ) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config, kafkaConsumerGroup: String) =>
+      logger.info(s"Data bucket is ${s3Config.dataBucket}")
       val data = kafkaDataWithTimePeriod.data
 
       val topics = data.map(_.topic).toSet
@@ -534,6 +535,7 @@ class RealS3BackupClientSpec
     forAll(kafkaDataWithTimePeriodsGen(100, 100, 1000, tailingSentinelValue = true),
            s3ConfigGen(useVirtualDotHost, bucketPrefix)
     ) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
+      logger.info(s"Data bucket is ${s3Config.dataBucket}")
       val data = kafkaDataWithTimePeriod.data
 
       implicit val config: S3Config = s3Config
@@ -621,6 +623,7 @@ class RealS3BackupClientSpec
           firstS3Config.dataBucket != secondS3Config.dataBucket && firstKafkaConsumerGroup != secondKafkaConsumerGroup
         ) {
           logger.info(s"Data bucket are ${firstS3Config.dataBucket} and ${secondS3Config.dataBucket}")
+
           val data = kafkaDataInChunksWithTimePeriod.data.flatten
 
           val topics = data.map(_.topic).toSet
@@ -758,6 +761,8 @@ class RealS3BackupClientSpec
         whenever(
           firstS3Config.dataBucket != secondS3Config.dataBucket && firstKafkaConsumerGroup != secondKafkaConsumerGroup
         ) {
+          logger.info(s"Data bucket are ${firstS3Config.dataBucket} and ${secondS3Config.dataBucket}")
+
           val data = kafkaDataWithTimePeriod.data
 
           val topics = data.map(_.topic).toSet
