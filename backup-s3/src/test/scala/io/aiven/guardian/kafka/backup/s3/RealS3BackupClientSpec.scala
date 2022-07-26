@@ -755,7 +755,9 @@ class RealS3BackupClientSpec
        firstKafkaConsumerGroup: String,
        secondKafkaConsumerGroup: String
       ) =>
-        whenever(firstS3Config.dataBucket != secondS3Config.dataBucket) {
+        whenever(
+          firstS3Config.dataBucket != secondS3Config.dataBucket && firstKafkaConsumerGroup != secondKafkaConsumerGroup
+        ) {
           val data = kafkaDataWithTimePeriod.data
 
           val topics = data.map(_.topic).toSet
