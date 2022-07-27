@@ -11,7 +11,7 @@ addSbtPlugin("com.codecommit"                    % "sbt-github-actions"       % 
 addSbtPlugin("com.github.sbt"                    % "sbt-pgp"                  % "2.1.2")
 addSbtPlugin("com.github.sbt"                    % "sbt-release"              % "1.1.0")
 addSbtPlugin("ch.epfl.scala"                     % "sbt-scalafix"             % "0.10.1")
-addSbtPlugin("org.scoverage"                     % "sbt-scoverage"            % "2.0.0")
+addSbtPlugin("org.scoverage"                     % "sbt-scoverage"            % "2.0.1")
 addSbtPlugin("org.scoverage"                     % "sbt-coveralls"            % "1.3.2")
 addSbtPlugin("net.vonbuchholtz"                  % "sbt-dependency-check"     % "4.1.0")
 
@@ -22,3 +22,6 @@ libraryDependencies ++= Seq(
   "org.parboiled" %% "parboiled-scala" % "1.4.1",
   "org.parboiled"  % "parboiled-java"  % "1.4.1"
 )
+
+// See https://github.com/akka/akka-http/pull/3995 and https://github.com/akka/akka-http/pull/3995#issuecomment-1026978593
+libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
