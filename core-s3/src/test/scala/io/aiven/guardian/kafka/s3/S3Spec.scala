@@ -16,6 +16,8 @@ import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.TestUtils
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.scalactic.Prettifier
+import org.scalactic.SizeLimit
 import org.scalatest.Ignore
 import org.scalatest.Tag
 import org.scalatest.concurrent.ScalaFutures
@@ -51,6 +53,11 @@ trait S3Spec
   implicit val defaultPatience: PatienceConfig = PatienceConfig(10 minutes, 100 millis)
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 1)
+
+  /** Due to the fact that we have to deal with massively generated collections when testing against S3, we override the
+    * default prettifier with one that truncates so we don't generate ridiculously large logs
+    */
+  implicit val prettifier: Prettifier = Prettifier.truncateAt(SizeLimit(10))
 
   val s3Settings: S3Settings
 
