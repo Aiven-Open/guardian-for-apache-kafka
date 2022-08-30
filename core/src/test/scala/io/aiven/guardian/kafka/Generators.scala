@@ -19,12 +19,13 @@ object Generators {
                                    key: String,
                                    timestamp: Long
   ): Gen[ReducedConsumerRecord] = for {
-    t             <- Gen.const(topic)
-    p             <- Gen.const(0) // In mocks this value is irrelevant and in tests we always have a single partition
-    o             <- Gen.const(offset)
-    k             <- Gen.const(key)
-    value         <- Gen.alphaStr.map(string => Base64.getEncoder.encodeToString(string.getBytes))
-    ts            <- Gen.const(timestamp)
+    t         <- Gen.const(topic)
+    p         <- Gen.const(0) // In mocks this value is irrelevant and in tests we always have a single partition
+    o         <- Gen.const(offset)
+    k         <- Gen.const(key)
+    valueSize <- Gen.choose(1, 100)
+    value <- Gen.stringOfN(valueSize, Gen.alphaChar).map(string => Base64.getEncoder.encodeToString(string.getBytes))
+    ts    <- Gen.const(timestamp)
     timestampType <- Gen.const(TimestampType.CREATE_TIME)
   } yield ReducedConsumerRecord(
     t,
@@ -65,8 +66,15 @@ object Generators {
   ): Gen[List[ReducedConsumerRecord]] = for {
     t                           <- Gen.const(topic)
     numberOfTotalReducedRecords <- Gen.chooseNum[Int](min, max)
-    numberOfKeys                <- Gen.chooseNum[Int](1, numberOfTotalReducedRecords)
-    keys <- Gen.listOfN(numberOfKeys, Gen.alphaStr.map(string => Base64.getEncoder.encodeToString(string.getBytes)))
+    keysUpper = 2 max (numberOfTotalReducedRecords / 1000)
+    numberOfKeys <- Gen.chooseNum[Int](2, keysUpper)
+    // Make the number of chars in the key proportional to how many we need to generate
+    numberOfCharsInKey = Math.ceil(numberOfKeys.toDouble / 52).toInt
+    valueSize <- Gen.choose(1, numberOfCharsInKey)
+    keys <- Gen.containerOfN[Set, String](
+              numberOfKeys,
+              Gen.stringOfN(valueSize, Gen.alphaChar).map(string => Base64.getEncoder.encodeToString(string.getBytes))
+            )
     keyDistribution <- Gen.listOfN(numberOfTotalReducedRecords, Gen.oneOf(keys))
     keysWithOffSets = keyDistribution.groupMap(identity)(createOffsetsByKey)
     reducedConsumerRecordsWithoutTimestamp = keysWithOffSets
@@ -204,9 +212,9 @@ object Generators {
     * @return
     *   A list of [[ReducedConsumerRecord]] that is at least as big as `size`.
     */
-  def kafkaDataWithMinSizeGen(size: Long,
-                              amount: Int,
-                              toBytesFunc: List[ReducedConsumerRecord] => Array[Byte]
+  def kafkaDataWithMinByteSizeGen(size: Long,
+                                  amount: Int,
+                                  toBytesFunc: List[ReducedConsumerRecord] => Array[Byte]
   ): Gen[KafkaDataInChunksWithTimePeriod] = {
     val single = kafkaDateGen(1000, 10000, 10, Some(reducedConsumerRecordsUntilSize(size, toBytesFunc)))
     for {
@@ -225,7 +233,7 @@ object Generators {
                                            toBytesFunc: List[ReducedConsumerRecord] => Array[Byte]
   ): Gen[KafkaDataInChunksWithTimePeriodRenamedTopics] =
     for {
-      kafkaData <- kafkaDataWithMinSizeGen(size, amount, toBytesFunc)
+      kafkaData <- kafkaDataWithMinByteSizeGen(size, amount, toBytesFunc)
       // New topics need to be unique, hence the set
       newTopicNames <-
         Gen.containerOfN[Set, String](kafkaData.topics.size, kafkaTopic.filterNot(kafkaData.topics.contains))
