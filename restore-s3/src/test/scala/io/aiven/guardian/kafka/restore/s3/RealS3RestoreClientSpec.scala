@@ -126,10 +126,12 @@ class RealS3RestoreClientSpec
           _              <- akka.pattern.after(5 seconds)(restoreClient.restore)
           receivedTopics <- akka.pattern.after(1 minute)(eventualRestoredTopics.drainAndShutdown())
           asConsumerRecords = receivedTopics.map(KafkaClient.consumerRecordToReducedConsumerRecord)
-          _                 = cleanTopics(kafkaDataInChunksWithTimePeriodRenamedTopics.topics)
-          _                 = cleanTopics(renamedTopics)
         } yield asConsumerRecords.toList
 
+        calculatedFuture.onComplete { _ =>
+          cleanTopics(kafkaDataInChunksWithTimePeriodRenamedTopics.topics)
+          cleanTopics(renamedTopics)
+        }
         val restoredConsumerRecords = calculatedFuture.futureValue
 
         val restoredGroupedAsKey = restoredConsumerRecords
