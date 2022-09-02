@@ -134,11 +134,11 @@ class RealS3BackupClientSpec
                   downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
                 case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
               }
-          _ = cleanTopics(topics)
         } yield downloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
           reducedConsumerRecord
         }
 
+        calculatedFuture.onComplete(_ => cleanTopics(topics))
         val downloaded = calculatedFuture.futureValue
 
         val downloadedGroupedAsKey = downloaded
@@ -244,7 +244,6 @@ class RealS3BackupClientSpec
                                       s"Expected object in bucket ${s3Config.dataBucket} with key $key"
                                     )
                                 }
-          _ = cleanTopics(topics)
         } yield {
           val first = firstDownloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
             reducedConsumerRecord
@@ -256,6 +255,7 @@ class RealS3BackupClientSpec
           (first, second)
         }
 
+        calculatedFuture.onComplete(_ => cleanTopics(topics))
         val (firstDownloaded, secondDownloaded) = calculatedFuture.futureValue
 
         // Only care about ordering when it comes to key
@@ -365,11 +365,11 @@ class RealS3BackupClientSpec
                             case None =>
                               throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
                           }
-          _ = cleanTopics(topics)
         } yield downloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
           reducedConsumerRecord
         }
 
+        calculatedFuture.onComplete(_ => cleanTopics(topics))
         val downloaded = calculatedFuture.futureValue
 
         // Only care about ordering when it comes to key
@@ -455,11 +455,11 @@ class RealS3BackupClientSpec
 
             })
             .map(_.flatten)
-        _ = cleanTopics(topics)
       } yield downloaded.flatten.collect { case Some(reducedConsumerRecord) =>
         reducedConsumerRecord
       }
 
+      calculatedFuture.onComplete(_ => cleanTopics(topics))
       val downloaded = calculatedFuture.futureValue
 
       // Only care about ordering when it comes to key
@@ -645,7 +645,6 @@ class RealS3BackupClientSpec
                     downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
                   case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
                 }
-            _ = cleanTopics(topics)
           } yield (downloadedOne.toList.flatten.collect { case Some(reducedConsumerRecord) =>
                      reducedConsumerRecord
                    },
@@ -654,6 +653,7 @@ class RealS3BackupClientSpec
                    }
           )
 
+          calculatedFuture.onComplete(_ => cleanTopics(topics))
           val (downloadedOne, downloadedTwo) = calculatedFuture.futureValue
 
           val downloadedOneGroupedAsKey = downloadedOne
@@ -800,7 +800,6 @@ class RealS3BackupClientSpec
 
                 })
                 .map(_.flatten)
-            _ = cleanTopics(topics)
           } yield (downloadedOne.flatten.collect { case Some(reducedConsumerRecord) =>
                      reducedConsumerRecord
                    },
@@ -809,6 +808,7 @@ class RealS3BackupClientSpec
                    }
           )
 
+          calculatedFuture.onComplete(_ => cleanTopics(topics))
           val (downloadedOne, downloadedTwo) = calculatedFuture.futureValue
 
           // Only care about ordering when it comes to key
