@@ -14,6 +14,7 @@ import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.TestUtils._
 import io.aiven.guardian.kafka.Utils
+import io.aiven.guardian.kafka.backup.BackupClientControlWrapper
 import io.aiven.guardian.kafka.backup.KafkaClient
 import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
 import io.aiven.guardian.kafka.backup.MockedKafkaClientInterface
@@ -107,18 +108,20 @@ class RealS3BackupClientSpec
 
         val producerSettings = createProducer()
 
-        val backupClient =
-          new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
-                                             implicitly,
-                                             implicitly,
-                                             implicitly,
-                                             implicitly
+        val backupClientWrapped =
+          new BackupClientControlWrapper(
+            new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
+                                               implicitly,
+                                               implicitly,
+                                               implicitly,
+                                               implicitly
+            )
           )
 
         val calculatedFuture = for {
           _ <- createTopics(topics)
           _ <- createBucket(s3Config.dataBucket)
-          _ = backupClient.backup.run()
+          _ = backupClientWrapped.run()
           _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
                  baseSource
                    .runWith(Producer.plainSink(producerSettings))
@@ -138,7 +141,10 @@ class RealS3BackupClientSpec
           reducedConsumerRecord
         }
 
-        calculatedFuture.onComplete(_ => cleanTopics(topics))
+        calculatedFuture.onComplete { _ =>
+          cleanTopics(topics)
+          backupClientWrapped.shutdown()
+        }
         val downloaded = calculatedFuture.futureValue
 
         val downloadedGroupedAsKey = downloaded
@@ -193,6 +199,16 @@ class RealS3BackupClientSpec
                                                        implicitly,
                                                        implicitly
           )
+        val backupClientWrapped = new BackupClientControlWrapper(backupClient)
+
+        val secondBackupClient = new BackupClient(Some(s3Settings))(
+          new KafkaClient(configureConsumer = baseKafkaConfig),
+          implicitly,
+          implicitly,
+          implicitly,
+          implicitly
+        )
+        val secondBackupClientWrapped = new BackupClientControlWrapper(secondBackupClient)
 
         val asProducerRecords = toProducerRecords(data)
         val baseSource        = toSource(asProducerRecords, 30 seconds)
@@ -200,22 +216,15 @@ class RealS3BackupClientSpec
         val calculatedFuture = for {
           _ <- createTopics(topics)
           _ <- createBucket(s3Config.dataBucket)
-          _ = backupClient.backup.run()
+          _ = backupClientWrapped.run()
           _ = baseSource.runWith(Producer.plainSink(producerSettings))
           _ <- waitUntilBackupClientHasCommitted(backupClient)
           _ = killSwitch.abort(TerminationException)
-          secondBackupClient <- akka.pattern.after(2 seconds) {
-                                  Future {
-                                    new BackupClient(Some(s3Settings))(
-                                      new KafkaClient(configureConsumer = baseKafkaConfig),
-                                      implicitly,
-                                      implicitly,
-                                      implicitly,
-                                      implicitly
-                                    )
-                                  }
-                                }
-          _ = secondBackupClient.backup.run()
+          _ <- akka.pattern.after(2 seconds) {
+                 Future {
+                   secondBackupClientWrapped.run()
+                 }
+               }
           _                     <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
           (firstKey, secondKey) <- getKeysFromTwoDownloads(s3Config.dataBucket)
           firstDownloaded <- S3.download(s3Config.dataBucket, firstKey)
@@ -255,7 +264,11 @@ class RealS3BackupClientSpec
           (first, second)
         }
 
-        calculatedFuture.onComplete(_ => cleanTopics(topics))
+        calculatedFuture.onComplete { _ =>
+          cleanTopics(topics)
+          backupClientWrapped.shutdown()
+          secondBackupClientWrapped.shutdown()
+        }
         val (firstDownloaded, secondDownloaded) = calculatedFuture.futureValue
 
         // Only care about ordering when it comes to key
@@ -328,6 +341,17 @@ class RealS3BackupClientSpec
                                                        implicitly,
                                                        implicitly
           )
+        val backupClientWrapped = new BackupClientControlWrapper(backupClient)
+
+        val secondBackupClient =
+          new BackupClient(Some(s3Settings))(
+            new KafkaClient(configureConsumer = baseKafkaConfig),
+            implicitly,
+            implicitly,
+            implicitly,
+            implicitly
+          )
+        val secondBackupClientWrapped = new BackupClientControlWrapper(secondBackupClient)
 
         val asProducerRecords = toProducerRecords(data)
         val baseSource        = toSource(asProducerRecords, 30 seconds)
@@ -335,23 +359,16 @@ class RealS3BackupClientSpec
         val calculatedFuture = for {
           _ <- createTopics(topics)
           _ <- createBucket(s3Config.dataBucket)
-          _ = backupClient.backup.run()
+          _ = backupClientWrapped.run()
           _ <- waitForStartOfTimeUnit(ChronoUnit.MINUTES)
           _ = baseSource.runWith(Producer.plainSink(producerSettings))
           _ <- waitUntilBackupClientHasCommitted(backupClient)
           _ = killSwitch.abort(TerminationException)
-          secondBackupClient <- akka.pattern.after(2 seconds) {
-                                  Future {
-                                    new BackupClient(Some(s3Settings))(
-                                      new KafkaClient(configureConsumer = baseKafkaConfig),
-                                      implicitly,
-                                      implicitly,
-                                      implicitly,
-                                      implicitly
-                                    )
-                                  }
-                                }
-          _ = secondBackupClient.backup.run()
+          _ <- akka.pattern.after(2 seconds) {
+                 Future {
+                   secondBackupClientWrapped.run()
+                 }
+               }
           _   <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
           key <- getKeyFromSingleDownload(s3Config.dataBucket)
           downloaded <- S3.download(s3Config.dataBucket, key)
@@ -369,7 +386,11 @@ class RealS3BackupClientSpec
           reducedConsumerRecord
         }
 
-        calculatedFuture.onComplete(_ => cleanTopics(topics))
+        calculatedFuture.onComplete { _ =>
+          cleanTopics(topics)
+          backupClientWrapped.shutdown()
+          secondBackupClientWrapped.shutdown()
+        }
         val downloaded = calculatedFuture.futureValue
 
         // Only care about ordering when it comes to key
@@ -417,18 +438,21 @@ class RealS3BackupClientSpec
 
       implicit val backupConfig: Backup =
         Backup(kafkaConsumerGroup, PeriodFromFirst(1 second), 10 seconds)
-      val backupClient =
-        new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
-                                           implicitly,
-                                           implicitly,
-                                           implicitly,
-                                           implicitly
+
+      val backupClientWrapped =
+        new BackupClientControlWrapper(
+          new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
+                                             implicitly,
+                                             implicitly,
+                                             implicitly,
+                                             implicitly
+          )
         )
 
       val calculatedFuture = for {
         _ <- createTopics(topics)
         _ <- createBucket(s3Config.dataBucket)
-        _ = backupClient.backup.run()
+        _ = backupClientWrapped.run()
         _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
                baseSource
                  .runWith(Producer.plainSink(producerSettings))
@@ -459,7 +483,10 @@ class RealS3BackupClientSpec
         reducedConsumerRecord
       }
 
-      calculatedFuture.onComplete(_ => cleanTopics(topics))
+      calculatedFuture.onComplete { _ =>
+        cleanTopics(topics)
+        backupClientWrapped.shutdown()
+      }
       val downloaded = calculatedFuture.futureValue
 
       // Only care about ordering when it comes to key
@@ -590,27 +617,31 @@ class RealS3BackupClientSpec
 
           val producerSettings = createProducer()
 
-          val backupClientOne = {
+          val backupClientOneWrapped = {
             implicit val backupConfig: Backup = Backup(firstKafkaConsumerGroup, PeriodFromFirst(1 minute), 10 seconds)
 
-            new BackupClient(Some(s3Settings))(
-              new KafkaClient(configureConsumer = baseKafkaConfig),
-              implicitly,
-              implicitly,
-              firstS3Config,
-              implicitly
+            new BackupClientControlWrapper(
+              new BackupClient(Some(s3Settings))(
+                new KafkaClient(configureConsumer = baseKafkaConfig),
+                implicitly,
+                implicitly,
+                firstS3Config,
+                implicitly
+              )
             )
           }
 
-          val backupClientTwo = {
+          val backupClientTwoWrapped = {
             implicit val backupConfig: Backup = Backup(secondKafkaConsumerGroup, PeriodFromFirst(1 minute), 10 seconds)
 
-            new BackupClient(Some(s3Settings))(
-              new KafkaClient(configureConsumer = baseKafkaConfig),
-              implicitly,
-              implicitly,
-              secondS3Config,
-              implicitly
+            new BackupClientControlWrapper(
+              new BackupClient(Some(s3Settings))(
+                new KafkaClient(configureConsumer = baseKafkaConfig),
+                implicitly,
+                implicitly,
+                secondS3Config,
+                implicitly
+              )
             )
           }
 
@@ -618,8 +649,8 @@ class RealS3BackupClientSpec
             _ <- createTopics(topics)
             _ <- createBucket(firstS3Config.dataBucket)
             _ <- createBucket(secondS3Config.dataBucket)
-            _ = backupClientOne.backup.run()
-            _ = backupClientTwo.backup.run()
+            _ = backupClientOneWrapped.run()
+            _ = backupClientTwoWrapped.run()
             _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
                    baseSource
                      .runWith(Producer.plainSink(producerSettings))
@@ -653,7 +684,11 @@ class RealS3BackupClientSpec
                    }
           )
 
-          calculatedFuture.onComplete(_ => cleanTopics(topics))
+          calculatedFuture.onComplete { _ =>
+            cleanTopics(topics)
+            backupClientOneWrapped.shutdown()
+            backupClientTwoWrapped.shutdown()
+          }
           val (downloadedOne, downloadedTwo) = calculatedFuture.futureValue
 
           val downloadedOneGroupedAsKey = downloadedOne
@@ -719,27 +754,31 @@ class RealS3BackupClientSpec
 
           val producerSettings = createProducer()
 
-          val backupClientOne = {
+          val backupClientOneWrapped = {
             implicit val backupConfig: Backup = Backup(firstKafkaConsumerGroup, PeriodFromFirst(1 second), 10 seconds)
 
-            new BackupClient(Some(s3Settings))(
-              new KafkaClient(configureConsumer = baseKafkaConfig),
-              implicitly,
-              implicitly,
-              firstS3Config,
-              implicitly
+            new BackupClientControlWrapper(
+              new BackupClient(Some(s3Settings))(
+                new KafkaClient(configureConsumer = baseKafkaConfig),
+                implicitly,
+                implicitly,
+                firstS3Config,
+                implicitly
+              )
             )
           }
 
-          val backupClientTwo = {
+          val backupClientTwoWrapped = {
             implicit val backupConfig: Backup = Backup(secondKafkaConsumerGroup, PeriodFromFirst(1 second), 10 seconds)
 
-            new BackupClient(Some(s3Settings))(
-              new KafkaClient(configureConsumer = baseKafkaConfig),
-              implicitly,
-              implicitly,
-              secondS3Config,
-              implicitly
+            new BackupClientControlWrapper(
+              new BackupClient(Some(s3Settings))(
+                new KafkaClient(configureConsumer = baseKafkaConfig),
+                implicitly,
+                implicitly,
+                secondS3Config,
+                implicitly
+              )
             )
           }
 
@@ -747,8 +786,8 @@ class RealS3BackupClientSpec
             _ <- createTopics(topics)
             _ <- createBucket(firstS3Config.dataBucket)
             _ <- createBucket(secondS3Config.dataBucket)
-            _ = backupClientOne.backup.run()
-            _ = backupClientTwo.backup.run()
+            _ = backupClientOneWrapped.run()
+            _ = backupClientTwoWrapped.run()
             _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
                    baseSource
                      .runWith(Producer.plainSink(producerSettings))
@@ -808,7 +847,11 @@ class RealS3BackupClientSpec
                    }
           )
 
-          calculatedFuture.onComplete(_ => cleanTopics(topics))
+          calculatedFuture.onComplete { _ =>
+            cleanTopics(topics)
+            backupClientOneWrapped.shutdown()
+            backupClientTwoWrapped.shutdown()
+          }
           val (downloadedOne, downloadedTwo) = calculatedFuture.futureValue
 
           // Only care about ordering when it comes to key
