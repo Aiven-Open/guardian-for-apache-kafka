@@ -78,7 +78,24 @@ trait S3Spec
 
   def createBucket(bucket: String): Future[Unit] =
     for {
-      _ <- S3.makeBucket(bucket)
+      bucketResponse <- S3.checkIfBucketExists(bucket)
+      _ <- bucketResponse match {
+             case BucketAccess.AccessDenied =>
+               throw new RuntimeException(
+                 s"Unable to create bucket: $bucket since it already exists however permissions are inadequate"
+               )
+             case BucketAccess.AccessGranted =>
+               logger.info(s"Deleting and recreating bucket: $bucket since it already exists with correct permissions")
+               for {
+                 _ <- S3.deleteBucketContents(bucket).withAttributes(s3Attrs).runWith(Sink.ignore)
+                 // Although theoretically speaking just clearing the buckets should be enough, since we rely a lot
+                 // on multipart upload state its safer to just delete and recreate the bucket
+                 _ <- S3.deleteBucket(bucket)
+                 _ <- S3.makeBucket(bucket)
+               } yield ()
+             case BucketAccess.NotExists =>
+               S3.makeBucket(bucket)
+           }
       _ = if (enableCleanup.isDefined)
             bucketsToCleanup.add(bucket)
     } yield ()
