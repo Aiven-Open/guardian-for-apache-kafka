@@ -29,3 +29,9 @@ Scala API doc @apidoc[kafka.backup.configs.Backup]
     * `commit-timeout-buffer-window`: Guardian sets the commit timeout of the Kafka consumer based on the `time-configuration`
       since Guardian does manual committing of cursors. The buffer gets added onto the `time-configuration` to give
       some headroom for any theoretical delays.
+    * `compression`: The compression format to use for the data being backed up. Note that changes in compression
+      configuration will not apply for any currently existing backups that need to be completed, only for future
+      new backups.
+      * `type`: Which compression to use.
+        * `gzip`. Standard [Gzip](https://en.wikipedia.org/wiki/Gzip) compression
+      * `level`: The level of compression to use

@@ -4,8 +4,10 @@ import akka.actor.ActorSystem
 import akka.testkit.TestKit
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
+import io.aiven.guardian.kafka.backup.configs.Compression
 import io.aiven.guardian.kafka.backup.configs.{Backup => BackupConfig}
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
+import io.aiven.guardian.kafka.models.Gzip
 import markatta.futiles.CancellableFuture
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
@@ -51,7 +53,10 @@ class CliSpec
       "--chrono-unit-slice",
       "hours",
       "--commit-timeout-buffer-window",
-      "1 second"
+      "1 second",
+      "gzip",
+      "--compression-level",
+      "5"
     )
 
     val cancellable = CancellableFuture {
@@ -73,7 +78,8 @@ class CliSpec
       case s3App: S3App =>
         s3App.backupConfig mustEqual BackupConfig(groupId,
                                                   ChronoUnitSlice(ChronoUnit.HOURS),
-                                                  FiniteDuration(1, TimeUnit.SECONDS)
+                                                  FiniteDuration(1, TimeUnit.SECONDS),
+                                                  Some(Compression(Gzip, Some(5)))
         )
         s3App.kafkaClusterConfig mustEqual KafkaClusterConfig(Set(topic))
         s3App.kafkaClient.consumerSettings.getProperty("bootstrap.servers") mustEqual bootstrapServer

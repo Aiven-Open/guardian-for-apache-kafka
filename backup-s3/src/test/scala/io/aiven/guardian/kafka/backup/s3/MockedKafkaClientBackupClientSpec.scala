@@ -57,7 +57,7 @@ class MockedKafkaClientBackupClientSpec
 
       implicit val config: S3Config = s3Config
       implicit val backupConfig: Backup =
-        Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 second), 10 seconds)
+        Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 second), 10 seconds, None)
 
       val backupClient =
         new BackupClient(Some(s3Settings))(new MockedKafkaClientInterface(Source(data)),

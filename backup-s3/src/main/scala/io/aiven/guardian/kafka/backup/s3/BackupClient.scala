@@ -12,6 +12,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.BackupClientInterface
 import io.aiven.guardian.kafka.backup.KafkaClientInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
+import io.aiven.guardian.kafka.models.BackupObjectMetadata
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 
 import scala.collection.immutable
@@ -167,8 +168,11 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
                   else
                     Future.successful(None)
 
-    } yield UploadStateResult(current.map(_._1),
-                              previous.map { case (state, previousKey) => PreviousState(state, previousKey) }
+    } yield UploadStateResult(
+      current.map { case (state, key) => StateDetails(state, BackupObjectMetadata.fromKey(key)) },
+      previous.map { case (previousState, previousKey) =>
+        PreviousState(StateDetails(previousState, BackupObjectMetadata.fromKey(previousKey)), previousKey)
+      }
     )
 
   }
@@ -238,19 +242,19 @@ class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings
         // the same key that means that in fact the upload has already been completed so in this case lets not do anything
         if (exists) {
           logger.debug(
-            s"Previous upload with uploadId: ${previousState.state.uploadId} and key: ${previousState.previousKey} doesn't actually exist, skipping terminating"
+            s"Previous upload with uploadId: ${previousState.stateDetails.state.uploadId} and key: ${previousState.previousKey} doesn't actually exist, skipping terminating"
           )
           Sink.ignore
         } else {
           logger.info(
-            s"Terminating and completing previous backup with key: ${previousState.previousKey} and uploadId: ${previousState.state.uploadId}"
+            s"Terminating and completing previous backup with key: ${previousState.previousKey} and uploadId: ${previousState.stateDetails.state.uploadId}"
           )
           val sink = S3
             .resumeMultipartUploadWithHeaders(
               s3Config.dataBucket,
               previousState.previousKey,
-              previousState.state.uploadId,
-              previousState.state.parts,
+              previousState.stateDetails.state.uploadId,
+              previousState.stateDetails.state.parts,
               s3Headers = s3Headers,
               chunkingParallelism = 1
             )
