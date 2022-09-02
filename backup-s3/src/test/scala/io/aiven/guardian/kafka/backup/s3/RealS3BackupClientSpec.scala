@@ -25,15 +25,10 @@ import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.Generators.s3ConfigGen
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
-import org.apache.kafka.clients.CommonClientConfigs
-import org.apache.kafka.clients.admin.AdminClient
-import org.apache.kafka.clients.admin.NewTopic
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.jdk.CollectionConverters._
-import scala.jdk.FutureConverters._
 import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
@@ -120,18 +115,8 @@ class RealS3BackupClientSpec
                                              implicitly
           )
 
-        val adminClient = AdminClient.create(
-          Map[String, AnyRef](
-            CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
-          ).asJava
-        )
-
-        val createTopics = adminClient.createTopics(topics.map { topic =>
-          new NewTopic(topic, 1, 1.toShort)
-        }.asJava)
-
         val calculatedFuture = for {
-          _ <- createTopics.all().toCompletableFuture.asScala
+          _ <- createTopics(topics)
           _ <- createBucket(s3Config.dataBucket)
           _ = backupClient.backup.run()
           _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
@@ -149,7 +134,7 @@ class RealS3BackupClientSpec
                   downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
                 case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
               }
-
+          _ = cleanTopics(topics)
         } yield downloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
           reducedConsumerRecord
         }
@@ -212,18 +197,8 @@ class RealS3BackupClientSpec
         val asProducerRecords = toProducerRecords(data)
         val baseSource        = toSource(asProducerRecords, 30 seconds)
 
-        val adminClient = AdminClient.create(
-          Map[String, AnyRef](
-            CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
-          ).asJava
-        )
-
-        val createTopics = adminClient.createTopics(topics.map { topic =>
-          new NewTopic(topic, 1, 1.toShort)
-        }.asJava)
-
         val calculatedFuture = for {
-          _ <- createTopics.all().toCompletableFuture.asScala
+          _ <- createTopics(topics)
           _ <- createBucket(s3Config.dataBucket)
           _ = backupClient.backup.run()
           _ = baseSource.runWith(Producer.plainSink(producerSettings))
@@ -269,7 +244,7 @@ class RealS3BackupClientSpec
                                       s"Expected object in bucket ${s3Config.dataBucket} with key $key"
                                     )
                                 }
-
+          _ = cleanTopics(topics)
         } yield {
           val first = firstDownloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
             reducedConsumerRecord
@@ -357,18 +332,8 @@ class RealS3BackupClientSpec
         val asProducerRecords = toProducerRecords(data)
         val baseSource        = toSource(asProducerRecords, 30 seconds)
 
-        val adminClient = AdminClient.create(
-          Map[String, AnyRef](
-            CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
-          ).asJava
-        )
-
-        val createTopics = adminClient.createTopics(topics.map { topic =>
-          new NewTopic(topic, 1, 1.toShort)
-        }.asJava)
-
         val calculatedFuture = for {
-          _ <- createTopics.all().toCompletableFuture.asScala
+          _ <- createTopics(topics)
           _ <- createBucket(s3Config.dataBucket)
           _ = backupClient.backup.run()
           _ <- waitForStartOfTimeUnit(ChronoUnit.MINUTES)
@@ -400,7 +365,7 @@ class RealS3BackupClientSpec
                             case None =>
                               throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
                           }
-
+          _ = cleanTopics(topics)
         } yield downloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
           reducedConsumerRecord
         }
@@ -460,18 +425,8 @@ class RealS3BackupClientSpec
                                            implicitly
         )
 
-      val adminClient = AdminClient.create(
-        Map[String, AnyRef](
-          CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
-        ).asJava
-      )
-
-      val createTopics = adminClient.createTopics(topics.map { topic =>
-        new NewTopic(topic, 1, 1.toShort)
-      }.asJava)
-
       val calculatedFuture = for {
-        _ <- createTopics.all().toCompletableFuture.asScala
+        _ <- createTopics(topics)
         _ <- createBucket(s3Config.dataBucket)
         _ = backupClient.backup.run()
         _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
@@ -500,7 +455,7 @@ class RealS3BackupClientSpec
 
             })
             .map(_.flatten)
-
+        _ = cleanTopics(topics)
       } yield downloaded.flatten.collect { case Some(reducedConsumerRecord) =>
         reducedConsumerRecord
       }
@@ -659,18 +614,8 @@ class RealS3BackupClientSpec
             )
           }
 
-          val adminClient = AdminClient.create(
-            Map[String, AnyRef](
-              CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
-            ).asJava
-          )
-
-          val createTopics = adminClient.createTopics(topics.map { topic =>
-            new NewTopic(topic, 1, 1.toShort)
-          }.asJava)
-
           val calculatedFuture = for {
-            _ <- createTopics.all().toCompletableFuture.asScala
+            _ <- createTopics(topics)
             _ <- createBucket(firstS3Config.dataBucket)
             _ <- createBucket(secondS3Config.dataBucket)
             _ = backupClientOne.backup.run()
@@ -700,7 +645,7 @@ class RealS3BackupClientSpec
                     downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
                   case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
                 }
-
+            _ = cleanTopics(topics)
           } yield (downloadedOne.toList.flatten.collect { case Some(reducedConsumerRecord) =>
                      reducedConsumerRecord
                    },
@@ -798,18 +743,8 @@ class RealS3BackupClientSpec
             )
           }
 
-          val adminClient = AdminClient.create(
-            Map[String, AnyRef](
-              CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
-            ).asJava
-          )
-
-          val createTopics = adminClient.createTopics(topics.map { topic =>
-            new NewTopic(topic, 1, 1.toShort)
-          }.asJava)
-
           val calculatedFuture = for {
-            _ <- createTopics.all().toCompletableFuture.asScala
+            _ <- createTopics(topics)
             _ <- createBucket(firstS3Config.dataBucket)
             _ <- createBucket(secondS3Config.dataBucket)
             _ = backupClientOne.backup.run()
@@ -865,7 +800,7 @@ class RealS3BackupClientSpec
 
                 })
                 .map(_.flatten)
-
+            _ = cleanTopics(topics)
           } yield (downloadedOne.flatten.collect { case Some(reducedConsumerRecord) =>
                      reducedConsumerRecord
                    },

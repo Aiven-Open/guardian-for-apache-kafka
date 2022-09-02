@@ -8,14 +8,21 @@ import akka.stream.scaladsl.Source
 import com.dimafeng.testcontainers.ForAllTestContainer
 import com.dimafeng.testcontainers.KafkaContainer
 import io.aiven.guardian.akka.AkkaStreamTestKit
+import io.aiven.guardian.kafka.TestUtils.KafkaFutureToCompletableFuture
+import org.apache.kafka.clients.CommonClientConfigs
+import org.apache.kafka.clients.admin.AdminClient
+import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.scalatest.Suite
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
+import scala.jdk.FutureConverters._
 import scala.language.postfixOps
 
 trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this: Suite =>
@@ -72,6 +79,42 @@ trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this
       )
     ).runWith(Producer.plainSink(producerSettings))
   }
+
+  protected var adminClient: AdminClient = _
+
+  override def afterStart(): Unit = {
+    super.afterStart()
+    adminClient = AdminClient.create(
+      Map[String, AnyRef](
+        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
+      ).asJava
+    )
+  }
+
+  override def beforeStop(): Unit = {
+    adminClient.close()
+    super.beforeStop()
+  }
+
+  def createTopics(topics: Set[String])(implicit executionContext: ExecutionContext): Future[Unit] =
+    for {
+      currentTopics <- adminClient.listTopics().names().toCompletableFuture.asScala
+      topicsToCreate = topics.diff(currentTopics.asScala.toSet)
+      _ <- adminClient
+             .createTopics(topicsToCreate.map { topic =>
+               new NewTopic(topic, 1, 1.toShort)
+             }.asJava)
+             .all()
+             .toCompletableFuture
+             .asScala
+    } yield ()
+
+  def cleanTopics(topics: Set[String])(implicit executionContext: ExecutionContext): Future[Unit] =
+    for {
+      currentTopics <- adminClient.listTopics().names().toCompletableFuture.asScala
+      topicsToDelete = topics.intersect(currentTopics.asScala.toSet)
+      _ <- adminClient.deleteTopics(topicsToDelete.asJava).all().toCompletableFuture.asScala
+    } yield ()
 
   case object TerminationException extends Exception("termination-exception")
 }
