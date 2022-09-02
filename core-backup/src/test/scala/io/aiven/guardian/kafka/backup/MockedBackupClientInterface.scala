@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka.backup
 import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.scaladsl.Compression
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
@@ -12,9 +13,14 @@ import io.aiven.guardian.kafka.TestUtils._
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
+import io.aiven.guardian.kafka.backup.configs.{Compression => CompressionModel}
+import io.aiven.guardian.kafka.models.BackupObjectMetadata
+import io.aiven.guardian.kafka.models.CompressionType
+import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
 import scala.collection.immutable
+import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
@@ -34,6 +40,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
   */
 class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafkaClientInterface,
                                   timeConfiguration: TimeConfiguration,
+                                  compression: Option[CompressionModel] = None,
                                   backedUpData: ConcurrentLinkedQueue[(String, ByteString)] =
                                     new ConcurrentLinkedQueue[(String, ByteString)]()
 )(implicit override val system: ActorSystem)
@@ -50,21 +57,33 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     * @return
     *   `backupData` with all of the `ByteString` data merged for each unique key
     */
-  def mergeBackedUpData(terminate: Boolean = true, sort: Boolean = true): List[(String, ByteString)] = {
+  def mergeBackedUpData(terminate: Boolean = true,
+                        sort: Boolean = true,
+                        compression: Option[CompressionType] = None
+  ): List[(String, ByteString)] = {
     val base = backedUpData.asScala
       .orderedGroupBy { case (key, _) =>
         key
       }
       .view
-      .mapValues { data =>
-        val complete = data.map { case (_, byteString) => byteString }.foldLeft(ByteString())(_ ++ _)
-        if (terminate)
-          if (complete.utf8String.endsWith("},"))
-            complete ++ ByteString("null]")
+      .map { case (key, data) =>
+        val joined = joinByteString(data.map { case (_, byteString) => byteString })
+        val complete =
+          // Only bother decompressing when needed since some tests can have mixed backups
+          if (BackupObjectMetadata.fromKey(key).compression.isDefined)
+            decompress(joined, compression)
+          else
+            joined
+
+        val finalData =
+          if (terminate)
+            if (complete.utf8String.endsWith("},"))
+              complete ++ ByteString("null]")
+            else
+              complete
           else
             complete
-        else
-          complete
+        (key, finalData)
       }
       .toList
     if (sort)
@@ -80,7 +99,8 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
   override implicit lazy val backupConfig: Backup = Backup(
     KafkaGroupId,
     timeConfiguration,
-    10 seconds
+    10 seconds,
+    compression
   )
 
   /** Override this type to define the result of backing up data to a datasource
@@ -97,8 +117,9 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
       if (index < 0)
         UploadStateResult.empty
       else {
-        val previous = keys.lift(index - 1).map(k => PreviousState((), k))
-        val current  = Some(())
+        val previous =
+          keys.lift(index - 1).map(k => PreviousState(StateDetails((), BackupObjectMetadata.fromKey(k)), k))
+        val current = Some(StateDetails((), BackupObjectMetadata.fromKey(key)))
         UploadStateResult(current, previous)
       }
 
@@ -138,6 +159,20 @@ object MockedBackupClientInterface {
     * Kafka cluster) where as when used against actual test Kafka clusters this is the consumer group that is used
     */
   val KafkaGroupId: String = "test"
+
+  def decompress(byteString: ByteString, compression: Option[CompressionType])(implicit
+      system: ActorSystem
+  ): ByteString =
+    compression match {
+      case Some(Gzip) =>
+        Await.result(Source.single(byteString).via(Compression.gunzip()).runFold(ByteString.empty)(_ ++ _),
+                     Duration.Inf
+        )
+      case None => byteString
+    }
+
+  def joinByteString(byteStrings: IterableOnce[ByteString]): ByteString =
+    byteStrings.iterator.foldLeft(ByteString.empty)(_ ++ _)
 }
 
 /** A `MockedBackupClientInterface` that also uses a mocked `KafkaClientInterface`
@@ -145,6 +180,7 @@ object MockedBackupClientInterface {
 class MockedBackupClientInterfaceWithMockedKafkaData(
     kafkaData: Source[ReducedConsumerRecord, NotUsed],
     timeConfiguration: TimeConfiguration,
+    compression: Option[CompressionModel] = None,
     commitStorage: ConcurrentLinkedDeque[Long] = new ConcurrentLinkedDeque[Long](),
     backedUpData: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)](),
     stopAfterDuration: Option[FiniteDuration] = None,
@@ -153,5 +189,6 @@ class MockedBackupClientInterfaceWithMockedKafkaData(
     extends MockedBackupClientInterface(
       new MockedKafkaClientInterface(kafkaData, commitStorage, stopAfterDuration, handleOffsets),
       timeConfiguration,
+      compression,
       backedUpData
     )

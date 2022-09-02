@@ -7,11 +7,11 @@ import akka.stream.scaladsl._
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.Errors
-import io.aiven.guardian.kafka.backup.configs.Backup
-import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
-import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
-import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
+import io.aiven.guardian.kafka.backup.configs.{Compression => CompressionConfig, _}
 import io.aiven.guardian.kafka.codecs.Circe._
+import io.aiven.guardian.kafka.models.BackupObjectMetadata
+import io.aiven.guardian.kafka.models.CompressionType
+import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.circe.syntax._
 
@@ -51,8 +51,9 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
 
   private[backup] case class Tail(override val context: kafkaClientInterface.CursorContext) extends ByteStringContext
 
-  case class PreviousState(state: State, previousKey: String)
-  case class UploadStateResult(current: Option[State], previous: Option[PreviousState])
+  case class StateDetails(state: State, backupObjectMetadata: BackupObjectMetadata)
+  case class PreviousState(stateDetails: StateDetails, previousKey: String)
+  case class UploadStateResult(current: Option[StateDetails], previous: Option[PreviousState])
   object UploadStateResult {
     val empty: UploadStateResult = UploadStateResult(None, None)
   }
@@ -296,8 +297,64 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
     }
   }
 
-  private[backup] val terminateSource: Source[ByteString, NotUsed] =
-    Source.single(ByteString("null]"))
+  private[backup] def compressContextFlow[CtxIn, CtxOut, Mat](
+      flowWithContext: FlowWithContext[ByteString, CtxIn, ByteString, CtxOut, Mat]
+  ) =
+    backupConfig.compression match {
+      case Some(compression) =>
+        flowWithContext.unsafeDataVia(compressionFlow(compression))
+      case None => flowWithContext
+    }
+
+  private[backup] def compressContextSink[Ctx, Mat](sink: Sink[(ByteString, Ctx), Mat]) =
+    backupConfig.compression match {
+      case Some(compression) =>
+        FlowWithContext[ByteString, Ctx]
+          .unsafeDataVia(compressionFlow(compression))
+          .asFlow
+          .toMat(
+            sink
+          )(Keep.right)
+      case None => sink
+    }
+
+  private[backup] def skipCompressionOnAlreadyExistingUpload(start: Start, previousState: PreviousState) =
+    (backupConfig.compression, previousState.stateDetails.backupObjectMetadata.compression) match {
+      case (Some(compression), None) =>
+        val whichCompression = compression.`type`.pretty
+        logger.info(
+          s"Configured compression $whichCompression will apply on next upload, skipping compressing current upload"
+        )
+        backupToStorageSink(start.key, None)
+          .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+            (byteString, byteStringContext.context)
+          }
+      case (None, None) =>
+        backupToStorageSink(start.key, None)
+          .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+            (byteString, byteStringContext.context)
+          }
+      case (None, Some(_)) =>
+        logger.info(s"Compression has been configured to be disabled, this will apply on next upload")
+        FlowWithContext[ByteString, ByteStringContext]
+          // Since we don't persist any details on what the compression level is for a previously
+          // initiated upload lets just use the default compression level
+          .unsafeDataVia(compressionFlow(CompressionConfig(Gzip, None)))
+          .asFlow
+          .toMat(
+            backupToStorageSink(start.key, None)
+              .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+                (byteString, byteStringContext.context)
+              }
+          )(Keep.right)
+      case (Some(CompressionConfig(Gzip, _)), Some(Gzip)) =>
+        compressContextSink(
+          backupToStorageSink(start.key, None)
+            .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+              (byteString, byteStringContext.context)
+            }
+        )
+    }
 
   /** Prepares the sink before it gets handed to `backupToStorageSink`
     */
@@ -308,25 +365,19 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
       case (Some(previous), None) =>
         backupConfig.timeConfiguration match {
           case _: PeriodFromFirst =>
-            backupToStorageSink(start.key, None)
-              .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
-                (byteString, byteStringContext.context)
-              }
+            skipCompressionOnAlreadyExistingUpload(start, previous)
           case _: ChronoUnitSlice =>
             logger.warn(
               s"Detected previous backup using PeriodFromFirst however current configuration is now changed to ChronoUnitSlice. Object/file with an older key: ${start.key} may contain newer events than object/file with newer key: ${previous.previousKey}"
             )
-            backupToStorageSink(start.key, None)
-              .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
-                (byteString, byteStringContext.context)
-              }
+            skipCompressionOnAlreadyExistingUpload(start, previous)
         }
       case (None, Some(current)) =>
         backupConfig.timeConfiguration match {
           case _: PeriodFromFirst =>
             throw Errors.UnhandledStreamCase(List(current))
           case _: ChronoUnitSlice =>
-            FlowWithContext
+            val baseFlow = FlowWithContext
               .fromTuples(
                 Flow[(ByteString, ByteStringContext)]
                   .flatMapPrefix(1) {
@@ -338,19 +389,22 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
                     case _ => throw Errors.ExpectedStartOfSource
                   }
               )
-              .asFlow
-              .toMat(backupToStorageSink(start.key, Some(current)).contramap[(ByteString, ByteStringContext)] {
+
+            compressContextFlow(baseFlow).asFlow
+              .toMat(backupToStorageSink(start.key, Some(current.state)).contramap[(ByteString, ByteStringContext)] {
                 case (byteString, byteStringContext) =>
                   (byteString, byteStringContext.context)
               })(Keep.right)
         }
       case (None, None) =>
-        backupToStorageSink(start.key, None)
-          .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
-            (byteString, byteStringContext.context)
-          }
+        compressContextSink(
+          backupToStorageSink(start.key, None)
+            .contramap[(ByteString, ByteStringContext)] { case (byteString, byteStringContext) =>
+              (byteString, byteStringContext.context)
+            }
+        )
       case (Some(previous), Some(current)) =>
-        throw Errors.UnhandledStreamCase(List(previous.state, current))
+        throw Errors.UnhandledStreamCase(List(previous.stateDetails, current))
     }
 
   /** The entire flow that involves reading from Kafka, transforming the data into JSON and then backing it up into a
@@ -374,10 +428,16 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
         case (Seq(only: Element, End), _) =>
           // This case only occurs when you have a single element in a timeslice.
           // We have to terminate immediately to create a JSON array with a single element
-          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
+          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime,
+                                 backupConfig.timeConfiguration,
+                                 backupConfig.compression
+          )
           transformFirstElement(only, key, terminate = true)
         case (Seq(first: Element, second: Element), restOfReducedConsumerRecords) =>
-          val key         = calculateKey(first.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
+          val key = calculateKey(first.reducedConsumerRecord.toOffsetDateTime,
+                                 backupConfig.timeConfiguration,
+                                 backupConfig.compression
+          )
           val firstSource = transformFirstElement(first, key, terminate = false)
 
           val rest = Source.combine(
@@ -402,7 +462,10 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
           )
         case (Seq(only: Element), _) =>
           // This case can also occur when user terminates the stream
-          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime, backupConfig.timeConfiguration)
+          val key = calculateKey(only.reducedConsumerRecord.toOffsetDateTime,
+                                 backupConfig.timeConfiguration,
+                                 backupConfig.compression
+          )
           transformFirstElement(only, key, terminate = false)
         case (rest, _) =>
           throw Errors.UnhandledStreamCase(rest)
@@ -422,7 +485,7 @@ trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
                 _ = logger.debug(s"Received $uploadStateResult from getCurrentUploadState with key:${start.key}")
                 _ <- (uploadStateResult.previous, uploadStateResult.current) match {
                        case (Some(previous), None) =>
-                         terminateSource
+                         terminateSource(previous.stateDetails.backupObjectMetadata.compression)
                            .runWith(backupToStorageTerminateSink(previous))
                            .map(Some.apply)(ExecutionContext.parasitic)
                        case _ => Future.successful(None)
@@ -464,13 +527,21 @@ object BackupClientInterface {
     * @return
     *   A `String` that can be used either as some object key or a filename
     */
-  def calculateKey(offsetDateTime: OffsetDateTime, timeConfiguration: TimeConfiguration): String = {
+  def calculateKey(offsetDateTime: OffsetDateTime,
+                   timeConfiguration: TimeConfiguration,
+                   maybeCompression: Option[CompressionConfig]
+  ): String = {
     val finalTime = timeConfiguration match {
       case ChronoUnitSlice(chronoUnit) => offsetDateTime.truncatedTo(chronoUnit)
       case _                           => offsetDateTime
     }
 
-    s"${BackupClientInterface.formatOffsetDateTime(finalTime)}.json"
+    val extension = maybeCompression match {
+      case Some(CompressionConfig(Gzip, _)) => "json.gz"
+      case None                             => "json"
+    }
+
+    s"${BackupClientInterface.formatOffsetDateTime(finalTime)}.$extension"
   }
 
   /** Calculates whether we have rolled over a time period given number of divided periods.
@@ -502,5 +573,42 @@ object BackupClientInterface {
 
     // TODO handle overflow?
     ChronoUnit.MICROS.between(finalInitialTime, reducedConsumerRecord.toOffsetDateTime) / period.toMicros
+  }
+
+  /** Flattens an existing flow so that for each incoming element there is exactly one outputting element. Typically
+    * this is used in combination with `unsafeDataVia` so that your `FlowWithContext`/`SourceWithContext` doesn't get
+    * corrupted.
+    * @param flow
+    *   An existing flow that you want to flatten
+    * @param zero
+    *   A zero value which is used if the `flow` doesn't produce any elements
+    * @param foldFunc
+    *   A function that determines how to concatenate a sequence
+    * @return
+    *   A flow that will always produce exactly single output element for a given input element
+    */
+  private[backup] def flattenFlow[T](flow: Flow[T, T, NotUsed], zero: T, foldFunc: (T, T) => T): Flow[T, T, NotUsed] =
+    Flow[T].flatMapConcat { single =>
+      Source
+        .fromMaterializer { case (mat, _) =>
+          Source.future(
+            Source.single(single).via(flow).runFold(zero)(foldFunc)(mat)
+          )
+        }
+    }
+
+  private[backup] def compressionFlow(compression: CompressionConfig) = compression match {
+    case CompressionConfig(Gzip, Some(level)) =>
+      flattenFlow[ByteString](Compression.gzip(level), ByteString.empty, _ ++ _)
+    case CompressionConfig(Gzip, None) =>
+      flattenFlow[ByteString](Compression.gzip, ByteString.empty, _ ++ _)
+  }
+
+  private[backup] def terminateSource(compression: Option[CompressionType]) = {
+    val baseSource = Source.single(ByteString("null]"))
+    compression match {
+      case Some(Gzip) => baseSource.via(Compression.gzip)
+      case None       => baseSource
+    }
   }
 }

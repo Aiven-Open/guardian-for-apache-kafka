@@ -5,6 +5,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.Attributes
 import akka.stream.SharedKillSwitch
+import akka.stream.scaladsl.Compression
 import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
@@ -13,6 +14,8 @@ import io.aiven.guardian.kafka.ExtensionsMethods._
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.configs.KafkaCluster
+import io.aiven.guardian.kafka.models.BackupObjectMetadata
+import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.restore.configs.Restore
 import markatta.futiles.Traversal.traverseSequentially
@@ -84,9 +87,16 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends LazyLogging {
     }
 
   private[kafka] def restoreKey(key: String): Future[Done] = {
-    val base = Source
+    val source = Source
       .single(key)
       .via(downloadFlow)
+
+    val sourceWithCompression = BackupObjectMetadata.fromKey(key).compression match {
+      case Some(Gzip) => source.via(Compression.gunzip())
+      case None       => source
+    }
+
+    val base = sourceWithCompression
       .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
       .collect {
         case Some(reducedConsumerRecord)
