@@ -30,6 +30,8 @@ trait App[T <: KafkaClientInterface] extends LazyLogging {
 
   def shutdown(control: Consumer.Control): Future[Done] = {
     logger.info("Shutdown of Guardian detected")
-    control.shutdown()
+    val future = control.shutdown()
+    future.onComplete(_ => logger.info("Guardian shut down"))
+    future
   }
 }

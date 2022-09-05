@@ -13,6 +13,7 @@ import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
+import io.aiven.guardian.kafka.backup.BackupClientControlWrapper
 import io.aiven.guardian.kafka.backup.KafkaClient
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
@@ -84,12 +85,14 @@ class RealS3RestoreClientSpec
         implicit val backupConfig: Backup =
           Backup(kafkaConsumerGroup, PeriodFromFirst(1 minute), 10 seconds)
 
-        val backupClient =
-          new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
-                                             implicitly,
-                                             implicitly,
-                                             implicitly,
-                                             implicitly
+        val backupClientWrapped =
+          new BackupClientControlWrapper(
+            new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
+                                               implicitly,
+                                               implicitly,
+                                               implicitly,
+                                               implicitly
+            )
           )
 
         val restoreClient =
@@ -100,7 +103,7 @@ class RealS3RestoreClientSpec
         val calculatedFuture = for {
           _ <- createTopics(kafkaDataInChunksWithTimePeriodRenamedTopics.topics)
           _ <- createBucket(s3Config.dataBucket)
-          _ = backupClient.backup.run()
+          _ = backupClientWrapped.run()
           _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
                  baseSource
                    .runWith(Producer.plainSink(producerSettings))
@@ -131,6 +134,7 @@ class RealS3RestoreClientSpec
         calculatedFuture.onComplete { _ =>
           cleanTopics(kafkaDataInChunksWithTimePeriodRenamedTopics.topics)
           cleanTopics(renamedTopics)
+          backupClientWrapped.shutdown()
         }
         val restoredConsumerRecords = calculatedFuture.futureValue
 
