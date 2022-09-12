@@ -175,7 +175,8 @@ lazy val coreS3 = project
       // security vulnerability gets resolved in Compile scope
       "com.typesafe.akka" %% "akka-http-xml"   % akkaHttpVersion,
       "org.scalatest"     %% "scalatest"       % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestScalaCheckVersion % Test
+      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestScalaCheckVersion % Test,
+      "com.monovore"      %% "decline"         % declineVersion             % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
