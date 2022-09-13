@@ -44,13 +44,9 @@ class RestoreClient[T <: KafkaProducerInterface](maybeS3Settings: Option[S3Setti
   override def downloadFlow: Flow[String, ByteString, NotUsed] =
     Flow[String]
       .flatMapConcat { key =>
-        val base = S3.download(s3Config.dataBucket, key, None, None, s3Headers)
+        val base = S3.getObject(s3Config.dataBucket, key, None, None, s3Headers)
         maybeS3Settings
           .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
-          .collect { case Some(value) =>
-            value
-          }
-          .flatMapConcat { case (source, _) => source }
       }
 
 }
