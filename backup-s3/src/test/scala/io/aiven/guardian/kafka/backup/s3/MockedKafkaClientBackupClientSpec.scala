@@ -21,6 +21,7 @@ import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.matchers.must.Matchers
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
@@ -71,19 +72,12 @@ class MockedKafkaClientBackupClientSpec
         downloaded <-
           Future
             .sequence(keysSorted.map { key =>
-              S3.download(s3Config.dataBucket, key)
+              S3.getObject(s3Config.dataBucket, key)
                 .withAttributes(s3Attrs)
-                .runWith(Sink.head)
-                .flatMap {
-                  case Some((downloadSource, _)) =>
-                    downloadSource
-                      .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
-                      .runWith(Sink.seq)
-                  case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-                }
-
+                .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                .runWith(Sink.seq)
             })
-            .map(_.flatten)
+            .map(_.flatten)(ExecutionContext.parasitic)
 
       } yield downloaded.flatten.collect { case Some(reducedConsumerRecord) =>
         reducedConsumerRecord

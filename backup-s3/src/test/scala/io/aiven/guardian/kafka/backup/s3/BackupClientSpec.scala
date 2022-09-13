@@ -14,11 +14,11 @@ import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.Generators._
 import io.aiven.guardian.kafka.s3.S3Spec
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
-import io.aiven.guardian.kafka.s3.errors.S3Errors
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.must.Matchers
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -56,27 +56,13 @@ trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with 
               .withAttributes(s3Attrs)
               .toMat(Sink.collection)(Keep.right)
               .run()
-          keysWithSource <-
-            Future.sequence(bucketContents.map { bucketContents =>
-              S3.download(s3Config.dataBucket, bucketContents.key)
-                .withAttributes(s3Attrs)
-                .map(
-                  _.getOrElse(
-                    throw S3Errors
-                      .ExpectedObjectToExist(s3Config.dataBucket, bucketContents.key, None, None, s3Headers)
-                  )
-                )
-                .runWith(Sink.head)
-                .map { case (source, _) =>
-                  (bucketContents.key, source)
-                }
-            })
-          keysWithRecords <- Future.sequence(keysWithSource.map { case (key, source) =>
-                               source
+          keysWithRecords <- Future.sequence(bucketContents.map { bucketContents =>
+                               S3.getObject(s3Config.dataBucket, bucketContents.key)
+                                 .withAttributes(s3Attrs)
                                  .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
                                  .toMat(Sink.collection)(Keep.right)
                                  .run()
-                                 .map(list => (key, list.flatten))
+                                 .map(list => (bucketContents.key, list.flatten))(ExecutionContext.parasitic)
                              })
           sorted = keysWithRecords.toList.sortBy { case (key, _) =>
                      val date = key.replace(".json", "")

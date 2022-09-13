@@ -25,6 +25,7 @@ import io.aiven.guardian.kafka.s3.Generators.s3ConfigGen
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -126,14 +127,10 @@ class RealS3BackupClientSpec
           _   <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
           key <- getKeyFromSingleDownload(s3Config.dataBucket)
           downloaded <-
-            S3.download(s3Config.dataBucket, key)
+            S3.getObject(s3Config.dataBucket, key)
               .withAttributes(s3Attrs)
-              .runWith(Sink.head)
-              .flatMap {
-                case Some((downloadSource, _)) =>
-                  downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
-                case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-              }
+              .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+              .runWith(Sink.seq)
         } yield downloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
           reducedConsumerRecord
         }
@@ -224,32 +221,14 @@ class RealS3BackupClientSpec
                }
           _                     <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
           (firstKey, secondKey) <- getKeysFromTwoDownloads(s3Config.dataBucket)
-          firstDownloaded <- S3.download(s3Config.dataBucket, firstKey)
+          firstDownloaded <- S3.getObject(s3Config.dataBucket, firstKey)
                                .withAttributes(s3Attrs)
-                               .runWith(Sink.head)
-                               .flatMap {
-                                 case Some((downloadSource, _)) =>
-                                   downloadSource
-                                     .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
-                                     .runWith(Sink.seq)
-                                 case None =>
-                                   throw new Exception(
-                                     s"Expected object in bucket ${s3Config.dataBucket} with key $key"
-                                   )
-                               }
-          secondDownloaded <- S3.download(s3Config.dataBucket, secondKey)
+                               .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                               .runWith(Sink.seq)
+          secondDownloaded <- S3.getObject(s3Config.dataBucket, secondKey)
                                 .withAttributes(s3Attrs)
-                                .runWith(Sink.head)
-                                .flatMap {
-                                  case Some((downloadSource, _)) =>
-                                    downloadSource
-                                      .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
-                                      .runWith(Sink.seq)
-                                  case None =>
-                                    throw new Exception(
-                                      s"Expected object in bucket ${s3Config.dataBucket} with key $key"
-                                    )
-                                }
+                                .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                                .runWith(Sink.seq)
         } yield {
           val first = firstDownloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
             reducedConsumerRecord
@@ -368,17 +347,10 @@ class RealS3BackupClientSpec
                }
           _   <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
           key <- getKeyFromSingleDownload(s3Config.dataBucket)
-          downloaded <- S3.download(s3Config.dataBucket, key)
+          downloaded <- S3.getObject(s3Config.dataBucket, key)
                           .withAttributes(s3Attrs)
-                          .runWith(Sink.head)
-                          .flatMap {
-                            case Some((downloadSource, _)) =>
-                              downloadSource
-                                .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
-                                .runWith(Sink.seq)
-                            case None =>
-                              throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-                          }
+                          .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                          .runWith(Sink.seq)
         } yield downloaded.toList.flatten.collect { case Some(reducedConsumerRecord) =>
           reducedConsumerRecord
         }
@@ -463,19 +435,12 @@ class RealS3BackupClientSpec
         downloaded <-
           Future
             .sequence(keysSorted.map { key =>
-              S3.download(s3Config.dataBucket, key)
+              S3.getObject(s3Config.dataBucket, key)
                 .withAttributes(s3Attrs)
-                .runWith(Sink.head)
-                .flatMap {
-                  case Some((downloadSource, _)) =>
-                    downloadSource
-                      .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
-                      .runWith(Sink.seq)
-                  case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-                }
-
+                .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                .runWith(Sink.seq)
             })
-            .map(_.flatten)
+            .map(_.flatten)(ExecutionContext.parasitic)
       } yield downloaded.flatten.collect { case Some(reducedConsumerRecord) =>
         reducedConsumerRecord
       }
@@ -582,23 +547,15 @@ class RealS3BackupClientSpec
             keyOne <- getKeyFromSingleDownload(firstS3Config.dataBucket)
             keyTwo <- getKeyFromSingleDownload(secondS3Config.dataBucket)
             downloadedOne <-
-              S3.download(firstS3Config.dataBucket, keyOne)
+              S3.getObject(firstS3Config.dataBucket, keyOne)
                 .withAttributes(s3Attrs)
-                .runWith(Sink.head)
-                .flatMap {
-                  case Some((downloadSource, _)) =>
-                    downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
-                  case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-                }
+                .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                .runWith(Sink.seq)
             downloadedTwo <-
-              S3.download(secondS3Config.dataBucket, keyTwo)
+              S3.getObject(secondS3Config.dataBucket, keyTwo)
                 .withAttributes(s3Attrs)
-                .runWith(Sink.head)
-                .flatMap {
-                  case Some((downloadSource, _)) =>
-                    downloadSource.via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]]).runWith(Sink.seq)
-                  case None => throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-                }
+                .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                .runWith(Sink.seq)
           } yield (downloadedOne.toList.flatten.collect { case Some(reducedConsumerRecord) =>
                      reducedConsumerRecord
                    },
@@ -730,38 +687,22 @@ class RealS3BackupClientSpec
             downloadedOne <-
               Future
                 .sequence(keysSortedOne.map { key =>
-                  S3.download(firstS3Config.dataBucket, key)
+                  S3.getObject(firstS3Config.dataBucket, key)
                     .withAttributes(s3Attrs)
-                    .runWith(Sink.head)
-                    .flatMap {
-                      case Some((downloadSource, _)) =>
-                        downloadSource
-                          .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
-                          .runWith(Sink.seq)
-                      case None =>
-                        throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-                    }
-
+                    .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                    .runWith(Sink.seq)
                 })
-                .map(_.flatten)
+                .map(_.flatten)(ExecutionContext.parasitic)
 
             downloadedTwo <-
               Future
                 .sequence(keysSortedTwo.map { key =>
-                  S3.download(secondS3Config.dataBucket, key)
+                  S3.getObject(secondS3Config.dataBucket, key)
                     .withAttributes(s3Attrs)
-                    .runWith(Sink.head)
-                    .flatMap {
-                      case Some((downloadSource, _)) =>
-                        downloadSource
-                          .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
-                          .runWith(Sink.seq)
-                      case None =>
-                        throw new Exception(s"Expected object in bucket ${s3Config.dataBucket} with key $key")
-                    }
-
+                    .via(CirceStreamSupport.decode[List[Option[ReducedConsumerRecord]]])
+                    .runWith(Sink.seq)
                 })
-                .map(_.flatten)
+                .map(_.flatten)(ExecutionContext.parasitic)
           } yield (downloadedOne.flatten.collect { case Some(reducedConsumerRecord) =>
                      reducedConsumerRecord
                    },

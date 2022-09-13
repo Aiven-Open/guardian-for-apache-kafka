@@ -30,13 +30,7 @@ class StorageClient(bucketName: String, prefix: Option[String], s3Headers: S3Hea
       .listBucket(bucketName, prefix, s3Headers)
       .flatMapMerge(
         storageConfig.parallelObjectDownloadLimit,
-        bucketDetails =>
-          S3.download(bucketName, bucketDetails.key, None, None, s3Headers)
-            .map(
-              _.getOrElse(
-                throw S3Errors.ExpectedObjectToExist(bucketName, bucketDetails.key, None, None, s3Headers)
-              )
-            )
+        bucketDetails => S3.getObject(bucketName, bucketDetails.key, None, None, s3Headers)
       )
 
     // TODO serialization from raw bytes to Kafka Topic Format
