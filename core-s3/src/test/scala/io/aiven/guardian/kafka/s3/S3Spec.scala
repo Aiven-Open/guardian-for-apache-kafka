@@ -15,6 +15,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.TestUtils
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import markatta.futiles.Retry
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.scalatest.Ignore
 import org.scalatest.Tag
@@ -119,7 +120,11 @@ trait S3Spec
                         _ <- S3.deleteUpload(bucket, part.key, part.uploadId)
                       } yield ()
                     })
-               _ <- S3.deleteBucket(bucket)
+               _ <- Retry.retryWithBackOff(
+                      5,
+                      100 millis,
+                      throwable => throwable.getMessage.contains("The bucket you tried to delete is not empty")
+                    )(S3.deleteBucket(bucket))
              } yield ()
            case BucketAccess.NotExists =>
              Future {
