@@ -172,6 +172,14 @@ export ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY=&quot;my secret&quot;
 export ALPAKKA_S3_REGION_PROVIDER=static
 export ALPAKKA_S3_REGION_DEFAULT_REGION=eu-central-1
 </code></pre>
+<h2><a href="#utilities" name="utilities" class="anchor"><span class="anchor-link"></span></a>Utilities</h2>
+<p>Guardian provides a utility to help deal with running S3 related tests. Due to the possibility of this tool making unintentional consequences to your S3 account, it needs to be manually run in sbt. To run the tool without any parameters do this</p>
+<pre class="prettyprint"><code class="language-sh">sbt &quot;coreS3/test:runMain io.aiven.guardian.kafka.s3.Main&quot;
+</code></pre>
+<p>Current commands</p>
+<ul>
+  <li><code>cleanup-buckets</code>: Helps in cleaning up S3 buckets that have been inadvertently left over by tests.</li>
+</ul>
 <h2><a href="#tagging-s3-tests" name="tagging-s3-tests" class="anchor"><span class="anchor-link"></span></a>Tagging S3 Tests</h2>
 <p>Due to a current limitation where there is no way to expose Github secrets to PR&rsquo;s made from external forks, tests which run against S3 need to be <a href="https://www.scalatest.org/scaladoc/3.2.13/org/scalatest/Tag.html">Tagged</a> using <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/core-s3/src/test/scala/io/aiven/guardian/kafka/s3/S3Spec.scala#L45-L48">RealS3Available</a>.</p>
 <div class="source-github">
@@ -190,6 +198,7 @@ The source code for this page can be found <a href="https://github.com/aiven/gua
 <ul>
   <li><a href="../testing/s3.html#s3-testing" class="header">S3 - Testing</a>
   <ul>
+    <li><a href="../testing/s3.html#utilities" class="header">Utilities</a></li>
     <li><a href="../testing/s3.html#tagging-s3-tests" class="header">Tagging S3 Tests</a></li>
   </ul></li>
 </ul>
