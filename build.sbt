@@ -10,7 +10,7 @@ ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/c
 
 val akkaVersion                = "2.6.20"
 val akkaHttpVersion            = "10.2.10"
-val alpakkaKafkaVersion        = "3.0.0"
+val alpakkaKafkaVersion        = "3.0.1"
 val kafkaClientsVersion        = "3.2.2"
 val alpakkaVersion             = "4.0.0"
 val futilesVersion             = "2.0.2"
