@@ -199,7 +199,7 @@ trait S3Spec
   ): Source[ProducerRecord[Array[Byte], Array[Byte]], NotUsed] = {
     val durationToMicros = streamDuration.toMillis
     val topicsPerMillis  = producerRecords.size / durationToMicros
-    Source(producerRecords).throttle(topicsPerMillis.toInt, 1 millis)
+    Source(producerRecords).throttle(topicsPerMillis.toInt max 1, 1 millis)
   }
 
   /** Converts a generated list of `ReducedConsumerRecord` to a list of `ProducerRecord`
