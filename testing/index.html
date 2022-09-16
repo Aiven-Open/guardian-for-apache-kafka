@@ -170,8 +170,37 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <ul>
   <li>It&rsquo;s the most supported testing framework in Scala, so much so that its considered a critical dependency whenever a  new Scala release is made</li>
   <li>It provides very handy utilities for testing asynchronous code, for example a  <a href="https://www.scalatest.org/scaladoc/3.2.13/org/scalatest/concurrent/AbstractPatienceConfiguration$PatienceConfig.html">PatienceConfig</a>  that provides efficient polling of Scala futures with configurable scalable timeouts and intervals.</li>
-  <li>Akka provides <a href="https://doc.akka.io/docs/akka/2.6/testing.html#asynchronous-testing-testkit">Testkit</a> with direct integration into ScalaTest  for easy testing of akka-streams.</li>
+  <li>Akka provides <a href="https://doc.akka.io/docs/akka/2.6/testing.html#asynchronous-testing-testkit">Testkit</a> with direct integration into  ScalaTest for easy testing of akka-streams.</li>
 </ul>
+<h3><a href="#property-based-tests" name="property-based-tests" class="anchor"><span class="anchor-link"></span></a>Property based tests</h3>
+<p>Guardian for Apache Kafka emphasises using property based testing over unit based tests. This is mainly due to the fact that property based tests often reveal more problems due to covering more cases compared to unit based tests. Here are more <a href="https://www.scalatest.org/user_guide/generator_driven_property_checks">details</a> on how property based testing works with Scala.</p>
+<p>Like most random data generation, ScalaTest/ScalaCheck relies on an initial seed to deterministically generate the data. When a test fails the seed for the failing test is automatically shown (search for <code>Init Seed:</code>). If you want to specify the seed to regenerate the exact same data that caused the test to fail, you need to specify it as a test argument in <code>sbt</code></p>
+<pre class="prettyprint"><code class="language-sbt">Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, &quot;-S&quot;, &quot;7832168009826873070&quot;)
+</code></pre>
+<p>where <code>7832168009826873070</code> happens to be the seed</p>
+<p>This argument can be put into any of the projects within the <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/build.sbt">build</a>. For example if you want to only specify the speed in the <code>core</code> project you can place it like so</p>
+<pre class="prettyprint"><code class="language-sbt">lazy val core = project
+  .in(file(&quot;core&quot;))
+  .settings(
+    librarySettings,
+    name := s&quot;$baseName-core&quot;,
+    Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, &quot;-S&quot;, &quot;7832168009826873070&quot;),
+</code></pre>
+<p>Whereas if you want it to apply globally you can just place it in the <code>guardian</code> project.</p>
+<h2><a href="#running-test-s-until-failure" name="running-test-s-until-failure" class="anchor"><span class="anchor-link"></span></a>Running test/s until failure</h2>
+<p>When diagnosing flaky tests it&rsquo;s very useful to be able to run a test until it fails which sbt allows you to do with <a href="https://www.scala-sbt.org/1.x/docs/Commands.html">commands</a>. Doing this using a sbt command is far quicker than other options such a shell script since you don&rsquo;t have to deal with startup time cost for every test run.</p>
+<p>This is what the base command looks like</p>
+<pre class="prettyprint"><code class="language-sbt">commands += Command.command(&quot;testUntilFailed&quot;) { state =&gt;
+  &quot;test&quot; :: &quot;testUntilFailed&quot; :: state
+}
+</code></pre>
+<p>The command will recursively call a specific task (in this case <code>test</code>) until it fails. For it to work with Guardin for Apache Kafka&rsquo;s <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/build.sbt">build</a>, you need to place it as a setting within the <code>guardian</code> project.</p>
+<p>Note that this works with any command, not just <code>test</code>. For example if you want to only run a single test suite until failure you can do</p>
+<pre class="prettyprint"><code class="language-sbt">commands += Command.command(&quot;testUntilFailed&quot;) { state =&gt;
+  &quot;backupS3/testOnly io.aiven.guardian.kafka.backup.s3.MockedKafkaClientBackupClientSpec&quot; :: &quot;testUntilFailed&quot; :: state
+}
+</code></pre>
+<p>Once specified in the <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/build.sbt">build</a> file you can then run <code>testUntilFailed</code> within the sbt shell.</p>
 <h2><a href="#testcontainers" name="testcontainers" class="anchor"><span class="anchor-link"></span></a>TestContainers</h2>
 <p><a href="https://www.testcontainers.org/">testcontainers</a> along with the Scala wrapper <a href="https://github.com/testcontainers/testcontainers-scala">testcontainers-scala</a> is used to automate the spinning up of <a href="https://www.docker.com/">docker</a> whenever the relevant test is run. As long as you have docker installed on your system you souldn&rsquo;t have to worry about anhything.</p>
 <div class="toc ">
@@ -200,6 +229,7 @@ The source code for this page can be found <a href="https://github.com/aiven/gua
   <li><a href="../testing/index.html#testing" class="header">Testing</a>
   <ul>
     <li><a href="../testing/index.html#scalatest" class="header">ScalaTest</a></li>
+    <li><a href="../testing/index.html#running-test-s-until-failure" class="header">Running test/s until failure</a></li>
     <li><a href="../testing/index.html#testcontainers" class="header">TestContainers</a></li>
   </ul></li>
 </ul>
