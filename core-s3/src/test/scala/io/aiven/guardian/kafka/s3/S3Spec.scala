@@ -15,7 +15,6 @@ import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.TestUtils
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
-import markatta.futiles.Retry
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.scalatest.Ignore
 import org.scalatest.Tag
@@ -88,10 +87,7 @@ trait S3Spec
              case BucketAccess.AccessGranted =>
                logger.info(s"Deleting and recreating bucket: $bucket since it already exists with correct permissions")
                for {
-                 _ <- S3.deleteBucketContents(bucket).withAttributes(s3Attrs).runWith(Sink.ignore)
-                 // Although theoretically speaking just clearing the buckets should be enough, since we rely a lot
-                 // on multipart upload state its safer to just delete and recreate the bucket
-                 _ <- S3.deleteBucket(bucket)
+                 _ <- S3TestUtils.cleanAndDeleteBucket(bucket)
                  _ <- S3.makeBucket(bucket)
                } yield ()
              case BucketAccess.NotExists =>
@@ -112,20 +108,7 @@ trait S3Spec
              }
            case BucketAccess.AccessGranted =>
              logger.info(s"Cleaning up bucket: $bucket")
-             for {
-               _          <- S3.deleteBucketContents(bucket, deleteAllVersions = true).runWith(Sink.ignore)
-               multiParts <- S3.listMultipartUpload(bucket, None).runWith(Sink.seq)
-               _ <- Future.sequence(multiParts.map { part =>
-                      for {
-                        _ <- S3.deleteUpload(bucket, part.key, part.uploadId)
-                      } yield ()
-                    })
-               _ <- Retry.retryWithBackOff(
-                      5,
-                      100 millis,
-                      throwable => throwable.getMessage.contains("The bucket you tried to delete is not empty")
-                    )(S3.deleteBucket(bucket))
-             } yield ()
+             S3TestUtils.cleanAndDeleteBucket(bucket)
            case BucketAccess.NotExists =>
              Future {
                logger.info(s"Not deleting bucket: $bucket since it no longer exists")

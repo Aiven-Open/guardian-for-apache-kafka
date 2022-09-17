@@ -13,13 +13,11 @@ import com.monovore.decline.CommandApp
 import com.monovore.decline.Opts
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.s3.Entry.computeAndDeleteBuckets
-import markatta.futiles.Retry
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.regions.providers.AwsRegionProvider
 
 import scala.concurrent._
 import scala.concurrent.duration._
-import scala.language.postfixOps
 import scala.util.control.NonFatal
 
 class Entry
@@ -99,22 +97,7 @@ object Entry extends LazyLogging {
     implicit val s3Attrs: Attributes = S3Attributes.settings(s3Settings)
     val futures = buckets.map { bucket =>
       logger.info(s"Deleting bucket $bucket")
-      for {
-        _ <- S3.deleteBucketContents(bucket).withAttributes(s3Attrs).runWith(Sink.ignore)
-        multiParts <-
-          S3.listMultipartUpload(bucket, None).withAttributes(s3Attrs).runWith(Sink.seq)
-        _ <- Future.sequence(multiParts.map { part =>
-               for {
-                 _ <- S3.deleteUpload(bucket, part.key, part.uploadId)
-               } yield ()
-             })
-        _ <- Retry.retryWithBackOff(
-               5,
-               100 millis,
-               throwable => throwable.getMessage.contains("The bucket you tried to delete is not empty")
-             )(S3.deleteBucket(bucket))
-        _ = logger.info(s"Completed deleting bucket $bucket")
-      } yield ()
+      S3TestUtils.cleanAndDeleteBucket(bucket)
     }
     Future.sequence(futures).map(_ => ())(ExecutionContext.parasitic)
   }
