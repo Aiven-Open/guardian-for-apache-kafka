@@ -44,8 +44,13 @@ class MockedKafkaClientBackupClientSpec
     "Creating many objects in a small period of time works despite S3's in progress multipart upload eventual consistency issues",
     RealS3Available
   ) {
-    forAll(kafkaDataWithTimePeriodsGen(100, 100, 1000, tailingSentinelValue = true),
-           s3ConfigGen(useVirtualDotHost, bucketPrefix)
+    forAll(
+      kafkaDataWithTimePeriodsGen(20,
+                                  20,
+                                  padTimestampsMillis = Range.inclusive(1000, 1000),
+                                  trailingSentinelValue = true
+      ),
+      s3ConfigGen(useVirtualDotHost, bucketPrefix)
     ) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
       logger.info(s"Data bucket is ${s3Config.dataBucket}")
       val data = kafkaDataWithTimePeriod.data

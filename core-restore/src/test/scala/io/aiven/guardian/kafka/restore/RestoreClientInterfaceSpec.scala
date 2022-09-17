@@ -39,7 +39,8 @@ class RestoreClientInterfaceSpec
 
   property("Calculating finalKeys contains correct keys with fromWhen filter") {
     forAll(
-      kafkaDataWithTimePeriodsAndPickedRecordGen(padTimestampsMillis = ChronoUnit.HOURS.getDuration.toMillis.toInt,
+      kafkaDataWithTimePeriodsAndPickedRecordGen(padTimestampsMillis =
+                                                   Range.inclusive(1, ChronoUnit.HOURS.getDuration.toMillis.toInt),
                                                  min = 1000,
                                                  max = 1000
       )
@@ -103,7 +104,8 @@ class RestoreClientInterfaceSpec
 
   property("Round-trip with backup and restore works using fromWhen filter") {
     forAll(
-      kafkaDataWithTimePeriodsAndPickedRecordGen(padTimestampsMillis = ChronoUnit.HOURS.getDuration.toMillis.toInt,
+      kafkaDataWithTimePeriodsAndPickedRecordGen(padTimestampsMillis =
+                                                   Range.inclusive(1, ChronoUnit.HOURS.getDuration.toMillis.toInt),
                                                  min = 1000,
                                                  max = 1000
       )
