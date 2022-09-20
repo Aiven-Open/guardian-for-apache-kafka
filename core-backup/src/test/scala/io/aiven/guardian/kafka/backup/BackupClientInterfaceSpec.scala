@@ -4,10 +4,15 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
+import akka.util.ByteString
+import com.softwaremill.diffx.generic.auto._
+import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
+import io.aiven.guardian.kafka.TestUtils.waitForStartOfTimeUnit
+import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
@@ -26,6 +31,8 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.ConcurrentLinkedQueue
 
 final case class Periods(periodsBefore: Long, periodsAfter: Long)
 
@@ -284,6 +291,65 @@ class BackupClientInterfaceSpec
         Inspectors.forEvery(nonTerminated) { case (_, byteString) =>
           byteString.utf8String.takeRight(2) mustEqual "},"
         }
+    }
+  }
+
+  property("suspend/resume for same object using ChronoUnitSlice works correctly") {
+    // Since this test needs to wait for the start of the next minute we only want it to
+    // succeed once otherwise it runs for a very long time.
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      PropertyCheckConfiguration(minSuccessful = 1)
+
+    forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
+      val commitStorage = new ConcurrentLinkedDeque[Long]()
+      val backupStorage = new ConcurrentLinkedQueue[(String, ByteString)]()
+      val data          = kafkaDataWithTimePeriod.data
+
+      val mockOne = new MockedBackupClientInterfaceWithMockedKafkaData(
+        Source(data),
+        ChronoUnitSlice(ChronoUnit.MINUTES),
+        commitStorage,
+        backupStorage,
+        stopAfterDuration = Some(kafkaDataWithTimePeriod.periodSlice),
+        trackCommits = true
+      )
+
+      val mockTwo = new MockedBackupClientInterfaceWithMockedKafkaData(Source(data),
+                                                                       ChronoUnitSlice(ChronoUnit.MINUTES),
+                                                                       commitStorage,
+                                                                       backupStorage,
+                                                                       stopAfterDuration = None,
+                                                                       trackCommits = true
+      )
+
+      val calculatedFuture = for {
+        _ <- waitForStartOfTimeUnit(ChronoUnit.MINUTES)
+        _ <- mockOne.backup.run()
+        _ <- akka.pattern.after(AkkaStreamInitializationConstant)(mockTwo.backup.run())
+        processedRecords <-
+          akka.pattern.after(AkkaStreamInitializationConstant)(
+            Future.successful(
+              mockTwo.mergeBackedUpData()
+            )
+          )
+        asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
+                       Source
+                         .single(byteString)
+                         .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
+                         .collect { case Some(value) =>
+                           value
+                         }
+                         .toMat(Sink.collection)(Keep.right)
+                         .run()
+                         .map(records => (key, records))
+                     })
+      } yield asRecords
+
+      val result = calculatedFuture.futureValue
+
+      val observed = result.flatMap { case (_, values) => values }
+
+      data mustMatchTo observed
     }
   }
 }

@@ -10,8 +10,6 @@ import scala.concurrent.duration.MILLISECONDS
 import scala.jdk.CollectionConverters._
 
 import java.util.Base64
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
 
 object Generators {
   def baseReducedConsumerRecordGen(topic: String,
@@ -36,13 +34,6 @@ object Generators {
     ts,
     timestampType
   )
-
-  private val keyOffsetMap = new ConcurrentHashMap[String, AtomicLong]().asScala
-
-  def createOffsetsByKey(key: String): Long = {
-    val returned = keyOffsetMap.getOrElseUpdate(key, new AtomicLong())
-    returned.incrementAndGet()
-  }
 
   /** A generator that allows you to generator an arbitrary collection of Kafka `ReducedConsumerRecord` used for
     * mocking. The generator will create a random distribution of keys (with each key having its own specific record of
@@ -76,15 +67,11 @@ object Generators {
               Gen.stringOfN(valueSize, Gen.alphaChar).map(string => Base64.getEncoder.encodeToString(string.getBytes))
             )
     keyDistribution <- Gen.listOfN(numberOfTotalReducedRecords, Gen.oneOf(keys))
-    keysWithOffSets = keyDistribution.groupMap(identity)(createOffsetsByKey)
+    keysWithOffSets = keyDistribution.zipWithIndex
     reducedConsumerRecordsWithoutTimestamp = keysWithOffSets
-                                               .map { case (key, offsets) =>
-                                                 offsets.map { offset =>
-                                                   (t, offset, key)
-                                                 }
+                                               .map { case (key, offset) =>
+                                                 (t, offset, key)
                                                }
-                                               .toList
-                                               .flatten
     timestampsWithPadding <- Gen
                                .sequence((1 to reducedConsumerRecordsWithoutTimestamp.size).map { _ =>
                                  Gen.chooseNum[Long](padTimestampsMillis.start, padTimestampsMillis.last)

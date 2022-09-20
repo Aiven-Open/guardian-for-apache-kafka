@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka.backup
 import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Keep
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
@@ -19,24 +20,26 @@ import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /** A mocked `BackupClientInterface` which given a `kafkaClientInterface` allows you to
+  *
   * @param kafkaClientInterface
-  * @param periodSlice
+  * @param timeConfiguration
+  * @param backedUpData
+  *   The collection that receives the data as its being submitted where each value is the key along with the
+  *   `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
+  *   have finished writing to it
   */
 class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafkaClientInterface,
-                                  timeConfiguration: TimeConfiguration
+                                  timeConfiguration: TimeConfiguration,
+                                  backedUpData: ConcurrentLinkedQueue[(String, ByteString)] =
+                                    new ConcurrentLinkedQueue[(String, ByteString)]()
 )(implicit override val system: ActorSystem)
     extends BackupClientInterface[MockedKafkaClientInterface] {
 
   import MockedBackupClientInterface._
-
-  /** The collection that receives the data as its being submitted where each value is the key along with the
-    * `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
-    * have finished writing to it
-    */
-  val backedUpData: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)]()
 
   /** This method is intended to be called after you have written to it during a test.
     * @param terminate
@@ -84,10 +87,23 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     */
   override type BackupResult = Done
 
-  override type State = Nothing
+  override type State = Unit
 
-  override def getCurrentUploadState(key: String): Future[UploadStateResult] =
-    Future.successful(UploadStateResult.empty)
+  override def getCurrentUploadState(key: String): Future[UploadStateResult] = {
+    val keys  = backedUpData.asScala.map { case (k, _) => k }.toVector.distinct.sortBy(Utils.keyToOffsetDateTime)
+    val index = keys.indexOf(key)
+
+    val uploadStateResult =
+      if (index < 0)
+        UploadStateResult.empty
+      else {
+        val previous = keys.lift(index - 1).map(k => PreviousState((), k))
+        val current  = Some(())
+        UploadStateResult(current, previous)
+      }
+
+    Future.successful(uploadStateResult)
+  }
 
   override def empty: () => Future[Done] = () => Future.successful(Done)
 
@@ -97,11 +113,16 @@ class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafka
     }
 
   override def backupToStorageSink(key: String,
-                                   currentState: Option[Nothing]
+                                   currentState: Option[Unit]
   ): Sink[(ByteString, kafkaClientInterface.CursorContext), Future[Done]] =
-    Sink.foreach { case (byteString, _) =>
-      backedUpData.add((key, byteString))
-    }
+    Flow[(ByteString, kafkaClientInterface.CursorContext)]
+      .alsoTo(kafkaClientInterface.commitCursor.contramap[(ByteString, kafkaClientInterface.CursorContext)] {
+        case (_, cursor) => cursor
+      })
+      .to(Sink.foreach { case (byteString, _) =>
+        backedUpData.add((key, byteString))
+      })
+      .mapMaterializedValue(_ => Future.successful(Done))
 
   def materializeBackupStreamPositions()(implicit
       system: ActorSystem
@@ -121,7 +142,16 @@ object MockedBackupClientInterface {
 
 /** A `MockedBackupClientInterface` that also uses a mocked `KafkaClientInterface`
   */
-class MockedBackupClientInterfaceWithMockedKafkaData(kafkaData: Source[ReducedConsumerRecord, NotUsed],
-                                                     timeConfiguration: TimeConfiguration
+class MockedBackupClientInterfaceWithMockedKafkaData(
+    kafkaData: Source[ReducedConsumerRecord, NotUsed],
+    timeConfiguration: TimeConfiguration,
+    commitStorage: ConcurrentLinkedDeque[Long] = new ConcurrentLinkedDeque[Long](),
+    backupStorage: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)](),
+    stopAfterDuration: Option[FiniteDuration] = None,
+    trackCommits: Boolean = false
 )(implicit override val system: ActorSystem)
-    extends MockedBackupClientInterface(new MockedKafkaClientInterface(kafkaData), timeConfiguration)
+    extends MockedBackupClientInterface(
+      new MockedKafkaClientInterface(kafkaData, commitStorage, stopAfterDuration, trackCommits),
+      timeConfiguration,
+      backupStorage
+    )
