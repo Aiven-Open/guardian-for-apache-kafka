@@ -1,7 +1,9 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
 
-ThisBuild / scalaVersion         := "2.13.8"
+val scalaV = "2.13.9"
+
+ThisBuild / scalaVersion         := scalaV
 ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
@@ -57,7 +59,7 @@ val flagsFor13 = Seq(
 )
 
 val librarySettings = Seq(
-  crossScalaVersions := List("2.12.17", "2.13.8"),
+  crossScalaVersions := List("2.12.17", scalaV),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n == 13 =>
