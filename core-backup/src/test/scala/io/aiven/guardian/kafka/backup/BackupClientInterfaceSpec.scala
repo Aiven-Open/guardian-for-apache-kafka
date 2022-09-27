@@ -7,6 +7,7 @@ import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
+import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
@@ -41,7 +42,8 @@ class BackupClientInterfaceSpec
     with AkkaStreamTestKit
     with Matchers
     with ScalaFutures
-    with ScalaCheckPropertyChecks {
+    with ScalaCheckPropertyChecks
+    with StrictLogging {
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)

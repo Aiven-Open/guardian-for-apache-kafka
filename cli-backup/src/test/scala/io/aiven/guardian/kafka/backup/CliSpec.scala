@@ -2,6 +2,7 @@ package io.aiven.guardian.kafka.backup
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
+import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.{Backup => BackupConfig}
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
@@ -21,7 +22,12 @@ import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 @nowarn("msg=method main in class CommandApp is deprecated")
-class CliSpec extends TestKit(ActorSystem("BackupCliSpec")) with AnyPropSpecLike with Matchers with ScalaFutures {
+class CliSpec
+    extends TestKit(ActorSystem("BackupCliSpec"))
+    with AnyPropSpecLike
+    with Matchers
+    with ScalaFutures
+    with StrictLogging {
   implicit val ec: ExecutionContext                    = system.dispatcher
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(5 minutes, 100 millis)
 

@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
+import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.ExtensionsMethods._
@@ -32,7 +33,8 @@ class RestoreClientInterfaceSpec
     with AkkaStreamTestKit
     with Matchers
     with ScalaFutures
-    with ScalaCheckPropertyChecks {
+    with ScalaCheckPropertyChecks
+    with StrictLogging {
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)
