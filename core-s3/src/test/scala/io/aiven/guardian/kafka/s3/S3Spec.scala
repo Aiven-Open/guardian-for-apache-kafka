@@ -120,16 +120,18 @@ trait S3Spec
   }
 
   override def afterAll(): Unit =
-    enableCleanup match {
-      case Some(initialDelay) =>
-        def cleanAllBuckets = {
-          val futures = bucketsToCleanup.asScala.toList.distinct.map(cleanBucket)
-          Future.sequence(futures)
-        }
-
-        Await.result(akka.pattern.after(initialDelay)(cleanAllBuckets), maxCleanupTimeout)
-      case None => ()
-    }
+    try
+      enableCleanup match {
+        case Some(initialDelay) =>
+          Await.result(akka.pattern.after(initialDelay)(
+                         Future.sequence(bucketsToCleanup.asScala.toList.distinct.map(cleanBucket))
+                       ),
+                       maxCleanupTimeout
+          )
+        case None => ()
+      }
+    finally
+      super.afterAll()
 
   /** @param dataBucket
     *   Which S3 bucket the objects are being persisted into
