@@ -146,12 +146,12 @@ class MockedBackupClientInterfaceWithMockedKafkaData(
     kafkaData: Source[ReducedConsumerRecord, NotUsed],
     timeConfiguration: TimeConfiguration,
     commitStorage: ConcurrentLinkedDeque[Long] = new ConcurrentLinkedDeque[Long](),
-    backupStorage: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)](),
+    backedUpData: ConcurrentLinkedQueue[(String, ByteString)] = new ConcurrentLinkedQueue[(String, ByteString)](),
     stopAfterDuration: Option[FiniteDuration] = None,
-    trackCommits: Boolean = false
+    handleOffsets: Boolean = false
 )(implicit override val system: ActorSystem)
     extends MockedBackupClientInterface(
-      new MockedKafkaClientInterface(kafkaData, commitStorage, stopAfterDuration, trackCommits),
+      new MockedKafkaClientInterface(kafkaData, commitStorage, stopAfterDuration, handleOffsets),
       timeConfiguration,
-      backupStorage
+      backedUpData
     )

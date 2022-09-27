@@ -311,7 +311,7 @@ class BackupClientInterfaceSpec
         commitStorage,
         backupStorage,
         stopAfterDuration = Some(kafkaDataWithTimePeriod.periodSlice),
-        trackCommits = true
+        handleOffsets = true
       )
 
       val mockTwo = new MockedBackupClientInterfaceWithMockedKafkaData(Source(data),
@@ -319,7 +319,7 @@ class BackupClientInterfaceSpec
                                                                        commitStorage,
                                                                        backupStorage,
                                                                        stopAfterDuration = None,
-                                                                       trackCommits = true
+                                                                       handleOffsets = true
       )
 
       val calculatedFuture = for {
