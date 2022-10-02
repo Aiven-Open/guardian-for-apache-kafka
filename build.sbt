@@ -21,13 +21,13 @@ val logbackClassicVersion      = "1.4.1"
 val declineVersion             = "2.3.0"
 val pureConfigVersion          = "0.17.1"
 val scalaTestVersion           = "3.2.14"
-val scalaTestScalaCheckVersion = "3.2.12.0-RC2"
+val scalaTestScalaCheckVersion = "3.2.14.0"
 val akkaStreamsJson            = "0.8.3"
 val diffxVersion               = "0.7.1"
 val testContainersVersion      = "0.40.10"
 val testContainersJavaVersion  = "1.17.3"
-val scalaCheckVersion          = "1.15.5-1-SNAPSHOT"
-val scalaCheckOpsVersion       = "2.9.0"
+val scalaCheckVersion          = "1.16.0"
+val scalaCheckOpsVersion       = "2.10.0"
 val enumeratumVersion          = "1.7.0"
 val organizeImportsVersion     = "0.6.0"
 
@@ -131,9 +131,9 @@ lazy val core = project
       "com.typesafe.akka"          %% "akka-actor"                     % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Test,
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
-      "org.scalatestplus"          %% "scalacheck-1-15"                % scalaTestScalaCheckVersion % Test,
+      "org.scalatestplus"          %% "scalacheck-1-16"                % scalaTestScalaCheckVersion % Test,
       "org.mdedetrich"             %% "scalacheck"                     % scalaCheckVersion          % Test,
-      "com.rallyhealth"            %% "scalacheck-ops_1-15"            % scalaCheckOpsVersion       % Test,
+      "com.rallyhealth"            %% "scalacheck-ops_1-16"            % scalaCheckOpsVersion       % Test,
       "com.softwaremill.diffx"     %% "diffx-scalatest-must"           % diffxVersion               % Test,
       "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-http-testkit"              % akkaHttpVersion            % Test,
@@ -175,7 +175,7 @@ lazy val coreS3 = project
       // security vulnerability gets resolved in Compile scope
       "com.typesafe.akka" %% "akka-http-xml"   % akkaHttpVersion,
       "org.scalatest"     %% "scalatest"       % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestScalaCheckVersion % Test,
+      "org.scalatestplus" %% "scalacheck-1-16" % scalaTestScalaCheckVersion % Test,
       "com.monovore"      %% "decline"         % declineVersion             % Test
     )
   )
@@ -192,7 +192,7 @@ lazy val coreGCS = project
       // has a security vulnerability gets resolved in Compile scope
       "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
       "org.scalatest"     %% "scalatest"            % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-15"      % scalaTestScalaCheckVersion % Test
+      "org.scalatestplus" %% "scalacheck-1-16"      % scalaTestScalaCheckVersion % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
