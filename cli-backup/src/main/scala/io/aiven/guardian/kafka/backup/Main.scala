@@ -141,11 +141,11 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
                   override lazy val kafkaClusterConfig: KafkaCluster = kafkaCluster
                   override lazy val s3Config: S3                     = s3
                   override lazy val backupConfig: Backup             = backup
-                  override lazy val kafkaClient: KafkaClient = {
+                  override lazy val kafkaClient: KafkaConsumer = {
                     val finalConsumerSettings =
                       (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
 
-                    new KafkaClient(Some(finalConsumerSettings))(actorSystem, kafkaClusterConfig, backupConfig)
+                    new KafkaConsumer(Some(finalConsumerSettings))(actorSystem, kafkaClusterConfig, backupConfig)
                   }
                 }
             }

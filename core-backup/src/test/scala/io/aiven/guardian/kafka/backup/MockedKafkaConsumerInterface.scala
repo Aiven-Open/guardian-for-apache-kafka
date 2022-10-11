@@ -29,11 +29,11 @@ import java.util.concurrent.atomic.AtomicReference
   *   will only add commits to the `commitStorage` if its later than any currently processed offsets. Furthermore it
   *   will not replay source data if it has already been committed.
   */
-class MockedKafkaClientInterface(kafkaData: Source[ReducedConsumerRecord, NotUsed],
-                                 commitStorage: ConcurrentLinkedDeque[Long] = new ConcurrentLinkedDeque[Long](),
-                                 stopAfterDuration: Option[FiniteDuration] = None,
-                                 handleOffsets: Boolean = false
-) extends KafkaClientInterface {
+class MockedKafkaConsumerInterface(kafkaData: Source[ReducedConsumerRecord, NotUsed],
+                                   commitStorage: ConcurrentLinkedDeque[Long] = new ConcurrentLinkedDeque[Long](),
+                                   stopAfterDuration: Option[FiniteDuration] = None,
+                                   handleOffsets: Boolean = false
+) extends KafkaConsumerInterface {
 
   /** The type of the context to pass around. In context of a Kafka consumer, this typically holds offset data to be
     * automatically committed

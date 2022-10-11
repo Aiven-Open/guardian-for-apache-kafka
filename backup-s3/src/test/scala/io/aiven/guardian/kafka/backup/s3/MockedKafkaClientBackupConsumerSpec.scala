@@ -10,7 +10,7 @@ import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
-import io.aiven.guardian.kafka.backup.MockedKafkaClientInterface
+import io.aiven.guardian.kafka.backup.MockedKafkaConsumerInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.codecs.Circe._
@@ -27,7 +27,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class MockedKafkaClientBackupClientSpec
+class MockedKafkaClientBackupConsumerSpec
     extends AnyPropTestKit(ActorSystem("MockedKafkaClientBackupClientSpec"))
     with S3Spec
     with Matchers {
@@ -60,7 +60,7 @@ class MockedKafkaClientBackupClientSpec
         Backup(MockedBackupClientInterface.KafkaGroupId, PeriodFromFirst(1 second), 10 seconds, None)
 
       val backupClient =
-        new BackupClient(Some(s3Settings))(new MockedKafkaClientInterface(Source(data)),
+        new BackupClient(Some(s3Settings))(new MockedKafkaConsumerInterface(Source(data)),
                                            implicitly,
                                            implicitly,
                                            implicitly,

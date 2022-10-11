@@ -38,13 +38,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
   *   `ByteString`. Use `mergeBackedUpData` to process `backedUpData` into a more convenient data structure once you
   *   have finished writing to it
   */
-class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafkaClientInterface,
+class MockedBackupClientInterface(override val kafkaClientInterface: MockedKafkaConsumerInterface,
                                   timeConfiguration: TimeConfiguration,
                                   compression: Option[CompressionModel] = None,
                                   backedUpData: ConcurrentLinkedQueue[(String, ByteString)] =
                                     new ConcurrentLinkedQueue[(String, ByteString)]()
 )(implicit override val system: ActorSystem)
-    extends BackupClientInterface[MockedKafkaClientInterface] {
+    extends BackupClientInterface[MockedKafkaConsumerInterface] {
 
   import MockedBackupClientInterface._
 
@@ -187,7 +187,7 @@ class MockedBackupClientInterfaceWithMockedKafkaData(
     handleOffsets: Boolean = false
 )(implicit override val system: ActorSystem)
     extends MockedBackupClientInterface(
-      new MockedKafkaClientInterface(kafkaData, commitStorage, stopAfterDuration, handleOffsets),
+      new MockedKafkaConsumerInterface(kafkaData, commitStorage, stopAfterDuration, handleOffsets),
       timeConfiguration,
       compression,
       backedUpData

@@ -40,7 +40,7 @@ import java.util.Base64
   * @param kafkaClusterConfig
   *   Additional cluster configuration that is needed
   */
-class KafkaClient(
+class KafkaConsumer(
     configureConsumer: Option[
       ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]
     ] = None,
@@ -48,14 +48,14 @@ class KafkaClient(
       CommitterSettings => CommitterSettings
     ] = None
 )(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster, backupConfig: Backup)
-    extends KafkaClientInterface
+    extends KafkaConsumerInterface
     with LazyLogging {
   override type CursorContext        = CommittableOffset
   override type Control              = Consumer.Control
   override type MatCombineResult     = Consumer.DrainingControl[Done]
   override type BatchedCursorContext = CommittableOffsetBatch
 
-  import KafkaClient._
+  import KafkaConsumer._
 
   if (kafkaClusterConfig.topics.isEmpty)
     logger.warn("Kafka Cluster configuration has no topics set")
@@ -120,7 +120,7 @@ class KafkaClient(
     CommittableOffsetBatch(cursors.toSeq)
 }
 
-object KafkaClient {
+object KafkaConsumer {
   def consumerRecordToReducedConsumerRecord(
       consumerRecord: ConsumerRecord[Array[Byte], Array[Byte]]
   ): ReducedConsumerRecord =

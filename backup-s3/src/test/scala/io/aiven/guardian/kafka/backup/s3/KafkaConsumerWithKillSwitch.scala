@@ -7,12 +7,12 @@ import akka.kafka.ConsumerSettings
 import akka.kafka.scaladsl.Consumer
 import akka.stream.SharedKillSwitch
 import akka.stream.scaladsl.SourceWithContext
-import io.aiven.guardian.kafka.backup.KafkaClient
+import io.aiven.guardian.kafka.backup.KafkaConsumer
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 
-class KafkaClientWithKillSwitch(
+class KafkaConsumerWithKillSwitch(
     configureConsumer: Option[
       ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]
     ] = None,
@@ -21,7 +21,7 @@ class KafkaClientWithKillSwitch(
     ] = None,
     killSwitch: SharedKillSwitch
 )(implicit system: ActorSystem, kafkaClusterConfig: KafkaCluster, backupConfig: Backup)
-    extends KafkaClient(configureConsumer, configureCommitter) {
+    extends KafkaConsumer(configureConsumer, configureCommitter) {
   override def getSource
       : SourceWithContext[ReducedConsumerRecord, ConsumerMessage.CommittableOffset, Consumer.Control] =
     super.getSource.via(killSwitch.flow)

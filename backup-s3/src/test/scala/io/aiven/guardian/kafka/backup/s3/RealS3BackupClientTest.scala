@@ -13,7 +13,7 @@ import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.TestUtils._
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.BackupClientControlWrapper
-import io.aiven.guardian.kafka.backup.KafkaClient
+import io.aiven.guardian.kafka.backup.KafkaConsumer
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
@@ -47,8 +47,8 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
 
   def createKafkaClient(
       killSwitch: SharedKillSwitch
-  )(implicit kafkaClusterConfig: KafkaCluster, backupConfig: Backup): KafkaClientWithKillSwitch =
-    new KafkaClientWithKillSwitch(
+  )(implicit kafkaClusterConfig: KafkaCluster, backupConfig: Backup): KafkaConsumerWithKillSwitch =
+    new KafkaConsumerWithKillSwitch(
       configureConsumer = baseKafkaConfig,
       killSwitch = killSwitch
     )
@@ -120,7 +120,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
 
         val backupClientWrapped =
           new BackupClientControlWrapper(
-            new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
+            new BackupClient(Some(s3Settings))(new KafkaConsumer(configureConsumer = baseKafkaConfig),
                                                implicitly,
                                                implicitly,
                                                implicitly,
@@ -204,7 +204,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
         val backupClientWrapped = new BackupClientControlWrapper(backupClient)
 
         val secondBackupClient = new BackupClient(Some(s3Settings))(
-          new KafkaClient(configureConsumer = baseKafkaConfig),
+          new KafkaConsumer(configureConsumer = baseKafkaConfig),
           implicitly,
           implicitly,
           implicitly,
@@ -324,7 +324,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
 
         val secondBackupClient =
           new BackupClient(Some(s3Settings))(
-            new KafkaClient(configureConsumer = baseKafkaConfig),
+            new KafkaConsumer(configureConsumer = baseKafkaConfig),
             implicitly,
             implicitly,
             implicitly,
@@ -409,7 +409,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
         Backup(kafkaConsumerGroup, PeriodFromFirst(1 second), 10 seconds, compression)
       val backupClientWrapped =
         new BackupClientControlWrapper(
-          new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
+          new BackupClient(Some(s3Settings))(new KafkaConsumer(configureConsumer = baseKafkaConfig),
                                              implicitly,
                                              implicitly,
                                              implicitly,
@@ -505,7 +505,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
 
             new BackupClientControlWrapper(
               new BackupClient(Some(s3Settings))(
-                new KafkaClient(configureConsumer = baseKafkaConfig),
+                new KafkaConsumer(configureConsumer = baseKafkaConfig),
                 implicitly,
                 implicitly,
                 firstS3Config,
@@ -520,7 +520,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
 
             new BackupClientControlWrapper(
               new BackupClient(Some(s3Settings))(
-                new KafkaClient(configureConsumer = baseKafkaConfig),
+                new KafkaConsumer(configureConsumer = baseKafkaConfig),
                 implicitly,
                 implicitly,
                 secondS3Config,
@@ -630,7 +630,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
 
             new BackupClientControlWrapper(
               new BackupClient(Some(s3Settings))(
-                new KafkaClient(configureConsumer = baseKafkaConfig),
+                new KafkaConsumer(configureConsumer = baseKafkaConfig),
                 implicitly,
                 implicitly,
                 firstS3Config,
@@ -645,7 +645,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
 
             new BackupClientControlWrapper(
               new BackupClient(Some(s3Settings))(
-                new KafkaClient(configureConsumer = baseKafkaConfig),
+                new KafkaConsumer(configureConsumer = baseKafkaConfig),
                 implicitly,
                 implicitly,
                 secondS3Config,

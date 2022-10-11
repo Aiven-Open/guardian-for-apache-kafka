@@ -9,7 +9,7 @@ import scala.concurrent.Future
 
 /** A wrapper that is designed to make it easier to cleanly shutdown resources in tests
   */
-class BackupClientControlWrapper[T <: KafkaClient](backupClient: BackupClientInterface[T])(implicit
+class BackupClientControlWrapper[T <: KafkaConsumer](backupClient: BackupClientInterface[T])(implicit
     materializer: Materializer,
     ec: ExecutionContext
 ) {
