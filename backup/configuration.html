@@ -240,6 +240,13 @@ backup {
         </ul>
       </li>
       <li><code>commit-timeout-buffer-window</code>: Guardian sets the commit timeout of the Kafka consumer based on the <code>time-configuration</code>  since Guardian does manual committing of cursors. The buffer gets added onto the <code>time-configuration</code> to give  some headroom for any theoretical delays.</li>
+      <li><code>compression</code>: The compression format to use for the data being backed up. Note that changes in compression  configuration will not apply for any currently existing backups that need to be completed, only for future  new backups.</li>
+      <li><code>type</code>: Which compression to use.
+        <ul>
+          <li><code>gzip</code>. Standard <a href="https://en.wikipedia.org/wiki/Gzip">Gzip</a> compression</li>
+        </ul>
+      </li>
+      <li><code>level</code>: The level of compression to use</li>
     </ul>
   </li>
 </ul>
