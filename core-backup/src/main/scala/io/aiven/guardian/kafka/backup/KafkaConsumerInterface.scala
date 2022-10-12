@@ -8,7 +8,7 @@ import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import scala.collection.immutable
 import scala.concurrent.Future
 
-trait KafkaClientInterface {
+trait KafkaConsumerInterface {
 
   /** The type of the context to pass around. In context of a Kafka consumer, this typically holds offset data to be
     * automatically committed

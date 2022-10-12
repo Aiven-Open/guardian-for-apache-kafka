@@ -10,7 +10,7 @@ import akka.stream.scaladsl._
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.BackupClientInterface
-import io.aiven.guardian.kafka.backup.KafkaClientInterface
+import io.aiven.guardian.kafka.backup.KafkaConsumerInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.models.BackupObjectMetadata
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
@@ -21,7 +21,7 @@ import scala.concurrent.Future
 
 import java.time.Instant
 
-class BackupClient[T <: KafkaClientInterface](maybeS3Settings: Option[S3Settings])(implicit
+class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settings])(implicit
     override val kafkaClientInterface: T,
     override val backupConfig: Backup,
     override val system: ActorSystem,

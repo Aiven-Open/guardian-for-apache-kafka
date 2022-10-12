@@ -12,7 +12,7 @@ import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.backup.BackupClientControlWrapper
-import io.aiven.guardian.kafka.backup.KafkaClient
+import io.aiven.guardian.kafka.backup.KafkaConsumer
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.Compression
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
@@ -89,7 +89,7 @@ trait RealS3RestoreClientTest
 
         val backupClientWrapped =
           new BackupClientControlWrapper(
-            new BackupClient(Some(s3Settings))(new KafkaClient(configureConsumer = baseKafkaConfig),
+            new BackupClient(Some(s3Settings))(new KafkaConsumer(configureConsumer = baseKafkaConfig),
                                                implicitly,
                                                implicitly,
                                                implicitly,
@@ -128,7 +128,7 @@ trait RealS3RestoreClientTest
           _              <- createTopics(renamedTopics)
           _              <- akka.pattern.after(5 seconds)(restoreClient.restore)
           receivedTopics <- akka.pattern.after(1 minute)(eventualRestoredTopics.drainAndShutdown())
-          asConsumerRecords = receivedTopics.map(KafkaClient.consumerRecordToReducedConsumerRecord)
+          asConsumerRecords = receivedTopics.map(KafkaConsumer.consumerRecordToReducedConsumerRecord)
         } yield asConsumerRecords.toList
 
         calculatedFuture.onComplete { _ =>

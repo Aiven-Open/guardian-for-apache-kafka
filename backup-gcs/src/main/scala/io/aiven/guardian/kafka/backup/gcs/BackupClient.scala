@@ -9,7 +9,7 @@ import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import io.aiven.guardian.kafka.backup.BackupClientInterface
-import io.aiven.guardian.kafka.backup.KafkaClientInterface
+import io.aiven.guardian.kafka.backup.KafkaConsumerInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.gcs.configs.{GCS => GCSConfig}
 
@@ -18,7 +18,7 @@ import scala.concurrent.Future
 
 // TODO: GCS implementation currently does not work correctly because of inability of current GCS implementation in
 // Alpakka to allow us to commit Kafka cursor whenever chunks are uploaded
-class BackupClient[T <: KafkaClientInterface](maybeGoogleSettings: Option[GoogleSettings])(implicit
+class BackupClient[T <: KafkaConsumerInterface](maybeGoogleSettings: Option[GoogleSettings])(implicit
     override val kafkaClientInterface: T,
     override val backupConfig: Backup,
     override val system: ActorSystem,

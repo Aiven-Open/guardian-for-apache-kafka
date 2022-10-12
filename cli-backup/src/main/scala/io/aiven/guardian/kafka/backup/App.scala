@@ -7,15 +7,15 @@ import akka.stream.ActorAttributes
 import akka.stream.Supervision
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.BackupClientInterface
-import io.aiven.guardian.kafka.backup.KafkaClient
-import io.aiven.guardian.kafka.backup.KafkaClientInterface
+import io.aiven.guardian.kafka.backup.KafkaConsumer
+import io.aiven.guardian.kafka.backup.KafkaConsumerInterface
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-trait App[T <: KafkaClientInterface] extends LazyLogging {
+trait App[T <: KafkaConsumerInterface] extends LazyLogging {
   implicit val kafkaClient: T
-  implicit val backupClient: BackupClientInterface[KafkaClient]
+  implicit val backupClient: BackupClientInterface[KafkaConsumer]
   implicit val actorSystem: ActorSystem
   implicit val executionContext: ExecutionContext
 

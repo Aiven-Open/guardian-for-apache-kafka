@@ -29,7 +29,7 @@ import java.time.temporal._
   * @tparam T
   *   The underlying `kafkaClientInterface` type
   */
-trait BackupClientInterface[T <: KafkaClientInterface] extends LazyLogging {
+trait BackupClientInterface[T <: KafkaConsumerInterface] extends LazyLogging {
   implicit val kafkaClientInterface: T
   implicit val backupConfig: Backup
   implicit val system: ActorSystem
