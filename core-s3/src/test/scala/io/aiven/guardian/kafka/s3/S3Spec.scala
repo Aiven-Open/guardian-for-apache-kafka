@@ -11,6 +11,7 @@ import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Sink
 import akka.stream.scaladsl.Source
 import akka.testkit.TestKitBase
+import com.softwaremill.diffx.ShowConfig
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.TestUtils
@@ -51,6 +52,7 @@ trait S3Spec
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(20 minutes, 100 millis)
+  implicit val showConfig: ShowConfig          = ShowConfig.default.skipIdentical
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 1)
 
