@@ -11,6 +11,7 @@ import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
 import io.aiven.guardian.kafka.TestUtils._
+import io.aiven.guardian.kafka.UniqueGenerators
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.BackupClientControlWrapper
 import io.aiven.guardian.kafka.backup.KafkaConsumer
@@ -22,9 +23,10 @@ import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
-import io.aiven.guardian.kafka.s3.Generators.s3ConfigGen
+import io.aiven.guardian.kafka.s3.UniqueGenerators.uniqueS3ConfigGen
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
+import org.scalatest.WorkStealingParallelExecution
 import org.scalatest.propspec.AnyPropSpecLike
 
 import scala.concurrent.Future
@@ -33,7 +35,12 @@ import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
 
-trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with BackupClientSpec {
+trait RealS3BackupClientTest
+    extends AnyPropSpecLike
+    with KafkaClusterTest
+    with BackupClientSpec
+    with UniqueGenerators
+    with WorkStealingParallelExecution {
   def compression: Option[CompressionConfig]
 
   override lazy val s3Settings: S3Settings = S3Settings()
@@ -95,9 +102,10 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
   }
 
   property("basic flow without interruptions using PeriodFromFirst works correctly", RealS3Available) {
-    forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
-           s3ConfigGen(useVirtualDotHost, bucketPrefix),
-           kafkaConsumerGroupGen
+    forAll(
+      kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
+      uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+      uniqueKafkaConsumerGroupGen()
     ) {
       (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod,
        s3Config: S3Config,
@@ -172,9 +180,10 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
   }
 
   property("suspend/resume using PeriodFromFirst creates separate object after resume point", RealS3Available) {
-    forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
-           s3ConfigGen(useVirtualDotHost, bucketPrefix),
-           kafkaConsumerGroupGen
+    forAll(
+      kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
+      uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+      uniqueKafkaConsumerGroupGen()
     ) {
       (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod,
        s3Config: S3Config,
@@ -291,9 +300,10 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
   }
 
   property("suspend/resume for same object using ChronoUnitSlice works correctly", RealS3Available) {
-    forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
-           s3ConfigGen(useVirtualDotHost, bucketPrefix),
-           kafkaConsumerGroupGen
+    forAll(
+      kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
+      uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+      uniqueKafkaConsumerGroupGen()
     ) {
       (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod,
        s3Config: S3Config,
@@ -390,8 +400,8 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     RealS3Available
   ) {
     forAll(kafkaDataWithTimePeriodsGen(min = 30000, max = 30000),
-           s3ConfigGen(useVirtualDotHost, bucketPrefix),
-           kafkaConsumerGroupGen
+           uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+           uniqueKafkaConsumerGroupGen()
     ) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config, kafkaConsumerGroup: String) =>
       logger.info(s"Data bucket is ${s3Config.dataBucket}")
       val data = kafkaDataWithTimePeriod.data
@@ -474,10 +484,10 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
   ) {
     forAll(
       kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
-      s3ConfigGen(useVirtualDotHost, bucketPrefix),
-      s3ConfigGen(useVirtualDotHost, bucketPrefix),
-      kafkaConsumerGroupGen,
-      kafkaConsumerGroupGen
+      uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+      uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+      uniqueKafkaConsumerGroupGen(),
+      uniqueKafkaConsumerGroupGen()
     ) {
       (kafkaDataInChunksWithTimePeriod: KafkaDataInChunksWithTimePeriod,
        firstS3Config: S3Config,
@@ -599,10 +609,10 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
   ) {
     forAll(
       kafkaDataWithTimePeriodsGen(min = 30000, max = 30000),
-      s3ConfigGen(useVirtualDotHost, bucketPrefix),
-      s3ConfigGen(useVirtualDotHost, bucketPrefix),
-      kafkaConsumerGroupGen,
-      kafkaConsumerGroupGen
+      uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+      uniqueS3ConfigGen(useVirtualDotHost, bucketPrefix),
+      uniqueKafkaConsumerGroupGen(),
+      uniqueKafkaConsumerGroupGen()
     ) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod,
        firstS3Config: S3Config,

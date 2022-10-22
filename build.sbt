@@ -35,6 +35,9 @@ val organizeImportsVersion      = "0.6.0"
 // See https://github.com/akka/akka-http/pull/3995 and https://github.com/akka/akka-http/pull/3995#issuecomment-1026978593
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
 
+concurrentRestrictions in Global += Tags.limit(Tags.ForkedTestGroup, EvaluateTask.SystemProcessors)
+ThisBuild / Test / testForkedParallel := true
+
 val flagsFor12 = Seq(
   "-Xlint:_",
   "-Ywarn-infer-any",
@@ -84,6 +87,9 @@ val cliSettings = Seq(
 
 val baseName = "guardian-for-apache-kafka"
 
+ThisBuild / Test / testForkedParallel := true
+ThisBuild / concurrentRestrictions    := Seq(Tags.limitAll(10))
+
 lazy val guardian = project
   .in(file("."))
   .enablePlugins(ScalaUnidocPlugin)
@@ -107,6 +113,9 @@ lazy val guardian = project
     cliRestore
   )
   .settings(
+    commands += Command.command("testUntilFailed") { state =>
+      "test" :: "testUntilFailed" :: state
+    },
     publish / skip     := true,
     crossScalaVersions := List() // workaround for https://github.com/sbt/sbt/issues/3465
   )
@@ -287,7 +296,8 @@ lazy val restoreS3 = project
   .in(file("restore-s3"))
   .settings(
     librarySettings,
-    name := s"$baseName-restore-s3"
+    Test / fork := true,
+    name        := s"$baseName-restore-s3"
   )
   .dependsOn(coreRestore % "compile->compile;test->test", coreS3 % "compile->compile;test->test")
   .dependsOn(backupS3 % "test->compile")
@@ -296,7 +306,8 @@ lazy val restoreGCS = project
   .in(file("restore-gcs"))
   .settings(
     librarySettings,
-    name := s"$baseName-restore-gcs"
+    Test / fork := true,
+    name        := s"$baseName-restore-gcs"
   )
   .dependsOn(coreRestore % "compile->compile;test->test", coreGCS % "compile->compile;test->test")
 

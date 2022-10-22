@@ -94,11 +94,17 @@ trait KafkaClusterTest extends AkkaStreamTestKit { this: Suite =>
     } yield ()
 
   def cleanTopics(topics: Set[String])(implicit executionContext: ExecutionContext): Future[Unit] =
+    Future.successful(())
+//    for {
+//      currentTopics <- adminClient.listTopics().names().toCompletableFuture.asScala
+//      topicsToDelete = topics.intersect(currentTopics.asScala.toSet)
+//      _ <- adminClient.deleteTopics(topicsToDelete.asJava).all().toCompletableFuture.asScala
+//    } yield ()
+
+  def checkConsumerGroupExists(consumerGroup: String)(implicit executionContext: ExecutionContext): Future[Boolean] =
     for {
-      currentTopics <- adminClient.listTopics().names().toCompletableFuture.asScala
-      topicsToDelete = topics.intersect(currentTopics.asScala.toSet)
-      _ <- adminClient.deleteTopics(topicsToDelete.asJava).all().toCompletableFuture.asScala
-    } yield ()
+      consumerGroups <- adminClient.listConsumerGroups().valid().toCompletableFuture.asScala
+    } yield consumerGroups.asScala.toList.map(_.groupId()).contains(consumerGroup)
 
   case object TerminationException extends Exception("termination-exception")
 }
