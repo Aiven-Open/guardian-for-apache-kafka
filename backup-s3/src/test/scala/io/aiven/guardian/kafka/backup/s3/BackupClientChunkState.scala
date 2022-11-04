@@ -5,6 +5,7 @@ import akka.actor.ActorSystem
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.S3Settings
 import akka.stream.alpakka.s3.SuccessfulUploadPart
+import akka.stream.scaladsl.Flow
 import akka.stream.scaladsl.Sink
 import io.aiven.guardian.kafka.backup.KafkaConsumerInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
@@ -24,10 +25,12 @@ class BackupClientChunkState[T <: KafkaConsumerInterface](maybeS3Settings: Optio
 ) extends BackupClient[T](maybeS3Settings) {
   val processedChunks: ConcurrentLinkedQueue[SuccessfulUploadPart] = new ConcurrentLinkedQueue[SuccessfulUploadPart]()
 
-  override val successSink
+  override def successSink
       : Sink[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext]), Future[Done]] =
-    super.successSink.contramap { case (part, value) =>
-      processedChunks.add(part)
-      (part, value)
-    }
+    Flow[(SuccessfulUploadPart, immutable.Iterable[kafkaClientInterface.CursorContext])]
+      .alsoTo(Sink.foreach { case (part, _) =>
+        processedChunks.add(part)
+      })
+      .to(super.successSink)
+      .mapMaterializedValue(_ => Future.successful(Done))
 }
