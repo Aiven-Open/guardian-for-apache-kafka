@@ -145,7 +145,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
           reducedConsumerRecord
         }
 
-        calculatedFuture.onComplete { _ =>
+        calculatedFuture.onCompleteLogError { () =>
           cleanTopics(topics)
           backupClientWrapped.shutdown()
         }
@@ -246,7 +246,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
           (first, second)
         }
 
-        calculatedFuture.onComplete { _ =>
+        calculatedFuture.onCompleteLogError { () =>
           cleanTopics(topics)
           backupClientWrapped.shutdown()
           secondBackupClientWrapped.shutdown()
@@ -357,7 +357,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
           reducedConsumerRecord
         }
 
-        calculatedFuture.onComplete { _ =>
+        calculatedFuture.onCompleteLogError { () =>
           cleanTopics(topics)
           backupClientWrapped.shutdown()
           secondBackupClientWrapped.shutdown()
@@ -441,7 +441,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
         reducedConsumerRecord
       }
 
-      calculatedFuture.onComplete { _ =>
+      calculatedFuture.onCompleteLogError { () =>
         cleanTopics(topics)
         backupClientWrapped.shutdown()
       }
@@ -556,7 +556,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
                    }
           )
 
-          calculatedFuture.onComplete { _ =>
+          calculatedFuture.onCompleteLogError { () =>
             cleanTopics(topics)
             backupClientOneWrapped.shutdown()
             backupClientTwoWrapped.shutdown()
@@ -697,7 +697,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
                    }
           )
 
-          calculatedFuture.onComplete { _ =>
+          calculatedFuture.onCompleteLogError { () =>
             cleanTopics(topics)
             backupClientOneWrapped.shutdown()
             backupClientTwoWrapped.shutdown()

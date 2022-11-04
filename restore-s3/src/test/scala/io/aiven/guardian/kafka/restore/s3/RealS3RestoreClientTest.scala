@@ -11,6 +11,7 @@ import akka.stream.scaladsl.Sink
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
+import io.aiven.guardian.kafka.TestUtils._
 import io.aiven.guardian.kafka.backup.BackupClientControlWrapper
 import io.aiven.guardian.kafka.backup.KafkaConsumer
 import io.aiven.guardian.kafka.backup.configs.Backup
@@ -131,7 +132,7 @@ trait RealS3RestoreClientTest
           asConsumerRecords = receivedTopics.map(KafkaConsumer.consumerRecordToReducedConsumerRecord)
         } yield asConsumerRecords.toList
 
-        calculatedFuture.onComplete { _ =>
+        calculatedFuture.onCompleteLogError { () =>
           cleanTopics(kafkaDataInChunksWithTimePeriodRenamedTopics.topics)
           cleanTopics(renamedTopics)
           backupClientWrapped.shutdown()
