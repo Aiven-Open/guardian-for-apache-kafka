@@ -1,13 +1,17 @@
 package io.aiven.guardian.kafka
 
 import akka.actor.ActorSystem
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.kafka.common.KafkaFuture
 
 import scala.collection.immutable
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.jdk.DurationConverters._
+import scala.util.Failure
+import scala.util.Success
 
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -28,6 +32,17 @@ object TestUtils {
       }
       wrappingFuture
     }
+  }
+
+  implicit final class ScalaFutureExtensionMethods[T](future: Future[T]) extends LazyLogging {
+    def onCompleteLogError(f: () => Unit)(implicit executor: ExecutionContext): Unit =
+      future.onComplete { result =>
+        result match {
+          case Failure(exception) => logger.error("Future resulted in error", exception)
+          case Success(_)         => ()
+        }
+        f()
+      }
   }
 
   /** The standard Scala groupBy returns an `immutable.Map` which is unordered, this version returns an ordered
