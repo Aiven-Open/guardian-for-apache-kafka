@@ -65,7 +65,9 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
   def getKeysFromTwoDownloads(dataBucket: String): Future[(String, String)] = waitForS3Download(
     dataBucket,
     {
-      case Seq(first, second) => (first.key, second.key)
+      case s if s.size == 2 =>
+        val sorted = s.sortBy(contents => Utils.keyToOffsetDateTime(contents.key))
+        (sorted(0).key, sorted(1).key)
       case rest =>
         throw DownloadNotReady(rest)
     }
