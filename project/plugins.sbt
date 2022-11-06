@@ -13,7 +13,7 @@ addSbtPlugin("com.github.sbt"                    % "sbt-release"              % 
 addSbtPlugin("ch.epfl.scala"                     % "sbt-scalafix"             % "0.10.4")
 addSbtPlugin("org.scoverage"                     % "sbt-scoverage"            % "2.0.6")
 addSbtPlugin("org.scoverage"                     % "sbt-coveralls"            % "1.3.2")
-addSbtPlugin("net.vonbuchholtz"                  % "sbt-dependency-check"     % "4.1.0")
+addSbtPlugin("net.vonbuchholtz"                  % "sbt-dependency-check"     % "4.2.0")
 
 // This is here to bump dependencies for sbt-paradox/sbt-site, see
 // https://github.com/sirthias/parboiled/issues/175, https://github.com/sirthias/parboiled/issues/128 and
