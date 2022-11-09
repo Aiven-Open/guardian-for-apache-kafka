@@ -17,7 +17,7 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
 
-object TestUtils {
+object TestUtils extends LazyLogging {
 
   // Taken from https://stackoverflow.com/a/56763206/1519631
   implicit final class KafkaFutureToCompletableFuture[T](kafkaFuture: KafkaFuture[T]) {
@@ -34,7 +34,7 @@ object TestUtils {
     }
   }
 
-  implicit final class ScalaFutureExtensionMethods[T](future: Future[T]) extends LazyLogging {
+  implicit final class ScalaFutureExtensionMethods[T](future: Future[T]) {
     def onCompleteLogError(f: () => Unit)(implicit executor: ExecutionContext): Unit =
       future.onComplete { result =>
         result match {
