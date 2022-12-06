@@ -28,7 +28,7 @@ val testContainersVersion      = "0.40.12"
 val testContainersJavaVersion  = "1.17.6"
 val scalaCheckVersion          = "1.17.0"
 val scalaCheckOpsVersion       = "2.10.0"
-val enumeratumVersion          = "1.7.0"
+val enumeratumVersion          = "1.7.2"
 val organizeImportsVersion     = "0.6.0"
 
 // See https://github.com/akka/akka-http/pull/3995 and https://github.com/akka/akka-http/pull/3995#issuecomment-1026978593
