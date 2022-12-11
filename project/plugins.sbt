@@ -12,7 +12,7 @@ addSbtPlugin("com.github.sbt"                    % "sbt-pgp"                  % 
 addSbtPlugin("com.github.sbt"                    % "sbt-release"              % "1.1.0")
 addSbtPlugin("ch.epfl.scala"                     % "sbt-scalafix"             % "0.10.4")
 addSbtPlugin("org.scoverage"                     % "sbt-scoverage"            % "2.0.6")
-addSbtPlugin("org.scoverage"                     % "sbt-coveralls"            % "1.3.2")
+addSbtPlugin("org.scoverage"                     % "sbt-coveralls"            % "1.3.5")
 addSbtPlugin("net.vonbuchholtz"                  % "sbt-dependency-check"     % "4.2.0")
 
 // This is here to bump dependencies for sbt-paradox/sbt-site, see
