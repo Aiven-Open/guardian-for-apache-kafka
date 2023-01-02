@@ -13,6 +13,8 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class CompressionSpec
     extends AnyPropTestKit(ActorSystem("CompressionSpec"))
@@ -22,7 +24,11 @@ class CompressionSpec
 
   implicit val ec: ExecutionContext = system.dispatcher
 
-  property("Gzip compression works with a SourceWithContext/FlowWithContext") {
+  // Its possible to generate a string with really bad entropy that causes the
+  // compression/decompression to take an unusually long amount of time
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(10 seconds, 15 millis)
+
+  property("GZip compression works with a SourceWithContext/FlowWithContext") {
     forAll { data: List[String] =>
       val asByteString    = data.map(ByteString.fromString)
       val zippedWithIndex = asByteString.zipWithIndex
