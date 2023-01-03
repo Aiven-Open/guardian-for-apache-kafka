@@ -5,6 +5,7 @@ import akka.stream.scaladsl.Compression
 import akka.stream.scaladsl.Source
 import akka.stream.scaladsl.SourceWithContext
 import akka.util.ByteString
+import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.backup.configs.{Compression => CompressionModel}
 import io.aiven.guardian.kafka.models.Gzip
@@ -20,12 +21,13 @@ class CompressionSpec
     extends AnyPropTestKit(ActorSystem("CompressionSpec"))
     with Matchers
     with ScalaFutures
-    with ScalaCheckPropertyChecks {
+    with ScalaCheckPropertyChecks
+    with AkkaStreamTestKit {
 
   implicit val ec: ExecutionContext = system.dispatcher
 
-  // Its possible to generate a string with really bad entropy that causes the
-  // compression/decompression to take an unusually long amount of time
+  // Due to akka-streams taking a while to initialize for the first time we need a longer
+  // increase in the timeout
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10 seconds, 15 millis)
 
   property("GZip compression works with a SourceWithContext/FlowWithContext") {
