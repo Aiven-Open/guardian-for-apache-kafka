@@ -8,28 +8,29 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
 ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-val akkaVersion                = "2.6.20"
-val akkaHttpVersion            = "10.2.10"
-val alpakkaKafkaVersion        = "3.0.1"
-val kafkaClientsVersion        = "3.3.1"
-val alpakkaVersion             = "4.0.0"
-val futilesVersion             = "2.0.2"
-val quillJdbcMonixVersion      = "3.7.2"
-val postgresqlJdbcVersion      = "42.5.1"
-val scalaLoggingVersion        = "3.9.5"
-val logbackClassicVersion      = "1.4.5"
-val declineVersion             = "2.4.1"
-val pureConfigVersion          = "0.17.2"
-val scalaTestVersion           = "3.2.15"
-val scalaTestScalaCheckVersion = "3.2.14.0"
-val akkaStreamsJson            = "0.8.3"
-val diffxVersion               = "0.8.2"
-val testContainersVersion      = "0.40.12"
-val testContainersJavaVersion  = "1.17.6"
-val scalaCheckVersion          = "1.17.0"
-val scalaCheckOpsVersion       = "2.10.0"
-val enumeratumVersion          = "1.7.2"
-val organizeImportsVersion     = "0.6.0"
+val akkaVersion                 = "2.6.20"
+val akkaHttpVersion             = "10.2.10"
+val alpakkaKafkaVersion         = "3.0.1"
+val kafkaClientsVersion         = "3.3.1"
+val alpakkaVersion              = "4.0.0"
+val futilesVersion              = "2.0.2"
+val quillJdbcMonixVersion       = "3.7.2"
+val postgresqlJdbcVersion       = "42.5.1"
+val scalaLoggingVersion         = "3.9.5"
+val logbackClassicVersion       = "1.4.5"
+val declineVersion              = "2.4.1"
+val pureConfigVersion           = "0.17.2"
+val scalaTestVersion            = "3.2.15"
+val scalaTestScalaCheckArtifact = "scalacheck-1-17"
+val scalaTestScalaCheckVersion  = "3.2.15.0"
+val akkaStreamsJson             = "0.8.3"
+val diffxVersion                = "0.8.2"
+val testContainersVersion       = "0.40.12"
+val testContainersJavaVersion   = "1.17.6"
+val scalaCheckVersion           = "1.17.0"
+val scalaCheckOpsVersion        = "2.10.0"
+val enumeratumVersion           = "1.7.2"
+val organizeImportsVersion      = "0.6.0"
 
 // See https://github.com/akka/akka-http/pull/3995 and https://github.com/akka/akka-http/pull/3995#issuecomment-1026978593
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
@@ -131,7 +132,7 @@ lazy val core = project
       "com.typesafe.akka"          %% "akka-actor"                     % akkaVersion                % Test,
       "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Test,
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
-      "org.scalatestplus"          %% "scalacheck-1-16"                % scalaTestScalaCheckVersion % Test,
+      "org.scalatestplus"          %% scalaTestScalaCheckArtifact      % scalaTestScalaCheckVersion % Test,
       "org.mdedetrich"             %% "scalacheck"                     % scalaCheckVersion          % Test,
       "com.rallyhealth"            %% "scalacheck-ops_1-16"            % scalaCheckOpsVersion       % Test,
       "com.softwaremill.diffx"     %% "diffx-scalatest-must"           % diffxVersion               % Test,
@@ -173,10 +174,10 @@ lazy val coreS3 = project
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
       // Ordinarily this would be in Test scope however if its not then a lower version of akka-http-xml which has a
       // security vulnerability gets resolved in Compile scope
-      "com.typesafe.akka" %% "akka-http-xml"   % akkaHttpVersion,
-      "org.scalatest"     %% "scalatest"       % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-16" % scalaTestScalaCheckVersion % Test,
-      "com.monovore"      %% "decline"         % declineVersion             % Test
+      "com.typesafe.akka" %% "akka-http-xml"             % akkaHttpVersion,
+      "org.scalatest"     %% "scalatest"                 % scalaTestVersion           % Test,
+      "org.scalatestplus" %% scalaTestScalaCheckArtifact % scalaTestScalaCheckVersion % Test,
+      "com.monovore"      %% "decline"                   % declineVersion             % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -190,9 +191,9 @@ lazy val coreGCS = project
       "com.lightbend.akka" %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion,
       // Ordinarily this would be in Test scope however if its not then a lower version of akka-http-spray-json which
       // has a security vulnerability gets resolved in Compile scope
-      "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
-      "org.scalatest"     %% "scalatest"            % scalaTestVersion           % Test,
-      "org.scalatestplus" %% "scalacheck-1-16"      % scalaTestScalaCheckVersion % Test
+      "com.typesafe.akka" %% "akka-http-spray-json"      % akkaHttpVersion,
+      "org.scalatest"     %% "scalatest"                 % scalaTestVersion           % Test,
+      "org.scalatestplus" %% scalaTestScalaCheckArtifact % scalaTestScalaCheckVersion % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
