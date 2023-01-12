@@ -19,5 +19,10 @@ class BackupClientControlWrapper[T <: KafkaConsumer](backupClient: BackupClientI
   def run(): Unit =
     control = backupClient.backup.run()
 
-  def shutdown(): Future[Done] = control.drainAndShutdown()
+  @SuppressWarnings(Array("DisableSyntax.null"))
+  def shutdown(): Future[Done] =
+    if (control != null)
+      control.drainAndShutdown()
+    else
+      Future.successful(Done)
 }
