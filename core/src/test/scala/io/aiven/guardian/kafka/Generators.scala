@@ -3,6 +3,7 @@ package io.aiven.guardian.kafka
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.common.record.TimestampType
 import org.scalacheck.Gen
+import org.scalacheck.util.Buildable
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration
@@ -113,6 +114,25 @@ object Generators {
     Gen.choose[Long](head.timestamp, last.timestamp - 1).map(millis => FiniteDuration(millis, MILLISECONDS))
   }
 
+  @SuppressWarnings(
+    Array(
+      "scalafix:DisableSyntax.while"
+    )
+  )
+  private def buildableOfCollCond[C <: Iterable[T], T](cond: C => Boolean, g: Gen[C])(implicit
+      evb: Buildable[T, C]
+  ): Gen[C] =
+    Gen.infiniteLazyList(g).map { ll =>
+      val it   = ll.iterator
+      val bldr = evb.builder
+      while (!cond(bldr.result()))
+        bldr ++= it.next()
+      bldr.result() // sub-optimal: is called twice for the same result, can be improved!
+    }
+
+  private def listOfFillCond[T](finishCondition: List[T] => Boolean, g: => Gen[List[T]]) =
+    buildableOfCollCond[List[T], T](finishCondition, g)
+
   def kafkaDateGen(min: Int = 2,
                    max: Int = 100,
                    padTimestampsMillis: Range = Range.inclusive(1, 10),
@@ -121,7 +141,7 @@ object Generators {
     topic <- kafkaTopic
     records <- {
       val base = Generators.kafkaReducedConsumerRecordsGen(topic, min, max, padTimestampsMillis)
-      condition.fold(base)(c => Gen.listOfFillCond(c, base))
+      condition.fold(base)(c => listOfFillCond(c, base))
     }
   } yield records
 

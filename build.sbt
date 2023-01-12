@@ -133,7 +133,7 @@ lazy val core = project
       "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Test,
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
       "org.scalatestplus"          %% scalaTestScalaCheckArtifact      % scalaTestScalaCheckVersion % Test,
-      "org.mdedetrich"             %% "scalacheck"                     % scalaCheckVersion          % Test,
+      "org.scalacheck"             %% "scalacheck"                     % scalaCheckVersion          % Test,
       "com.rallyhealth"            %% "scalacheck-ops_1-16"            % scalaCheckOpsVersion       % Test,
       "com.softwaremill.diffx"     %% "diffx-scalatest-must"           % diffxVersion               % Test,
       "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
