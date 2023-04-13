@@ -8,29 +8,38 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
 ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-val akkaVersion                 = "2.6.20"
-val akkaHttpVersion             = "10.2.10"
-val alpakkaKafkaVersion         = "3.0.1"
-val kafkaClientsVersion         = "3.4.0"
-val alpakkaVersion              = "4.0.0"
-val futilesVersion              = "2.0.2"
-val quillJdbcMonixVersion       = "3.7.2"
-val postgresqlJdbcVersion       = "42.6.0"
-val scalaLoggingVersion         = "3.9.5"
-val logbackClassicVersion       = "1.4.6"
-val declineVersion              = "2.4.1"
-val pureConfigVersion           = "0.17.2"
-val scalaTestVersion            = "3.2.15"
-val scalaTestScalaCheckArtifact = "scalacheck-1-17"
-val scalaTestScalaCheckVersion  = "3.2.15.0"
-val akkaStreamsJson             = "0.8.3"
-val diffxVersion                = "0.8.2"
-val testContainersVersion       = "0.40.14"
-val testContainersJavaVersion   = "1.17.6"
-val scalaCheckVersion           = "1.17.0"
-val scalaCheckOpsVersion        = "2.10.0"
-val enumeratumVersion           = "1.7.2"
-val organizeImportsVersion      = "0.6.0"
+val akkaVersion                = "2.6.20"
+val akkaHttpVersion            = "10.2.10"
+val alpakkaKafkaVersion        = "3.0.1"
+val kafkaClientsVersion        = "3.4.0"
+val alpakkaVersion             = "4.0.0"
+val futilesVersion             = "2.0.2"
+val quillJdbcMonixVersion      = "3.7.2"
+val postgresqlJdbcVersion      = "42.6.0"
+val scalaLoggingVersion        = "3.9.5"
+val logbackClassicVersion      = "1.4.6"
+val declineVersion             = "2.4.1"
+val pureConfigVersion          = "0.17.2"
+val scalaTestVersion           = "3.2.15"
+val scalaTestScalaCheckVersion = "3.2.15.0"
+val akkaStreamsJson            = "0.8.3"
+val diffxVersion               = "0.8.2"
+val testContainersVersion      = "0.40.14"
+val testContainersJavaVersion  = "1.17.6"
+val scalaCheckVersion          = "1.17.0"
+val scalaCheckOpsVersion       = "2.10.0"
+val enumeratumVersion          = "1.7.2"
+val organizeImportsVersion     = "0.6.0"
+
+/** Calculates the scalatest version in a format that is used for `org.scalatestplus` scalacheck artifacts
+  *
+  * @see
+  *   https://www.scalatest.org/user_guide/property_based_testing
+  */
+def scalaTestPlusScalaCheckVersion(version: String) =
+  version.split('.').take(2).mkString("-")
+
+val scalaTestScalaCheckArtifact = s"scalacheck-${scalaTestPlusScalaCheckVersion(scalaCheckVersion)}"
 
 // See https://github.com/akka/akka-http/pull/3995 and https://github.com/akka/akka-http/pull/3995#issuecomment-1026978593
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
