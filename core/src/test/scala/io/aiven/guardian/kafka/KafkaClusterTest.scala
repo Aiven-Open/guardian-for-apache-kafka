@@ -5,7 +5,6 @@ import akka.kafka.ConsumerSettings
 import akka.kafka.ProducerSettings
 import akka.kafka.scaladsl.Producer
 import akka.stream.scaladsl.Source
-import com.dimafeng.testcontainers.ForAllTestContainer
 import com.dimafeng.testcontainers.KafkaContainer
 import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.kafka.TestUtils.KafkaFutureToCompletableFuture
@@ -25,13 +24,13 @@ import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
 import scala.language.postfixOps
 
-trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this: Suite =>
+trait KafkaClusterTest extends AkkaStreamTestKit { this: Suite =>
 
   /** Timeout constant to wait for both Akka Streams plus initialization of consumer/kafka cluster
     */
   val KafkaInitializationTimeoutConstant: FiniteDuration = AkkaStreamInitializationConstant + (2.5 seconds)
 
-  override lazy val container: KafkaContainer = new KafkaContainer()
+  lazy val container: KafkaContainer = KafkaClusterTest.container
 
   def baseKafkaConfig: Some[ConsumerSettings[Array[Byte], Array[Byte]] => ConsumerSettings[Array[Byte], Array[Byte]]] =
     Some(
@@ -80,22 +79,7 @@ trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this
     ).runWith(Producer.plainSink(producerSettings))
   }
 
-  protected var adminClient: AdminClient = _
-
-  override def afterStart(): Unit = {
-    super.afterStart()
-    adminClient = AdminClient.create(
-      Map[String, AnyRef](
-        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> container.bootstrapServers
-      ).asJava
-    )
-  }
-
-  override def beforeStop(): Unit = {
-    adminClient.close()
-    super.beforeStop()
-  }
-
+  import KafkaClusterTest.adminClient
   def createTopics(topics: Set[String])(implicit executionContext: ExecutionContext): Future[Unit] =
     for {
       currentTopics <- adminClient.listTopics().names().toCompletableFuture.asScala
@@ -110,11 +94,32 @@ trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this
     } yield ()
 
   def cleanTopics(topics: Set[String])(implicit executionContext: ExecutionContext): Future[Unit] =
+    Future.successful(())
+//    for {
+//      currentTopics <- adminClient.listTopics().names().toCompletableFuture.asScala
+//      topicsToDelete = topics.intersect(currentTopics.asScala.toSet)
+//      _ <- adminClient.deleteTopics(topicsToDelete.asJava).all().toCompletableFuture.asScala
+//    } yield ()
+
+  def checkConsumerGroupExists(consumerGroup: String)(implicit executionContext: ExecutionContext): Future[Boolean] =
     for {
-      currentTopics <- adminClient.listTopics().names().toCompletableFuture.asScala
-      topicsToDelete = topics.intersect(currentTopics.asScala.toSet)
-      _ <- adminClient.deleteTopics(topicsToDelete.asJava).all().toCompletableFuture.asScala
-    } yield ()
+      consumerGroups <- adminClient.listConsumerGroups().valid().toCompletableFuture.asScala
+    } yield consumerGroups.asScala.toList.map(_.groupId()).contains(consumerGroup)
 
   case object TerminationException extends Exception("termination-exception")
+}
+
+object KafkaClusterTest {
+  protected var adminClient: AdminClient = _
+
+  protected lazy val container: KafkaContainer = {
+    val con = new KafkaContainer()
+    con.start()
+    adminClient = AdminClient.create(
+      Map[String, AnyRef](
+        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> con.bootstrapServers
+      ).asJava
+    )
+    con
+  }
 }
