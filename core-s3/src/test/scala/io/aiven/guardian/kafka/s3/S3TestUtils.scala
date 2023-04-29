@@ -23,13 +23,13 @@ object S3TestUtils extends StrictLogging {
       multiParts <-
         S3.listMultipartUpload(bucket, None).withAttributes(s3Attrs).runWith(Sink.seq)
       _ <- Future.sequence(multiParts.map { part =>
-             S3.deleteUpload(bucket, part.key, part.uploadId)
+             S3.deleteUpload(bucket, part.key, part.uploadId)(implicitly, s3Attrs)
            })
       _ <- Retry.retryWithBackOff(
              5,
              100 millis,
              throwable => throwable.getMessage.contains("The bucket you tried to delete is not empty")
-           )(S3.deleteBucket(bucket))
+           )(S3.deleteBucket(bucket)(implicitly, s3Attrs))
       _ = logger.info(s"Completed deleting bucket $bucket")
     } yield ()
   }
