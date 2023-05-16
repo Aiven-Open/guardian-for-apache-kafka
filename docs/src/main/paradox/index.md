@@ -11,6 +11,7 @@ to ensure that the tool runs reliably and as desired with large datasets in diff
 
 * [overview](overview.md)
 * [security](security.md)
+* [license-report](license-report.md)
 * [ci](ci.md)
 * [doc-generation](doc-generation.md)
 * [general-architecture](general-architecture/index.md)
