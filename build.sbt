@@ -116,6 +116,7 @@ lazy val guardian = project
     cliRestore
   )
   .settings(
+    name               := s"$baseName-root",
     publish / skip     := true,
     crossScalaVersions := List() // workaround for https://github.com/sbt/sbt/issues/3465
   )
@@ -356,7 +357,14 @@ lazy val docs = project
       "github.base_url" -> s"https://github.com/aiven/guardian-for-apache-kafka/tree/${if (isSnapshot.value) "main"
         else "v" + version.value}",
       "scaladoc.io.aiven.guardian.base_url" -> s"/guardian-for-apache-kafka/${(Preprocess / siteSubdirName).value}/"
-    )
+    ),
+    Compile / paradoxMarkdownToHtml / sourceGenerators += Def.taskDyn {
+      val targetFile = (Compile / paradox / sourceManaged).value / "license-report.md"
+
+      (LocalRootProject / dumpLicenseReportAggregate).map { dir =>
+        IO.copy(List(dir / s"$baseName-root-licenses.md" -> targetFile)).toList
+      }
+    }.taskValue
   )
 
 ThisBuild / homepage := Some(url("https://github.com/aiven/guardian-for-apache-kafka"))
