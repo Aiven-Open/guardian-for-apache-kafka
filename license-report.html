@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+
+<head>
+<title>License Report · Guardian for Apache Kafka Documentation</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content='docs'/>
+<link rel="canonical" href="https://github.com/aiven/guardian-for-apache-kafkalicense-report.html"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italicc" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="lib/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/warnOldVersion.js"></script>
+<script type="text/javascript" src="js/groups.js"></script>
+<script type="text/javascript" src="js/snippets.js"></script>
+<link rel="stylesheet" type="text/css" href="lib/foundation/dist/foundation.min.css"/>
+<link rel="stylesheet" type="text/css" href="css/page.css"/>
+
+<!--
+<link rel="shortcut icon" href="images/favicon.ico" />
+-->
+</head>
+
+<body>
+<div class="off-canvas-wrapper">
+<div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+<div class="off-canvas position-left" id="off-canvas-menu" data-off-canvas>
+<nav class="off-canvas-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Guardian for Apache Kafka Documentation
+</a>
+<div class="version-number">
+0.1.0*
+</div>
+</div>
+<select class="supergroup" name="Language"><option class="group" value="group-scala">Scala</option></select>
+<div class="nav-toc">
+<ul>
+  <li><a href="overview.html" class="page">Overview</a></li>
+  <li><a href="security.html" class="page">Security</a></li>
+  <li><a href="license-report.html" class="active page">License Report</a></li>
+  <li><a href="ci.html" class="page">CI - Continuous Integration</a></li>
+  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
+  <li><a href="general-architecture/index.html" class="page">General Architecture</a>
+  <ul>
+    <li><a href="general-architecture/logging.html" class="page">Logging</a></li>
+  </ul></li>
+  <li><a href="testing/index.html" class="page">Testing</a>
+  <ul>
+    <li><a href="testing/s3.html" class="page">S3 - Testing</a></li>
+  </ul></li>
+  <li><a href="application/index.html" class="page">Application</a>
+  <ul>
+    <li><a href="application/design.html" class="page">Design</a></li>
+    <li><a href="application/packaging.html" class="page">Packaging</a></li>
+    <li><a href="application/logging.html" class="page">Logging</a></li>
+  </ul></li>
+  <li><a href="backup/index.html" class="page">Backup</a>
+  <ul>
+    <li><a href="backup/configuration.html" class="page">Configuration</a></li>
+    <li><a href="backup/design.html" class="page">Design</a></li>
+  </ul></li>
+  <li><a href="persistence/index.html" class="page">Persistence Modules</a>
+  <ul>
+    <li><a href="persistence/design.html" class="page">Design</a></li>
+    <li><a href="persistence/s3/index.html" class="page">S3</a></li>
+  </ul></li>
+  <li><a href="restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="restore/configuration.html" class="page">Configuration</a></li>
+  </ul></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="off-canvas-content" data-off-canvas-content>
+
+<header class="site-header expanded row">
+<div class="small-12 column">
+<a href="#" class="off-canvas-toggle hide-for-medium" data-toggle="off-canvas-menu"><svg class="svg-icon svg-icon-menu" version="1.1" id="Menu" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"> <path class="svg-icon-menu-path" fill="#53CDEC" d="M16.4,9H3.6C3.048,9,3,9.447,3,10c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,9.447,16.952,9,16.4,9z M16.4,13
+H3.6C3.048,13,3,13.447,3,14c0,0.553,0.048,1,0.6,1H16.4c0.552,0,0.6-0.447,0.6-1C17,13.447,16.952,13,16.4,13z M3.6,7H16.4
+C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.048,7,3.6,7z"/></svg>
+</a>
+<div class="title"><a href="index.html">Guardian for Apache Kafka Documentation</a></div>
+
+<!--
+<a href="https://www.example.com" class="logo show-for-medium">logo</a>
+-->
+</div>
+</header>
+
+<div class="expanded row">
+
+<div class="medium-3 large-2 show-for-medium column">
+<nav class="site-nav">
+<div class="nav-home">
+<a href="index.html" >
+<span class="home-icon">⌂</span>Guardian for Apache Kafka Documentation
+</a>
+<div class="version-number">
+0.1.0*
+</div>
+</div>
+<select class="supergroup" name="Language"><option class="group" value="group-scala">Scala</option></select>
+<div class="nav-toc">
+<ul>
+  <li><a href="overview.html" class="page">Overview</a></li>
+  <li><a href="security.html" class="page">Security</a></li>
+  <li><a href="license-report.html" class="active page">License Report</a></li>
+  <li><a href="ci.html" class="page">CI - Continuous Integration</a></li>
+  <li><a href="doc-generation.html" class="page">Document Generation</a></li>
+  <li><a href="general-architecture/index.html" class="page">General Architecture</a>
+  <ul>
+    <li><a href="general-architecture/logging.html" class="page">Logging</a></li>
+  </ul></li>
+  <li><a href="testing/index.html" class="page">Testing</a>
+  <ul>
+    <li><a href="testing/s3.html" class="page">S3 - Testing</a></li>
+  </ul></li>
+  <li><a href="application/index.html" class="page">Application</a>
+  <ul>
+    <li><a href="application/design.html" class="page">Design</a></li>
+    <li><a href="application/packaging.html" class="page">Packaging</a></li>
+    <li><a href="application/logging.html" class="page">Logging</a></li>
+  </ul></li>
+  <li><a href="backup/index.html" class="page">Backup</a>
+  <ul>
+    <li><a href="backup/configuration.html" class="page">Configuration</a></li>
+    <li><a href="backup/design.html" class="page">Design</a></li>
+  </ul></li>
+  <li><a href="persistence/index.html" class="page">Persistence Modules</a>
+  <ul>
+    <li><a href="persistence/design.html" class="page">Design</a></li>
+    <li><a href="persistence/s3/index.html" class="page">S3</a></li>
+  </ul></li>
+  <li><a href="restore/index.html" class="page">Restore</a>
+  <ul>
+    <li><a href="restore/configuration.html" class="page">Configuration</a></li>
+  </ul></li>
+</ul>
+</div>
+
+</nav>
+</div>
+
+<div class="small-12 medium-9 large-10 column">
+<section class="site-content">
+
+<span id="version-warning"></span>
+
+<div class="page-header row">
+<div class="medium-12 show-for-medium column">
+<div class="nav-breadcrumbs">
+<ul>
+  <li><a href="index.html">Guardian for Apache Kafka Documentation</a></li>
+  <li>License Report</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="page-content row">
+<div class="small-12 large-9 column" id="docs">
+<h1><a href="#license-report" name="license-report" class="anchor"><span class="anchor-link"></span></a>License Report</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Category </th>
+      <th>License </th>
+      <th>Dependency </th>
+      <th>Maven/Ivy Configurations </th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2</a> </td>
+      <td><a href="https://github.com/milessabin/shapeless">com.chuusai # shapeless_2.13 # 2.3.10</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2</a> </td>
+      <td><a href="https://github.com/spray/spray-json">io.spray # spray-json_2.13 # 1.3.6</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> </td>
+      <td><a href="https://github.com/google/auto/tree/master/value">com.google.auto.value # auto-value-annotations # 1.6.6</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0</a> </td>
+      <td>com.google.errorprone # error_prone_annotations # 2.11.0 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="http://softwaremill.com/open-source">com.softwaremill.common # tagging_2.13 # 2.3.2</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="http://softwaremill.com/open-source">com.softwaremill.diffx # diffx-core_2.13 # 0.8.3</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="http://softwaremill.com/open-source">com.softwaremill.diffx # diffx-scalatest-must_2.13 # 0.8.3</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="http://softwaremill.com/open-source">com.softwaremill.magnolia1_2 # magnolia_2.13 # 1.1.2</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="https://github.com/circe/circe">io.circe # circe-core_2.13 # 0.14.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="https://github.com/circe/circe">io.circe # circe-jawn_2.13 # 0.14.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="https://github.com/circe/circe">io.circe # circe-numbers_2.13 # 0.14.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache 2.0</a> </td>
+      <td><a href="https://github.com/grpc/grpc-java">io.grpc # grpc-context # 1.22.1</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> </td>
+      <td><a href="https://github.com/typelevel/simulacrum-scalafix">org.typelevel # simulacrum-scalafix-annotations_2.13 # 0.5.4</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0 License</a> </td>
+      <td><a href="https://github.com/lightbend/scala-logging">com.typesafe.scala-logging # scala-logging_2.13 # 3.9.5</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache License, Version 2.0</a> </td>
+      <td><a href="https://github.com/google/guava">com.google.guava # guava # 31.1-jre</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a> </td>
+      <td><a href="https://github.com/johanandren/futiles">com.markatta # futiles_2.13 # 2.0.2</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache License, Version 2.0</a> </td>
+      <td><a href="http://commons.apache.org/proper/commons-codec/">commons-codec # commons-codec # 1.11</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache License, Version 2.0</a> </td>
+      <td><a href="https://commons.apache.org/proper/commons-compress/">org.apache.commons # commons-compress # 1.22</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache License, Version 2.0</a> </td>
+      <td><a href="http://hc.apache.org/httpcomponents-client">org.apache.httpcomponents # httpclient # 4.5.10</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache License, Version 2.0</a> </td>
+      <td><a href="http://hc.apache.org/httpcomponents-core-ga">org.apache.httpcomponents # httpcore # 4.4.12</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td>software.amazon.awssdk # annotations # 2.17.113 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td><a href="https://aws.amazon.com/sdkforjava">software.amazon.awssdk # auth # 2.17.113</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td>software.amazon.awssdk # http-client-spi # 2.17.113 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td><a href="https://aws.amazon.com/sdkforjava">software.amazon.awssdk # json-utils # 2.17.113</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td>software.amazon.awssdk # metrics-spi # 2.17.113 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td><a href="https://aws.amazon.com/sdkforjava">software.amazon.awssdk # profiles # 2.17.113</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td>software.amazon.awssdk # regions # 2.17.113 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td><a href="https://aws.amazon.com/sdkforjava">software.amazon.awssdk # sdk-core # 2.17.113</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td><a href="https://aws.amazon.com/sdkforjava">software.amazon.awssdk # third-party-jackson-core # 2.17.113</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td>software.amazon.awssdk # utils # 2.17.113 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://aws.amazon.com/apache2.0">Apache License, Version 2.0</a> </td>
+      <td><a href="https://github.com/awslabs/aws-eventstream-java">software.amazon.eventstream # eventstream # 1.0.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-backup-gcs_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-backup-s3_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-backup-s3_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-compaction-gcs_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-compaction-s3_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-core-backup_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-core-backup_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-core-cli_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-core-compaction_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-core-restore_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-core_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-gcs_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-restore-gcs_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-restore-s3_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/aiven/guardian-for-apache-kafka">aiven.io # guardian-for-apache-kafka-s3_2.13 # 0.1.0-SNAPSHOT</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="https://jwt-scala.github.io/jwt-scala/">com.github.jwt-scala # jwt-core_2.13 # 7.1.4</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="https://jwt-scala.github.io/jwt-scala/">com.github.jwt-scala # jwt-json-common_2.13 # 7.1.4</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="https://jwt-scala.github.io/jwt-scala/">com.github.jwt-scala # jwt-spray-json_2.13 # 7.1.4</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> </td>
+      <td><a href="https://doc.akka.io/docs/alpakka/current">com.lightbend.akka # akka-stream-alpakka-google-cloud-storage_2.13 # 4.0.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> </td>
+      <td><a href="https://doc.akka.io/docs/alpakka/current">com.lightbend.akka # akka-stream-alpakka-google-common_2.13 # 4.0.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> </td>
+      <td><a href="https://doc.akka.io/docs/alpakka/current">com.lightbend.akka # akka-stream-alpakka-s3_2.13 # 4.0.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="http://monovore.com/decline">com.monovore # decline_2.13 # 2.4.1</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="http://monovore.com/decline">com.monovore # decline_2.13 # 2.4.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/lightbend/config">com.typesafe # config # 1.4.2</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> </td>
+      <td><a href="https://github.com/lightbend/ssl-config">com.typesafe # ssl-config-core_2.13 # 0.4.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="https://akka.io/">com.typesafe.akka # akka-actor_2.13 # 2.6.20</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http-core_2.13 # 10.2.10</a> </td>
+      <td>compile,test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http-core_2.13 # 10.2.10</a> </td>
+      <td>compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http-core_2.13 # 10.2.10</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http-core_2.13 # 10.2.9</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http-spray-json_2.13 # 10.2.10</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http-testkit_2.13 # 10.2.10</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http-xml_2.13 # 10.2.10</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http_2.13 # 10.2.10</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http_2.13 # 10.2.10</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-http_2.13 # 10.2.9</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-parsing_2.13 # 10.2.10</a> </td>
+      <td>compile,test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-parsing_2.13 # 10.2.10</a> </td>
+      <td>compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-parsing_2.13 # 10.2.10</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://akka.io">com.typesafe.akka # akka-parsing_2.13 # 10.2.9</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="https://akka.io/">com.typesafe.akka # akka-protobuf-v3_2.13 # 2.6.20</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="https://akka.io/">com.typesafe.akka # akka-slf4j_2.13 # 2.6.20</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://doc.akka.io/docs/alpakka-kafka/current">com.typesafe.akka # akka-stream-kafka_2.13 # 3.0.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="https://akka.io/">com.typesafe.akka # akka-stream-testkit_2.13 # 2.6.20</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="https://akka.io/">com.typesafe.akka # akka-stream_2.13 # 2.6.20</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="https://akka.io/">com.typesafe.akka # akka-testkit_2.13 # 2.6.20</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="https://zio.dev">dev.zio # izumi-reflect-thirdparty-boopickle-shaded_2.13 # 1.1.2</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="https://zio.dev">dev.zio # izumi-reflect_2.13 # 1.1.2</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> </td>
+      <td><a href="https://github.com/java-native-access/jna">net.java.dev.jna # jna # 5.12.1</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/mdedetrich/akka-streams-json">org.mdedetrich # akka-stream-circe_2.13 # 0.8.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://opensource.org/licenses/Apache-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/mdedetrich/akka-streams-json">org.mdedetrich # akka-stream-json_2.13 # 0.8.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="http://www.scala-lang.org/">org.scala-lang.modules # scala-java8-compat_2.13 # 1.0.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="http://www.scala-lang.org/">org.scala-lang.modules # scala-parser-combinators_2.13 # 1.1.2</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="http://www.scala-lang.org/">org.scala-lang.modules # scala-xml_2.13 # 1.3.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="http://www.scala-lang.org/">org.scala-lang.modules # scala-xml_2.13 # 2.1.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> </td>
+      <td><a href="https://github.com/scalatest/scalatestplus-scalacheck">org.scalatestplus # scalacheck-1-17_2.13 # 3.2.15.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache-2.0</a> </td>
+      <td><a href="https://github.com/xerial/snappy-java">org.xerial.snappy # snappy-java # 1.1.8.4</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache License, Version 2.0</a> </td>
+      <td><a href="https://github.com/GoogleContainerTools/jib">com.google.cloud.tools # jib-build-plan # 0.4.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache License, Version 2.0</a> </td>
+      <td><a href="https://github.com/GoogleContainerTools/jib">com.google.cloud.tools # jib-core # 0.22.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache License, Version 2.0</a> </td>
+      <td><a href="https://github.com/census-instrumentation/opencensus-java">io.opencensus # opencensus-api # 0.24.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache License, Version 2.0</a> </td>
+      <td><a href="https://github.com/census-instrumentation/opencensus-java">io.opencensus # opencensus-contrib-http-util # 0.24.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache License, Version 2.0</a> </td>
+      <td><a href="https://kafka.apache.org">org.apache.kafka # kafka-clients # 3.4.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="http://github.com/FasterXML/jackson">com.fasterxml.jackson.core # jackson-annotations # 2.13.3</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="https://github.com/FasterXML/jackson-core">com.fasterxml.jackson.core # jackson-core # 2.13.3</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="http://github.com/FasterXML/jackson">com.fasterxml.jackson.core # jackson-databind # 2.13.3</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td>com.fasterxml.jackson.datatype # jackson-datatype-jsr310 # 2.13.3 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="https://github.com/docker-java/docker-java">com.github.docker-java # docker-java-api # 3.3.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="https://github.com/docker-java/docker-java">com.github.docker-java # docker-java-transport # 3.3.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="https://github.com/docker-java/docker-java">com.github.docker-java # docker-java-transport-zerodep # 3.3.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="http://findbugs.sourceforge.net/">com.google.code.findbugs # jsr305 # 3.0.2</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td>com.google.guava # failureaccess # 1.0.1 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td>com.google.guava # listenablefuture # 9999.0-empty-to-avoid-conflict-with-guava </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td>com.google.http-client # google-http-client # 1.34.0 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td>com.google.http-client # google-http-client-apache-v2 # 1.34.0 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td>com.google.http-client # google-http-client-jackson2 # 1.32.1 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="https://github.com/google/j2objc/">com.google.j2objc # j2objc-annotations # 1.3</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="http://commons.apache.org/proper/commons-logging/">commons-logging # commons-logging # 1.2</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="https://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="https://github.com/JetBrains/java-annotations">org.jetbrains # annotations # 17.0.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0.txt">The Apache Software License, Version 2.0</a> </td>
+      <td><a href="https://github.com/lz4/lz4-java">org.lz4 # lz4-java # 1.8.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalactic # scalactic_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-compatible # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-core_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-diagrams_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-featurespec_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-flatspec_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-freespec_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-funspec_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-funsuite_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-matchers-core_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-mustmatchers_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-propspec_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-refspec_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-shouldmatchers_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest-wordspec_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Apache </td>
+      <td><a href="http://www.apache.org/licenses/LICENSE-2.0">the Apache License, ASL Version 2.0</a> </td>
+      <td><a href="http://www.scalatest.org">org.scalatest # scalatest_2.13 # 3.2.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="https://github.com/sbt/test-interface/blob/master/LICENSE">BSD</a> </td>
+      <td><a href="http://www.scala-sbt.org">org.scala-sbt # test-interface # 1.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="https://opensource.org/licenses/BSD-2-Clause">BSD 2-Clause License</a> </td>
+      <td><a href="https://github.com/luben/zstd-jni">com.github.luben # zstd-jni # 1.5.2-1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="https://opensource.org/licenses/BSD-3-Clause">BSD 3-clause</a> </td>
+      <td><a href="http://www.scalacheck.org">org.scalacheck # scalacheck_2.13 # 1.17.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="http://opensource.org/licenses/BSD-3-Clause">BSD New license</a> </td>
+      <td>com.google.auth # google-auth-library-credentials # 0.18.0 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="http://opensource.org/licenses/BSD-3-Clause">BSD New license</a> </td>
+      <td>com.google.auth # google-auth-library-credentials # 0.24.1 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="http://opensource.org/licenses/BSD-3-Clause">BSD New license</a> </td>
+      <td>com.google.auth # google-auth-library-oauth2-http # 0.18.0 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="https://jdbc.postgresql.org/about/license.html">BSD-2-Clause</a> </td>
+      <td><a href="https://jdbc.postgresql.org">org.postgresql # postgresql # 42.6.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="https://asm.ow2.io/license.html">BSD-3-Clause</a> </td>
+      <td><a href="http://asm.ow2.io/">org.ow2.asm # asm # 9.3</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>BSD </td>
+      <td><a href="http://www.opensource.org/licenses/bsd-license.php">New BSD License</a> </td>
+      <td>org.hamcrest # hamcrest-core # 1.3 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>CC0 </td>
+      <td><a href="http://creativecommons.org/publicdomain/zero/1.0/">CC0</a> </td>
+      <td><a href="http://www.reactive-streams.org/">org.reactivestreams # reactive-streams # 1.0.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>EPL </td>
+      <td><a href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License 1.0</a> </td>
+      <td><a href="http://junit.org">junit # junit # 4.13.2</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>LGPL </td>
+      <td><a href="http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">GNU Lesser General Public License</a> </td>
+      <td>ch.qos.logback # logback-classic # 1.4.7 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>LGPL </td>
+      <td><a href="http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">GNU Lesser General Public License</a> </td>
+      <td>ch.qos.logback # logback-core # 1.4.7 </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://github.com/lloydmeta/enumeratum">com.beachape # enumeratum-macros_2.13 # 1.6.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://github.com/lloydmeta/enumeratum">com.beachape # enumeratum_2.13 # 1.7.2</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">MIT</a> </td>
+      <td>com.rallyhealth # scalacheck-ops_1-16_2.13 # 2.10.0 </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://github.com/rnorth/${project.artifactId}">org.rnorth.duct-tape # duct-tape # 1.0.8</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://testcontainers.org">org.testcontainers # kafka # 1.18.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://testcontainers.org">org.testcontainers # testcontainers # 1.18.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://github.com/typelevel/cats">org.typelevel # cats-core_2.13 # 2.6.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://typelevel.org/cats">org.typelevel # cats-core_2.13 # 2.9.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://typelevel.org/cats">org.typelevel # cats-core_2.13 # 2.9.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://github.com/typelevel/cats">org.typelevel # cats-kernel_2.13 # 2.6.1</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://typelevel.org/cats">org.typelevel # cats-kernel_2.13 # 2.9.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="https://typelevel.org/cats">org.typelevel # cats-kernel_2.13 # 2.9.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">MIT</a> </td>
+      <td><a href="http://github.com/typelevel/jawn">org.typelevel # jawn-parser_2.13 # 1.3.2</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://www.opensource.org/licenses/mit-license.php">MIT License</a> </td>
+      <td><a href="http://www.slf4j.org">org.slf4j # slf4j-api # 2.0.4</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">The MIT License</a> </td>
+      <td><a href="https://checkerframework.org">org.checkerframework # checker-qual # 3.12.0</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="http://opensource.org/licenses/MIT">The MIT License</a> </td>
+      <td><a href="https://checkerframework.org">org.checkerframework # checker-qual # 3.31.0</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">The MIT License (MIT)</a> </td>
+      <td><a href="https://github.com/testcontainers/testcontainers-scala">com.dimafeng # testcontainers-scala-core_2.13 # 0.40.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">The MIT License (MIT)</a> </td>
+      <td><a href="https://github.com/testcontainers/testcontainers-scala">com.dimafeng # testcontainers-scala-kafka_2.13 # 0.40.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>MIT </td>
+      <td><a href="https://opensource.org/licenses/MIT">The MIT License (MIT)</a> </td>
+      <td><a href="https://github.com/testcontainers/testcontainers-scala">com.dimafeng # testcontainers-scala-scalatest_2.13 # 0.40.15</a> </td>
+      <td>test </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Mozilla </td>
+      <td><a href="https://www.mozilla.org/MPL/2.0/">Mozilla Public License, version 2.0</a> </td>
+      <td><a href="https://github.com/pureconfig/pureconfig">com.github.pureconfig # pureconfig-core_2.13 # 0.17.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Mozilla </td>
+      <td><a href="https://www.mozilla.org/MPL/2.0/">Mozilla Public License, version 2.0</a> </td>
+      <td><a href="https://github.com/pureconfig/pureconfig">com.github.pureconfig # pureconfig-generic-base_2.13 # 0.17.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Mozilla </td>
+      <td><a href="https://www.mozilla.org/MPL/2.0/">Mozilla Public License, version 2.0</a> </td>
+      <td><a href="https://github.com/pureconfig/pureconfig">com.github.pureconfig # pureconfig-generic_2.13 # 0.17.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+    <tr>
+      <td>Mozilla </td>
+      <td><a href="https://www.mozilla.org/MPL/2.0/">Mozilla Public License, version 2.0</a> </td>
+      <td><a href="https://github.com/pureconfig/pureconfig">com.github.pureconfig # pureconfig_2.13 # 0.17.3</a> </td>
+      <td>test,compile </td>
+      <td><notextile></notextile></td>
+    </tr>
+  </tbody>
+</table>
+<div class="source-github">
+The source code for this page can be found <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/docs/target/paradox_managed/license-report.md">here</a>.
+</div>
+
+<div class="nav-next">
+<p><strong>Next:</strong> <a href="ci.html">CI - Continuous Integration</a></p>
+</div>
+</div>
+<div class="large-3 show-for-large column" data-sticky-container>
+</div>
+</div>
+
+</section>
+</div>
+
+</div>
+
+<footer class="site-footer">
+
+<section class="site-footer-nav">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 medium-4 large-3 text-center column">
+<div class="nav-links">
+<ul>
+<!-- <li><a href="https://www.example.com/products/">Products</a> -->
+</ul>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section class="site-footer-base">
+<div class="expanded row">
+<div class="small-12 large-offset-2 large-10 column">
+<div class="row site-footer-content">
+
+<div class="small-12 text-center large-9 column">
+
+<!--
+<div class="copyright">
+<span class="text">&copy; 2023</span>
+<a href="https://www.example.com" class="logo">logo</a>
+</div>
+-->
+</div>
+
+</div>
+</div>
+</div>
+</section>
+</footer>
+
+</div>
+</div>
+</div>
+</body>
+
+<script type="text/javascript" src="lib/foundation/dist/foundation.min.js"></script>
+<script type="text/javascript">jQuery(document).foundation();</script>
+<script type="text/javascript" src="js/magellan.js"></script>
+
+<style type="text/css">@import "lib/prettify/prettify.css";</style>
+<script type="text/javascript" src="lib/prettify/prettify.js"></script>
+<script type="text/javascript" src="lib/prettify/lang-scala.js"></script>
+<script type="text/javascript">jQuery(function(){window.prettyPrint && prettyPrint()});</script>
+<script type="text/javascript">jQuery(function(jq){initOldVersionWarnings(jq, '0.1.0-SNAPSHOT', 'https://github.com/aiven/guardian-for-apache-kafka')});</script>
+
+
+</html>
