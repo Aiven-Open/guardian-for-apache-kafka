@@ -3,7 +3,7 @@ addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox"              % 
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-apidoc"       % "1.0.0")
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-project-info" % "3.0.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-unidoc"               % "0.5.0")
-addSbtPlugin("com.github.sbt"                    % "sbt-ghpages"              % "0.7.0")
+addSbtPlugin("com.github.sbt"                    % "sbt-ghpages"              % "0.8.0")
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.2")
 addSbtPlugin("com.github.sbt"                    % "sbt-site"                 % "1.5.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-native-packager"      % "1.9.16")
