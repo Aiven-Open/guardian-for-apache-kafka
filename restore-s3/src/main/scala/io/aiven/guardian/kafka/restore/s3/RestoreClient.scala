@@ -2,7 +2,6 @@ package io.aiven.guardian.kafka.restore.s3
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.SharedKillSwitch
 import akka.stream.alpakka.s3.S3Attributes
 import akka.stream.alpakka.s3.S3Headers
 import akka.stream.alpakka.s3.S3Settings
@@ -19,9 +18,7 @@ import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-class RestoreClient[T <: KafkaProducerInterface](maybeS3Settings: Option[S3Settings],
-                                                 override val maybeKillSwitch: Option[SharedKillSwitch]
-)(implicit
+class RestoreClient[T <: KafkaProducerInterface](maybeS3Settings: Option[S3Settings])(implicit
     override val kafkaProducerInterface: T,
     override val restoreConfig: Restore,
     override val kafkaClusterConfig: KafkaCluster,

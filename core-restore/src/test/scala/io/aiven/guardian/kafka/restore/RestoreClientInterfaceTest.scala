@@ -100,7 +100,8 @@ trait RestoreClientInterfaceTest
         _ <- akka.pattern.after(10 seconds)(Future.successful(()))
         processedRecords = backupMock.mergeBackedUpData()
         restoreMock      = new MockedRestoreClientInterface(processedRecords.toMap)
-        _ <- restoreMock.restore
+        (_, runFuture)   = restoreMock.restore.run()
+        _ <- runFuture
         restoredData = restoreMock.kafkaProducerInterface.producedData.asScala.toList
       } yield restoredData
 
@@ -136,7 +137,8 @@ trait RestoreClientInterfaceTest
         _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
         processedRecords = backupMock.mergeBackedUpData()
         restoreMock      = new MockedRestoreClientInterface(processedRecords.toMap)
-        _ <- restoreMock.restore
+        (_, runFuture)   = restoreMock.restore.run()
+        _ <- runFuture
         restoredData = restoreMock.kafkaProducerInterface.producedData.asScala.toList
       } yield restoredData
 

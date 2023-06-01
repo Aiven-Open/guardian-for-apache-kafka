@@ -4,9 +4,13 @@ import akka.Done
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.Attributes
-import akka.stream.SharedKillSwitch
+import akka.stream.KillSwitches
+import akka.stream.UniqueKillSwitch
 import akka.stream.scaladsl.Compression
+import akka.stream.scaladsl.Concat
 import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.Keep
+import akka.stream.scaladsl.RunnableGraph
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
@@ -18,7 +22,6 @@ import io.aiven.guardian.kafka.models.BackupObjectMetadata
 import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.restore.configs.Restore
-import markatta.futiles.Traversal.traverseSequentially
 import org.mdedetrich.akka.stream.support.CirceStreamSupport
 import org.typelevel.jawn.AsyncParser
 
@@ -32,7 +35,6 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends LazyLogging {
   implicit val restoreConfig: Restore
   implicit val kafkaClusterConfig: KafkaCluster
   implicit val system: ActorSystem
-  val maybeKillSwitch: Option[SharedKillSwitch]
   val maybeAttributes: Option[Attributes] = None
 
   def retrieveBackupKeys: Future[List[String]]
@@ -86,36 +88,36 @@ trait RestoreClientInterface[T <: KafkaProducerInterface] extends LazyLogging {
       case None => true
     }
 
-  private[kafka] def restoreKey(key: String): Future[Done] = {
+  private[kafka] def restoreKey(key: String): Source[ByteString, NotUsed] = {
     val source = Source
       .single(key)
       .via(downloadFlow)
 
-    val sourceWithCompression = BackupObjectMetadata.fromKey(key).compression match {
+    BackupObjectMetadata.fromKey(key).compression match {
       case Some(Gzip) => source.via(Compression.gunzip())
       case None       => source
     }
+  }
 
-    val base = sourceWithCompression
-      .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray))
+  def restore: RunnableGraph[(UniqueKillSwitch, Future[Done])] = {
+    val sourceWithCompression = Source.future(finalKeys).flatMapConcat { keys =>
+      keys.map(key => restoreKey(key)) match {
+        case first :: Nil            => first
+        case first :: second :: Nil  => Source.combine(first, second)(Concat(_))
+        case first :: second :: rest => Source.combine(first, second, rest: _*)(Concat(_))
+        case Nil                     => Source.empty[ByteString]
+      }
+    }
+
+    val asReducedConsumerRecord = sourceWithCompression
+      .via(CirceStreamSupport.decode[Option[ReducedConsumerRecord]](AsyncParser.UnwrapArray, multiValue = true))
       .collect {
         case Some(reducedConsumerRecord)
             if checkTopicInConfig(reducedConsumerRecord) && checkTopicGreaterThanTime(reducedConsumerRecord) =>
           reducedConsumerRecord
       }
 
-    maybeKillSwitch
-      .fold(base)(killSwitch => base.via(killSwitch.flow))
-      .runWith(kafkaProducerInterface.getSink)
-  }
-
-  def restore: Future[Done] = {
-    implicit val ec: ExecutionContext = system.dispatcher
-
-    for {
-      keys <- finalKeys
-      _    <- traverseSequentially(keys)(restoreKey)
-    } yield Done
+    asReducedConsumerRecord.viaMat(KillSwitches.single)(Keep.right).toMat(kafkaProducerInterface.getSink)(Keep.both)
   }
 
 }
