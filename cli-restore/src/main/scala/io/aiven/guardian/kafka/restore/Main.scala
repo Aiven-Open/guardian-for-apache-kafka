@@ -1,9 +1,7 @@
 package io.aiven.guardian.kafka.restore
 
 import akka.kafka.ProducerSettings
-import akka.stream.KillSwitches
 import akka.stream.RestartSettings
-import akka.stream.SharedKillSwitch
 import cats.data.ValidatedNel
 import com.monovore.decline._
 import com.monovore.decline.time._
@@ -155,14 +153,12 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
             logbackFile.foreach(path => MainUtils.setLogbackFile(path, LoggerFactory.getILoggerFactory))
             lazy val logger: Logger =
               Logger(LoggerFactory.getLogger(logClassName))
-            val killSwitch = KillSwitches.shared("restore-kill-switch")
             val app = storage match {
               case StorageOpt.S3 =>
                 new S3App {
-                  override lazy val kafkaClusterConfig: KafkaCluster          = kafkaCluster
-                  override lazy val s3Config: S3                              = s3
-                  override lazy val restoreConfig: Restore                    = restore
-                  override lazy val maybeKillSwitch: Option[SharedKillSwitch] = Some(killSwitch)
+                  override lazy val kafkaClusterConfig: KafkaCluster = kafkaCluster
+                  override lazy val s3Config: S3                     = s3
+                  override lazy val restoreConfig: Restore           = restore
                   override lazy val kafkaProducer: KafkaProducer = {
                     val finalProducerSettings =
                       (propertiesConsumerSettings.toList ++ bootstrapConsumerSettings.toList).reduceLeft(_ andThen _)
@@ -172,12 +168,14 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
                 }
             }
             initializedApp.set(Some(app))
+            val (killSwitch, future) = app.run()
+
             Runtime.getRuntime.addShutdownHook(new Thread {
               logger.info("Shutdown of Guardian detected")
               killSwitch.shutdown()
               Await.result(app.actorSystem.terminate(), 5 minutes)
             })
-            Await.result(app.run(), Duration.Inf)
+            Await.result(future, Duration.Inf)
         }
       }
     )
