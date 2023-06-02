@@ -1,8 +1,8 @@
 package io.aiven.guardian.kafka
 
-import akka.actor.ActorSystem
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.kafka.common.KafkaFuture
+import org.apache.pekko
 
 import scala.collection.immutable
 import scala.collection.mutable
@@ -16,6 +16,8 @@ import scala.util.Success
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
+
+import pekko.actor.ActorSystem
 
 object TestUtils {
 
@@ -85,7 +87,7 @@ object TestUtils {
     if (BigDecimal(current) / BigDecimal(max) * BigDecimal(100) <= buffer)
       Future.successful(())
     else
-      akka.pattern.after(previousChronoUnit.getDuration.toScala)(recurseUntilHitTimeUnit(previousChronoUnit, buffer))
+      pekko.pattern.after(previousChronoUnit.getDuration.toScala)(recurseUntilHitTimeUnit(previousChronoUnit, buffer))
   }
 
   def waitForStartOfTimeUnit(chronoUnit: ChronoUnit, buffer: BigDecimal = BigDecimal(5))(implicit

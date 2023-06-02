@@ -20,7 +20,7 @@ object MainUtils {
 
   /** Hook that lets the user specify the future that will signal the shutdown of the server whenever completed. Adapted
     * from
-    * https://github.com/akka/akka-http/blob/main/akka-http/src/main/scala/akka/http/scaladsl/server/HttpApp.scala#L151-L163
+    * https://github.com/apache/incubator-pekko-http/blob/94d1b1c153cc39216dae4217fd0e927f04d53cd2/http/src/main/scala/org/apache/pekko/http/scaladsl/server/HttpApp.scala#L164-L176
     */
   @SuppressWarnings(
     Array(

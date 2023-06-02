@@ -8,8 +8,8 @@ Scala API doc @apidoc[kafka.backup.configs.Backup]
 
 ## Explanation
 
-* `akka.kafka.consumer`: See @extref:[documentation](alpakka-kafka-docs:consumer.html#settings)
-* `akka.kafka.consumer.kafka-clients`: See @extref:[documentation](kafka-docs:documentation.html#consumerconfigs)
+* `pekko.kafka.consumer`: See @extref:[documentation](pekko-connectors-kafka-docs:consumer.html#settings)
+* `pekko.kafka.consumer.kafka-clients`: See @extref:[documentation](kafka-docs:documentation.html#consumerconfigs)
 * `backup`:
     * `kafka-group-id`: The group id for the Kafka consumer that's used in restore tool
     * `time-configuration`: How to slice the persisted keys/files based by time

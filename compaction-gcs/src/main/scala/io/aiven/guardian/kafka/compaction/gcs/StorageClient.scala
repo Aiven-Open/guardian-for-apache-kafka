@@ -1,15 +1,17 @@
 package io.aiven.guardian.kafka.compaction.gcs
 
-import akka.NotUsed
-import akka.stream.alpakka.googlecloud.storage.scaladsl.GCStorage
-import akka.stream.scaladsl.Source
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.compaction.StorageInterface
 import io.aiven.guardian.kafka.compaction.gcs.models.StorageConfig
 import io.aiven.guardian.kafka.gcs.errors.GCSErrors
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.pekko
 
 import scala.annotation.nowarn
+
+import pekko.NotUsed
+import pekko.stream.connectors.googlecloud.storage.scaladsl.GCStorage
+import pekko.stream.scaladsl.Source
 
 class StorageClient(bucketName: String, maybePrefix: Option[String])(implicit storageConfig: StorageConfig)
     extends StorageInterface

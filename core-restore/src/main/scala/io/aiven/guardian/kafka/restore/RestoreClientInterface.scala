@@ -1,18 +1,5 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.Done
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.Attributes
-import akka.stream.KillSwitches
-import akka.stream.UniqueKillSwitch
-import akka.stream.scaladsl.Compression
-import akka.stream.scaladsl.Concat
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.RunnableGraph
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.ExtensionsMethods._
 import io.aiven.guardian.kafka.Utils
@@ -22,13 +9,28 @@ import io.aiven.guardian.kafka.models.BackupObjectMetadata
 import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.restore.configs.Restore
-import org.mdedetrich.akka.stream.support.CirceStreamSupport
+import org.apache.pekko
+import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.typelevel.jawn.AsyncParser
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import java.time.OffsetDateTime
+
+import pekko.Done
+import pekko.NotUsed
+import pekko.actor.ActorSystem
+import pekko.stream.Attributes
+import pekko.stream.KillSwitches
+import pekko.stream.UniqueKillSwitch
+import pekko.stream.scaladsl.Compression
+import pekko.stream.scaladsl.Concat
+import pekko.stream.scaladsl.Flow
+import pekko.stream.scaladsl.Keep
+import pekko.stream.scaladsl.RunnableGraph
+import pekko.stream.scaladsl.Source
+import pekko.util.ByteString
 
 trait RestoreClientInterface[T <: KafkaProducerInterface] extends LazyLogging {
   implicit val kafkaProducerInterface: T

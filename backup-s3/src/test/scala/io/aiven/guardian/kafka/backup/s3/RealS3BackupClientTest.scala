@@ -1,12 +1,5 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import akka.kafka.scaladsl.Producer
-import akka.stream.KillSwitches
-import akka.stream.SharedKillSwitch
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Compression
-import akka.stream.scaladsl.Sink
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
@@ -24,7 +17,8 @@ import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.Generators.s3ConfigGen
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
-import org.mdedetrich.akka.stream.support.CirceStreamSupport
+import org.apache.pekko
+import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.scalatest.propspec.AnyPropSpecLike
 
 import scala.concurrent.Future
@@ -32,6 +26,14 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
+
+import pekko.kafka.scaladsl.Producer
+import pekko.stream.KillSwitches
+import pekko.stream.SharedKillSwitch
+import pekko.stream.connectors.s3.S3Settings
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Compression
+import pekko.stream.scaladsl.Sink
 
 trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with BackupClientSpec {
   def compression: Option[CompressionConfig]
@@ -78,9 +80,9 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
                                         delay: FiniteDuration = 5 seconds
   ): Future[Unit] =
     if (backupClient.processedChunks.size() > 0)
-      akka.pattern.after(delay)(Future.successful(()))
+      pekko.pattern.after(delay)(Future.successful(()))
     else
-      akka.pattern.after(step)(waitUntilBackupClientHasCommitted(backupClient, step, delay))
+      pekko.pattern.after(step)(waitUntilBackupClientHasCommitted(backupClient, step, delay))
 
   private def downloadObject(dataBucket: String, key: String) = {
     val downloadSource = S3
@@ -134,7 +136,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
           _ <- createTopics(topics)
           _ <- createBucket(s3Config.dataBucket)
           _ = backupClientWrapped.run()
-          _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
+          _ <- pekko.pattern.after(KafkaInitializationTimeoutConstant)(
                  baseSource
                    .runWith(Producer.plainSink(producerSettings))
                )
@@ -224,7 +226,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
           _ = baseSource.runWith(Producer.plainSink(producerSettings))
           _ <- waitUntilBackupClientHasCommitted(backupClient)
           _ = killSwitch.abort(TerminationException)
-          _ <- akka.pattern.after(2 seconds) {
+          _ <- pekko.pattern.after(2 seconds) {
                  Future {
                    secondBackupClientWrapped.run()
                  }
@@ -345,7 +347,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
           _ = baseSource.runWith(Producer.plainSink(producerSettings))
           _ <- waitUntilBackupClientHasCommitted(backupClient)
           _ = killSwitch.abort(TerminationException)
-          _ <- akka.pattern.after(2 seconds) {
+          _ <- pekko.pattern.after(2 seconds) {
                  Future {
                    secondBackupClientWrapped.run()
                  }
@@ -423,13 +425,13 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
         _ <- createTopics(topics)
         _ <- createBucket(s3Config.dataBucket)
         _ = backupClientWrapped.run()
-        _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
+        _ <- pekko.pattern.after(KafkaInitializationTimeoutConstant)(
                baseSource
                  .runWith(Producer.plainSink(producerSettings))
              )
 
         _ <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
-        bucketContents <- akka.pattern.after(10 seconds)(
+        bucketContents <- pekko.pattern.after(10 seconds)(
                             S3.listBucket(s3Config.dataBucket, None).withAttributes(s3Attrs).runWith(Sink.seq)
                           )
         keysSorted = bucketContents.map(_.key).sortBy(Utils.keyToOffsetDateTime)
@@ -537,7 +539,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
             _ <- createBucket(secondS3Config.dataBucket)
             _ = backupClientOneWrapped.run()
             _ = backupClientTwoWrapped.run()
-            _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
+            _ <- pekko.pattern.after(KafkaInitializationTimeoutConstant)(
                    baseSource
                      .runWith(Producer.plainSink(producerSettings))
                  )
@@ -662,14 +664,14 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
             _ <- createBucket(secondS3Config.dataBucket)
             _ = backupClientOneWrapped.run()
             _ = backupClientTwoWrapped.run()
-            _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
+            _ <- pekko.pattern.after(KafkaInitializationTimeoutConstant)(
                    baseSource
                      .runWith(Producer.plainSink(producerSettings))
                  )
 
             _ <- sendTopicAfterTimePeriod(1 minute, producerSettings, topics.head)
             (bucketContentsOne, bucketContentsTwo) <-
-              akka.pattern.after(10 seconds)(for {
+              pekko.pattern.after(10 seconds)(for {
                 bucketContentsOne <-
                   S3.listBucket(firstS3Config.dataBucket, None).withAttributes(s3Attrs).runWith(Sink.seq)
                 bucketContentsTwo <-

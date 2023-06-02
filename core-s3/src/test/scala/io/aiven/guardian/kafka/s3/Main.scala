@@ -1,11 +1,5 @@
 package io.aiven.guardian.kafka.s3
 
-import akka.actor.ActorSystem
-import akka.stream.Attributes
-import akka.stream.alpakka.s3.S3Attributes
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Sink
 import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Command
@@ -13,12 +7,18 @@ import com.monovore.decline.CommandApp
 import com.monovore.decline.Opts
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.s3.Entry.computeAndDeleteBuckets
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.regions.providers.AwsRegionProvider
+import org.apache.pekko
 
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
+
+import pekko.actor.ActorSystem
+import pekko.stream.Attributes
+import pekko.stream.connectors.s3.S3Attributes
+import pekko.stream.connectors.s3.S3Settings
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Sink
 
 class Entry
     extends CommandApp(
@@ -80,12 +80,8 @@ object Entry extends LazyLogging {
       system: ActorSystem,
       s3Settings: S3Settings
   ): Future[Set[String]] =
-    // Bug that needs to be fixed upstream in Alpakka, this specific S3 api call is not region specific
-    // so US_EAST_1 needs to be hardcoded
     S3.listBuckets()
-      .withAttributes(S3Attributes.settings(s3Settings.withS3RegionProvider(new AwsRegionProvider {
-        val getRegion: Region = Region.US_EAST_1
-      })))
+      .withAttributes(S3Attributes.settings(s3Settings))
       .runWith(Sink.seq)
       .map { allBuckets =>
         allBuckets.map(_.name).toSet.filter(fromS3Bucket => fromS3Bucket.startsWith(bucketPrefix)).diff(excludeBuckets)

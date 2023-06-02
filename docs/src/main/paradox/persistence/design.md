@@ -22,5 +22,5 @@ just need to handle how to store/push `ByteString` into the storage of your choi
 The @apidoc[RestoreClientInterface] implements restoration from an existing backup. Implementing this is quite simple,
 you need to define @apidoc[RestoreClientInterface.retrieveBackupKeys](RestoreClientInterface) which returns all valid
 keys to restore (i.e. don't include currently in progress backup keys) and
-@apidoc[RestoreClientInterface.downloadFlow](RestoreClientInterface) which is an akka-stream `Flow` that takes
+@apidoc[RestoreClientInterface.downloadFlow](RestoreClientInterface) which is a pekko-stream `Flow` that takes
 a `String` which is the key and outputs the content of that key.

@@ -1,10 +1,10 @@
 package io.aiven.guardian.cli
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 
 import scala.concurrent.ExecutionContext
 
-trait AkkaSettings {
+trait PekkoSettings {
   implicit val actorSystem: ActorSystem           = ActorSystem()
   implicit val executionContext: ExecutionContext = ExecutionContext.global
 }
