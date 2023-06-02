@@ -1,16 +1,18 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.Done
-import akka.actor.ActorSystem
-import akka.stream.ActorAttributes
-import akka.stream.KillSwitch
-import akka.stream.Supervision
-import akka.stream.UniqueKillSwitch
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.restore.KafkaProducer
 import io.aiven.guardian.kafka.restore.s3.RestoreClient
+import org.apache.pekko
 
 import scala.concurrent.Future
+
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.stream.ActorAttributes
+import pekko.stream.KillSwitch
+import pekko.stream.Supervision
+import pekko.stream.UniqueKillSwitch
 
 trait App extends LazyLogging {
   implicit val kafkaProducer: KafkaProducer

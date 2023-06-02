@@ -1,8 +1,8 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.actor.ActorSystem
-import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.backup.configs.Compression
+import io.aiven.guardian.pekko.AnyPropTestKit
+import org.apache.pekko.actor.ActorSystem
 
 class RestoreClientInterfaceSpec
     extends AnyPropTestKit(ActorSystem("RestoreClientInterfaceSpec"))

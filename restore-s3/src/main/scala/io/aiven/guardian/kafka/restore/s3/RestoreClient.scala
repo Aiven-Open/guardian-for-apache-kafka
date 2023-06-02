@@ -1,22 +1,24 @@
 package io.aiven.guardian.kafka.restore.s3
 
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.alpakka.s3.S3Attributes
-import akka.stream.alpakka.s3.S3Headers
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.util.ByteString
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.restore.KafkaProducerInterface
 import io.aiven.guardian.kafka.restore.RestoreClientInterface
 import io.aiven.guardian.kafka.restore.configs.Restore
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
+import org.apache.pekko
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+
+import pekko.NotUsed
+import pekko.actor.ActorSystem
+import pekko.stream.connectors.s3.S3Attributes
+import pekko.stream.connectors.s3.S3Headers
+import pekko.stream.connectors.s3.S3Settings
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Flow
+import pekko.stream.scaladsl.Sink
+import pekko.util.ByteString
 
 class RestoreClient[T <: KafkaProducerInterface](maybeS3Settings: Option[S3Settings])(implicit
     override val kafkaProducerInterface: T,

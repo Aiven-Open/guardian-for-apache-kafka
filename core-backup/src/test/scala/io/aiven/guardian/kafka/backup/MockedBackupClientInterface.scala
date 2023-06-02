@@ -1,14 +1,5 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.Done
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.Compression
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import io.aiven.guardian.kafka.TestUtils._
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.configs.Backup
@@ -18,6 +9,7 @@ import io.aiven.guardian.kafka.models.BackupObjectMetadata
 import io.aiven.guardian.kafka.models.CompressionType
 import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.pekko
 
 import scala.collection.immutable
 import scala.concurrent.Await
@@ -28,6 +20,16 @@ import scala.language.postfixOps
 
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ConcurrentLinkedQueue
+
+import pekko.Done
+import pekko.NotUsed
+import pekko.actor.ActorSystem
+import pekko.stream.scaladsl.Compression
+import pekko.stream.scaladsl.Flow
+import pekko.stream.scaladsl.Keep
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.Source
+import pekko.util.ByteString
 
 /** A mocked `BackupClientInterface` which given a `kafkaClientInterface` allows you to
   *

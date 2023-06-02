@@ -1,10 +1,8 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.stream.scaladsl.Source
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import com.typesafe.scalalogging.StrictLogging
-import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.kafka.ExtensionsMethods._
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.Utils
@@ -13,6 +11,8 @@ import io.aiven.guardian.kafka.backup.configs.Compression
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
 import io.aiven.guardian.kafka.restore.configs.{Restore => RestoreConfig}
+import io.aiven.guardian.pekko.PekkoStreamTestKit
+import org.apache.pekko
 import org.scalatest.Inspectors
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
@@ -28,9 +28,11 @@ import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
 
+import pekko.stream.scaladsl.Source
+
 trait RestoreClientInterfaceTest
     extends AnyPropSpecLike
-    with AkkaStreamTestKit
+    with PekkoStreamTestKit
     with Matchers
     with ScalaFutures
     with ScalaCheckPropertyChecks
@@ -67,7 +69,7 @@ trait RestoreClientInterfaceTest
       backupMock.clear()
       val calculatedFuture = for {
         _ <- backupMock.backup.run()
-        _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+        _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful(()))
         processedRecords = backupMock.mergeBackedUpData(compression = compression.map(_.`type`))
         restoreMock      = new MockedRestoreClientInterface(processedRecords.toMap)
         keys <- restoreMock.finalKeys
@@ -97,7 +99,7 @@ trait RestoreClientInterfaceTest
       backupMock.clear()
       val calculatedFuture = for {
         _ <- backupMock.backup.run()
-        _ <- akka.pattern.after(10 seconds)(Future.successful(()))
+        _ <- pekko.pattern.after(10 seconds)(Future.successful(()))
         processedRecords = backupMock.mergeBackedUpData()
         restoreMock      = new MockedRestoreClientInterface(processedRecords.toMap)
         (_, runFuture)   = restoreMock.restore.run()
@@ -134,7 +136,7 @@ trait RestoreClientInterfaceTest
       backupMock.clear()
       val calculatedFuture = for {
         _ <- backupMock.backup.run()
-        _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+        _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful(()))
         processedRecords = backupMock.mergeBackedUpData()
         restoreMock      = new MockedRestoreClientInterface(processedRecords.toMap)
         (_, runFuture)   = restoreMock.restore.run()

@@ -1,13 +1,8 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import com.typesafe.scalalogging.StrictLogging
-import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
 import io.aiven.guardian.kafka.TestUtils.waitForStartOfTimeUnit
@@ -16,8 +11,10 @@ import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.backup.configs.{Compression => CompressionModel}
 import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import io.aiven.guardian.pekko.PekkoStreamTestKit
 import org.apache.kafka.common.record.TimestampType
-import org.mdedetrich.akka.stream.support.CirceStreamSupport
+import org.apache.pekko
+import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.scalatest.Inspectors
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
@@ -35,11 +32,16 @@ import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ConcurrentLinkedQueue
 
+import pekko.stream.scaladsl.Keep
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.Source
+import pekko.util.ByteString
+
 final case class Periods(periodsBefore: Long, periodsAfter: Long)
 
 trait BackupClientInterfaceTest
     extends AnyPropSpecLike
-    with AkkaStreamTestKit
+    with PekkoStreamTestKit
     with Matchers
     with ScalaFutures
     with ScalaCheckPropertyChecks
@@ -137,7 +139,7 @@ trait BackupClientInterfaceTest
         mock.clear()
         val calculatedFuture = for {
           _ <- mock.backup.run()
-          _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+          _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful(()))
           processedRecords = mock.mergeBackedUpData()
           asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                          Source
@@ -178,7 +180,7 @@ trait BackupClientInterfaceTest
         mock.clear()
         val calculatedFuture = for {
           _ <- mock.backup.run()
-          _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+          _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful(()))
           processedRecords = mock.mergeBackedUpData(compression = compression.map(_.`type`))
           asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                          Source
@@ -213,7 +215,7 @@ trait BackupClientInterfaceTest
     mock.clear()
     val calculatedFuture = for {
       _ <- mock.backup.run()
-      _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+      _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful(()))
       processedRecords = mock.mergeBackedUpData(compression = compression.map(_.`type`))
       asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                      Source
@@ -250,7 +252,7 @@ trait BackupClientInterfaceTest
     mock.clear()
     val calculatedFuture = for {
       _ <- mock.backup.run()
-      _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+      _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful(()))
       processedRecords = mock.mergeBackedUpData(compression = compression.map(_.`type`))
       asRecords <- Future.sequence(processedRecords.map { case (key, byteString) =>
                      Source
@@ -284,7 +286,7 @@ trait BackupClientInterfaceTest
         mock.clear()
         val calculatedFuture = for {
           _ <- mock.backup.run()
-          _ <- akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful(()))
+          _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful(()))
           processedRecords = mock.mergeBackedUpData(terminate = false, compression = compression.map(_.`type`))
         } yield processedRecords.splitAt(processedRecords.length - 1)
 
@@ -335,9 +337,9 @@ trait BackupClientInterfaceTest
       val calculatedFuture = for {
         _ <- waitForStartOfTimeUnit(ChronoUnit.MINUTES)
         _ <- mockOne.backup.run()
-        _ <- akka.pattern.after(AkkaStreamInitializationConstant)(mockTwo.backup.run())
+        _ <- pekko.pattern.after(PekkoStreamInitializationConstant)(mockTwo.backup.run())
         processedRecords <-
-          akka.pattern.after(AkkaStreamInitializationConstant)(
+          pekko.pattern.after(PekkoStreamInitializationConstant)(
             Future.successful(
               mockTwo.mergeBackedUpData()
             )

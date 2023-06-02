@@ -1,20 +1,16 @@
 package io.aiven.guardian.kafka
 
-import akka.Done
-import akka.kafka.ConsumerSettings
-import akka.kafka.ProducerSettings
-import akka.kafka.scaladsl.Producer
-import akka.stream.scaladsl.Source
 import com.dimafeng.testcontainers.ForAllTestContainer
 import com.dimafeng.testcontainers.KafkaContainer
-import io.aiven.guardian.akka.AkkaStreamTestKit
 import io.aiven.guardian.kafka.TestUtils.KafkaFutureToCompletableFuture
+import io.aiven.guardian.pekko.PekkoStreamTestKit
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
+import org.apache.pekko
 import org.scalatest.Suite
 
 import scala.concurrent.ExecutionContext
@@ -25,11 +21,17 @@ import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
 import scala.language.postfixOps
 
-trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this: Suite =>
+import pekko.Done
+import pekko.kafka.ConsumerSettings
+import pekko.kafka.ProducerSettings
+import pekko.kafka.scaladsl.Producer
+import pekko.stream.scaladsl.Source
 
-  /** Timeout constant to wait for both Akka Streams plus initialization of consumer/kafka cluster
+trait KafkaClusterTest extends ForAllTestContainer with PekkoStreamTestKit { this: Suite =>
+
+  /** Timeout constant to wait for both Pekko Streams plus initialization of consumer/kafka cluster
     */
-  val KafkaInitializationTimeoutConstant: FiniteDuration = AkkaStreamInitializationConstant + (2.5 seconds)
+  val KafkaInitializationTimeoutConstant: FiniteDuration = PekkoStreamInitializationConstant + (2.5 seconds)
 
   override lazy val container: KafkaContainer = new KafkaContainer()
 
@@ -72,7 +74,7 @@ trait KafkaClusterTest extends ForAllTestContainer with AkkaStreamTestKit { this
   def sendTopicAfterTimePeriod(duration: FiniteDuration,
                                producerSettings: ProducerSettings[Array[Byte], Array[Byte]],
                                topic: String
-  ): Future[Done] = akka.pattern.after(duration) {
+  ): Future[Done] = pekko.pattern.after(duration) {
     Source(
       List(
         new ProducerRecord[Array[Byte], Array[Byte]](topic, "1".getBytes, "1".getBytes)

@@ -8,8 +8,8 @@ Scala API doc @apidoc[kafka.restore.configs.Restore]
 
 ## Explanation
 
-* `akka.kafka.producer`: See @extref:[documentation](alpakka-kafka-docs:producer.html#settings)
-* `akka.kafka.producer.kafka-clients`: See @extref:[documentation](kafka-docs:documentation.html#producerconfigs)
+* `pekko.kafka.producer`: See @extref:[documentation](pekko-connectors-kafka-docs:producer.html#settings)
+* `pekko.kafka.producer.kafka-clients`: See @extref:[documentation](kafka-docs:documentation.html#producerconfigs)
 * `restore`:
     * `from-when`: An `ISO-8601` time that specifies from when topics need to be restored. Note that the time used is
       based on the original Kafka timestamp and **NOT** the current time.

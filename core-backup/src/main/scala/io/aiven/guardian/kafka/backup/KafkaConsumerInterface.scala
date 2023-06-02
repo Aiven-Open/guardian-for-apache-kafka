@@ -1,12 +1,14 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.Done
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.SourceWithContext
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.pekko
 
 import scala.collection.immutable
 import scala.concurrent.Future
+
+import pekko.Done
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.SourceWithContext
 
 trait KafkaConsumerInterface {
 
@@ -20,7 +22,7 @@ trait KafkaConsumerInterface {
   type Control
 
   /** The type that represents the result of the `combine` parameter that is supplied to
-    * [[akka.stream.scaladsl.Source.toMat]]
+    * [[pekko.stream.scaladsl.Source.toMat]]
     */
   type MatCombineResult
 
@@ -40,7 +42,7 @@ trait KafkaConsumerInterface {
 
   /** @return
     *   The result of this function gets directly passed into the `combine` parameter of
-    *   [[akka.stream.scaladsl.Source.toMat]]
+    *   [[pekko.stream.scaladsl.Source.toMat]]
     */
   def matCombine: (Control, Future[Done]) => MatCombineResult
 

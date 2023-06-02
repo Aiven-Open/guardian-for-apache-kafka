@@ -8,28 +8,32 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
 ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-val akkaVersion                = "2.6.20"
-val akkaHttpVersion            = "10.2.10"
-val alpakkaKafkaVersion        = "3.0.1"
-val kafkaClientsVersion        = "3.4.0"
-val alpakkaVersion             = "4.0.0"
-val futilesVersion             = "2.0.2"
-val quillJdbcMonixVersion      = "3.7.2"
-val postgresqlJdbcVersion      = "42.6.0"
-val scalaLoggingVersion        = "3.9.5"
-val logbackClassicVersion      = "1.4.7"
-val declineVersion             = "2.4.1"
-val pureConfigVersion          = "0.17.4"
-val scalaTestVersion           = "3.2.16"
-val scalaTestScalaCheckVersion = s"$scalaTestVersion.0"
-val akkaStreamsJson            = "0.9.0"
-val diffxVersion               = "0.8.3"
-val testContainersVersion      = "0.40.16"
-val testContainersJavaVersion  = "1.18.3"
-val scalaCheckVersion          = "1.17.0"
-val scalaCheckOpsVersion       = "2.10.0"
-val enumeratumVersion          = "1.7.2"
-val organizeImportsVersion     = "0.6.0"
+// TODO: Remove when Pekko has a proper release
+ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
+ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
+
+val pekkoVersion                = "0.0.0+26669-ec5b6764-SNAPSHOT"
+val pekkoHttpVersion            = "0.0.0+4411-6fe04045-SNAPSHOT"
+val pekkoConnectorsKafkaVersion = "0.0.0+1738-07a19b8e-SNAPSHOT"
+val kafkaClientsVersion         = "3.4.0"
+val pekkoConnectorsVersion      = "0.0.0+85-a82f3c3c-SNAPSHOT"
+val futilesVersion              = "2.0.2"
+val quillJdbcMonixVersion       = "3.7.2"
+val postgresqlJdbcVersion       = "42.6.0"
+val scalaLoggingVersion         = "3.9.5"
+val logbackClassicVersion       = "1.4.7"
+val declineVersion              = "2.4.1"
+val pureConfigVersion           = "0.17.4"
+val scalaTestVersion            = "3.2.16"
+val scalaTestScalaCheckVersion  = s"$scalaTestVersion.0"
+val pekkoStreamCirceVersion     = "0.0.0+94-dbf3173f-SNAPSHOT"
+val diffxVersion                = "0.8.3"
+val testContainersVersion       = "0.40.16"
+val testContainersJavaVersion   = "1.18.3"
+val scalaCheckVersion           = "1.17.0"
+val scalaCheckOpsVersion        = "2.10.0"
+val enumeratumVersion           = "1.7.2"
+val organizeImportsVersion      = "0.6.0"
 
 /** Calculates the scalatest version in a format that is used for `org.scalatestplus` scalacheck artifacts
   *
@@ -127,27 +131,27 @@ lazy val core = project
     librarySettings,
     name := s"$baseName-core",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor"        % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream"       % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream-kafka" % alpakkaKafkaVersion,
+      "org.apache.pekko" %% "pekko-actor"            % pekkoVersion,
+      "org.apache.pekko" %% "pekko-stream"           % pekkoVersion,
+      "org.apache.pekko" %% "pekko-connectors-kafka" % pekkoConnectorsKafkaVersion,
       // Ideally we shouldn't be explicitly providing a kafka-clients version and instead getting the version
-      // transitively from akka-streams-kafka however there isn't a nice way to extract a transitive dependency
+      // transitively from pekko-connectors-kafka however there isn't a nice way to extract a transitive dependency
       // for usage in linking to documentation.
       "org.apache.kafka"            % "kafka-clients"                  % kafkaClientsVersion,
       "com.typesafe.scala-logging" %% "scala-logging"                  % scalaLoggingVersion,
       "com.github.pureconfig"      %% "pureconfig"                     % pureConfigVersion,
       "ch.qos.logback"              % "logback-classic"                % logbackClassicVersion,
-      "org.mdedetrich"             %% "akka-stream-circe"              % akkaStreamsJson,
+      "org.mdedetrich"             %% "pekko-stream-circe"             % pekkoStreamCirceVersion,
       "com.markatta"               %% "futiles"                        % futilesVersion,
-      "com.typesafe.akka"          %% "akka-actor"                     % akkaVersion                % Test,
-      "com.typesafe.akka"          %% "akka-stream"                    % akkaVersion                % Test,
+      "org.apache.pekko"           %% "pekko-actor"                    % pekkoVersion               % Test,
+      "org.apache.pekko"           %% "pekko-stream"                   % pekkoVersion               % Test,
       "org.scalatest"              %% "scalatest"                      % scalaTestVersion           % Test,
       "org.scalatestplus"          %% scalaTestScalaCheckArtifact      % scalaTestScalaCheckVersion % Test,
       "org.scalacheck"             %% "scalacheck"                     % scalaCheckVersion          % Test,
       "com.rallyhealth"            %% "scalacheck-ops_1-16"            % scalaCheckOpsVersion       % Test,
       "com.softwaremill.diffx"     %% "diffx-scalatest-must"           % diffxVersion               % Test,
-      "com.typesafe.akka"          %% "akka-stream-testkit"            % akkaVersion                % Test,
-      "com.typesafe.akka"          %% "akka-http-testkit"              % akkaHttpVersion            % Test,
+      "org.apache.pekko"           %% "pekko-stream-testkit"           % pekkoVersion               % Test,
+      "org.apache.pekko"           %% "pekko-http-testkit"             % pekkoHttpVersion           % Test,
       "com.dimafeng"               %% "testcontainers-scala-scalatest" % testContainersVersion      % Test,
       "com.dimafeng"               %% "testcontainers-scala-kafka"     % testContainersVersion      % Test,
       "org.testcontainers"          % "kafka"                          % testContainersJavaVersion  % Test
@@ -166,11 +170,11 @@ lazy val coreCli = project
     ) ++ flagsFor13,
     name := s"$baseName-core-cli",
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-      "com.typesafe.akka" %% "akka-slf4j"  % akkaVersion,
-      "com.monovore"      %% "decline"     % declineVersion,
-      "com.beachape"      %% "enumeratum"  % enumeratumVersion
+      "org.apache.pekko" %% "pekko-actor"  % pekkoVersion,
+      "org.apache.pekko" %% "pekko-stream" % pekkoVersion,
+      "org.apache.pekko" %% "pekko-slf4j"  % pekkoVersion,
+      "com.monovore"     %% "decline"      % declineVersion,
+      "com.beachape"     %% "enumeratum"   % enumeratumVersion
     )
   )
   .dependsOn(core)
@@ -181,10 +185,10 @@ lazy val coreS3 = project
     librarySettings,
     name := s"$baseName-s3",
     libraryDependencies ++= Seq(
-      "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
-      // Ordinarily this would be in Test scope however if its not then a lower version of akka-http-xml which has a
+      "org.apache.pekko" %% "pekko-connectors-s3" % pekkoConnectorsVersion,
+      // Ordinarily this would be in Test scope however if its not then a lower version of pekko-http-xml which has a
       // security vulnerability gets resolved in Compile scope
-      "com.typesafe.akka" %% "akka-http-xml"             % akkaHttpVersion,
+      "org.apache.pekko"  %% "pekko-http-xml"            % pekkoHttpVersion,
       "org.scalatest"     %% "scalatest"                 % scalaTestVersion           % Test,
       "org.scalatestplus" %% scalaTestScalaCheckArtifact % scalaTestScalaCheckVersion % Test,
       "com.monovore"      %% "decline"                   % declineVersion             % Test
@@ -198,10 +202,10 @@ lazy val coreGCS = project
     librarySettings,
     name := s"$baseName-gcs",
     libraryDependencies ++= Seq(
-      "com.lightbend.akka" %% "akka-stream-alpakka-google-cloud-storage" % alpakkaVersion,
-      // Ordinarily this would be in Test scope however if its not then a lower version of akka-http-spray-json which
+      "org.apache.pekko" %% "pekko-connectors-google-cloud-storage" % pekkoConnectorsVersion,
+      // Ordinarily this would be in Test scope however if its not then a lower version of pekko-http-spray-json which
       // has a security vulnerability gets resolved in Compile scope
-      "com.typesafe.akka" %% "akka-http-spray-json"      % akkaHttpVersion,
+      "org.apache.pekko"  %% "pekko-http-spray-json"     % pekkoHttpVersion,
       "org.scalatest"     %% "scalatest"                 % scalaTestVersion           % Test,
       "org.scalatestplus" %% scalaTestScalaCheckArtifact % scalaTestScalaCheckVersion % Test
     )
@@ -339,18 +343,19 @@ lazy val docs = project
     git.remoteRepo               := scmInfo.value.get.connection.replace("scm:git:", ""),
     paradoxGroups                := Map("Language" -> Seq("Scala")),
     paradoxProperties ++= Map(
-      "akka.version"                     -> akkaVersion,
-      "akka-http.version"                -> akkaHttpVersion,
-      "akka-streams-json.version"        -> akkaStreamsJson,
-      "pure-config.version"              -> pureConfigVersion,
-      "decline.version"                  -> declineVersion,
-      "scala-logging.version"            -> scalaLoggingVersion,
-      "extref.akka.base_url"             -> s"https://doc.akka.io/api/akka/${binaryVersion(akkaVersion)}/%s",
-      "extref.akka-docs.base_url"        -> s"https://doc.akka.io/docs/akka/${binaryVersion(akkaVersion)}/%s",
-      "extref.akka-stream-json.base_url" -> s"https://github.com/mdedetrich/akka-streams-json",
-      "extref.alpakka.base_url"          -> s"https://doc.akka.io/api/alpakka/${binaryVersion(alpakkaVersion)}/%s",
-      "extref.alpakka-docs.base_url"     -> s"https://docs.akka.io/docs/alpakka/${binaryVersion(alpakkaVersion)}/%s",
-      "extref.alpakka-kafka-docs.base_url" -> s"https://docs.akka.io/docs/alpakka-kafka/${binaryVersion(alpakkaVersion)}/%s",
+      "pekko.version"              -> pekkoVersion,
+      "pekko-http.version"         -> pekkoHttpVersion,
+      "pekko-stream-circe.version" -> pekkoStreamCirceVersion,
+      "pure-config.version"        -> pureConfigVersion,
+      "decline.version"            -> declineVersion,
+      "scala-logging.version"      -> scalaLoggingVersion,
+      // TODO: Replace current with binaryVersion(pekkoVersion) when pekko is released
+      "extref.pekko.base_url"                 -> s"https://pekko.apache.org/api/pekko/current/%s",
+      "extref.pekko-docs.base_url"            -> s"https://pekko.apache.org/docs/pekko/current/%s",
+      "extref.pekko-stream-circe.base_url"    -> s"https://github.com/mdedetrich/pekko-streams-circe",
+      "extref.pekko-connectors.base_url"      -> s"https://pekko.apache.org/api/pekko-connectors/current/%s",
+      "extref.pekko-connectors-docs.base_url" -> s"https://pekko.apache.org/docs/pekko-connectors/current/%s",
+      "extref.pekko-connectors-kafka-docs.base_url" -> s"https://pekko.apache.org/docs/pekko-connectors-kafka/current/%s",
       "extref.kafka-docs.base_url" -> s"https://kafka.apache.org/${binaryVersion(kafkaClientsVersion).replace(".", "")}/%s",
       "extref.pureconfig.base_url" -> s"https://pureconfig.github.io/docs/",
       "extref.scalatest.base_url"  -> s"https://www.scalatest.org/scaladoc/$scalaTestVersion/org/scalatest/%s",
@@ -436,11 +441,11 @@ ThisBuild / githubWorkflowBuild := Seq(
     List("clean", "coverage", "test"),
     name = Some("Build project"),
     env = Map(
-      "ALPAKKA_S3_REGION_PROVIDER"                   -> "static",
-      "ALPAKKA_S3_REGION_DEFAULT_REGION"             -> "us-west-2",
-      "ALPAKKA_S3_AWS_CREDENTIALS_PROVIDER"          -> "static",
-      "ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID"     -> "${{ secrets.AWS_ACCESS_KEY }}",
-      "ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY" -> "${{ secrets.AWS_SECRET_KEY }}"
+      "PEKKO_CONNECTORS_S3_REGION_PROVIDER"                   -> "static",
+      "PEKKO_CONNECTORS_S3_REGION_DEFAULT_REGION"             -> "us-west-2",
+      "PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_PROVIDER"          -> "static",
+      "PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_ACCESS_KEY_ID"     -> "${{ secrets.AWS_ACCESS_KEY }}",
+      "PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY" -> "${{ secrets.AWS_SECRET_KEY }}"
     )
   ),
   WorkflowStep.Sbt(List("docs/makeSite"), name = Some("Compile docs"))
