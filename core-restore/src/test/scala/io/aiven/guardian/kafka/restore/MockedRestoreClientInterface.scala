@@ -2,7 +2,6 @@ package io.aiven.guardian.kafka.restore
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.SharedKillSwitch
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 import io.aiven.guardian.kafka.configs.KafkaCluster
@@ -16,8 +15,6 @@ class MockedRestoreClientInterface(backupData: Map[String, ByteString])(implicit
     override val kafkaClusterConfig: KafkaCluster,
     override val system: ActorSystem
 ) extends RestoreClientInterface[MockedKafkaProducerInterface] {
-
-  override val maybeKillSwitch: Option[SharedKillSwitch] = None
 
   override def retrieveBackupKeys: Future[List[String]] = Future.successful(
     backupData.keys.toList
