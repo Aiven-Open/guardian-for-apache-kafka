@@ -99,7 +99,7 @@ trait RealS3RestoreClientTest
           )
 
         val restoreClient =
-          new RestoreClient[KafkaProducer](Some(s3Settings), None)
+          new RestoreClient[KafkaProducer](Some(s3Settings))
 
         val producerSettings = createProducer()
 
@@ -126,8 +126,11 @@ trait RealS3RestoreClientTest
             Consumer
               .plainSource(restoreResultConsumerTopicSettings, Subscriptions.topics(renamedTopics))
           eventualRestoredTopics = restoreResultConsumerSource.toMat(Sink.collection)(DrainingControl.apply).run()
-          _              <- createTopics(renamedTopics)
-          _              <- akka.pattern.after(5 seconds)(restoreClient.restore)
+          _ <- createTopics(renamedTopics)
+          _ <- akka.pattern.after(5 seconds) {
+                 val (_, future) = restoreClient.restore.run()
+                 future
+               }
           receivedTopics <- akka.pattern.after(1 minute)(eventualRestoredTopics.drainAndShutdown())
           asConsumerRecords = receivedTopics.map(KafkaConsumer.consumerRecordToReducedConsumerRecord)
         } yield asConsumerRecords.toList
