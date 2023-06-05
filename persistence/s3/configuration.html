@@ -169,46 +169,46 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#s3" name="s3" class="anchor"><span class="anchor-link"></span></a>S3</h1>
 <h2><a href="#reference" name="reference" class="anchor"><span class="anchor-link"></span></a>Reference</h2>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/core-s3/src/main/resources/reference.conf" target="_blank" title="Go to snippet source">source</a><code class="language-conf">alpakka.s3 {
-  buffer = ${?ALPAKKA_S3_BUFFER}
-  disk-buffer-path = ${?ALPAKKA_S3_DISK_BUFFER_PATH}
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/core-s3/src/main/resources/reference.conf" target="_blank" title="Go to snippet source">source</a><code class="language-conf">pekko.connectors.s3 {
+  buffer = ${?PEKKO_CONNECTORS_S3_BUFFER}
+  disk-buffer-path = ${?PEKKO_CONNECTORS_S3_DISK_BUFFER_PATH}
 
   forward-proxy {
-    scheme = ${?ALPAKKA_S3_FORWARD_PROXY_SCHEME}
-    host = ${?ALPAKKA_S3_FORWARD_PROXY_HOST}
-    port = ${?ALPAKKA_S3_FORWARD_PROXY_PORT}
+    scheme = ${?PEKKO_CONNECTORS_S3_FORWARD_PROXY_SCHEME}
+    host = ${?PEKKO_CONNECTORS_S3_FORWARD_PROXY_HOST}
+    port = ${?PEKKO_CONNECTORS_S3_FORWARD_PROXY_PORT}
 
     credentials {
-      username = ${?ALPAKKA_S3_FORWARD_PROXY_CREDENTIALS_USERNAME}
-      password = ${?ALPAKKA_S3_FORWARD_PROXY_CREDENTIALS_PASSWORD}
+      username = ${?PEKKO_CONNECTORS_S3_FORWARD_PROXY_CREDENTIALS_USERNAME}
+      password = ${?PEKKO_CONNECTORS_S3_FORWARD_PROXY_CREDENTIALS_PASSWORD}
     }
   }
 
   aws {
     credentials {
-      access-key-id = ${?ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID}
-      secret-access-key = ${?ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY}
-      token = ${?ALPAKKA_S3_AWS_CREDENTIALS_TOKEN}
-      provider = ${?ALPAKKA_S3_AWS_CREDENTIALS_PROVIDER}
+      access-key-id = ${?PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_ACCESS_KEY_ID}
+      secret-access-key = ${?PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY}
+      token = ${?PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_TOKEN}
+      provider = ${?PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_PROVIDER}
     }
 
     region {
-      default-region = ${?ALPAKKA_S3_REGION_DEFAULT_REGION}
-      provider = ${?ALPAKKA_S3_REGION_PROVIDER}
+      default-region = ${?PEKKO_CONNECTORS_S3_REGION_DEFAULT_REGION}
+      provider = ${?PEKKO_CONNECTORS_S3_REGION_PROVIDER}
     }
   }
 
-  path-style-access = ${?ALPAKKA_S3_PATH_STYLE_ACCESS}
-  access-style = ${?ALPAKKA_S3_ACCESS_STYLE}
-  endpoint-url = ${?ALPAKKA_S3_ENDPOINT_URL}
-  list-bucket-api-version = ${?ALPAKKA_S3_LIST_BUCKET_API_VERSION}
-  validate-object-key = ${?ALPAKKA_S3_VALIDATE_OBJECT_KEY}
+  path-style-access = ${?PEKKO_CONNECTORS_S3_PATH_STYLE_ACCESS}
+  access-style = ${?PEKKO_CONNECTORS_S3_ACCESS_STYLE}
+  endpoint-url = ${?PEKKO_CONNECTORS_S3_ENDPOINT_URL}
+  list-bucket-api-version = ${?PEKKO_CONNECTORS_S3_LIST_BUCKET_API_VERSION}
+  validate-object-key = ${?PEKKO_CONNECTORS_S3_VALIDATE_OBJECT_KEY}
 
   retry-settings {
-    max-retries = ${?ALPAKKA_S3_RETRY_SETTINGS_MAX_RETRIES}
-    min-backoff = ${?ALPAKKA_S3_RETRY_SETTINGS_MIN_BACKOFF}
-    max-backoff = ${?ALPAKKA_S3_RETRY_SETTINGS_MAX_BACKOFF}
-    random-factor = ${?ALPAKKA_S3_RETRY_SETTINGS_RANDOM_FACTOR}
+    max-retries = ${?PEKKO_CONNECTORS_S3_RETRY_SETTINGS_MAX_RETRIES}
+    min-backoff = ${?PEKKO_CONNECTORS_S3_RETRY_SETTINGS_MIN_BACKOFF}
+    max-backoff = ${?PEKKO_CONNECTORS_S3_RETRY_SETTINGS_MAX_BACKOFF}
+    random-factor = ${?PEKKO_CONNECTORS_S3_RETRY_SETTINGS_RANDOM_FACTOR}
   }
 }
 
@@ -235,13 +235,13 @@ s3-config = {
 <p>Scala API doc <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/s3/configs/S3.html" title="io.aiven.guardian.kafka.s3.configs.S3"><code>S3</code></a></span></p>
 <h2><a href="#explanation" name="explanation" class="anchor"><span class="anchor-link"></span></a>Explanation</h2>
 <ul>
-  <li><code>s3-headers</code>: See <a href="https://doc.akka.io/api/alpakka/4.0/akka/stream/alpakka/s3/headers/index.html">documentation</a></li>
-  <li><code>alpakka.s3</code>: See <a href="https://docs.akka.io/docs/alpakka/4.0/s3.html#configuration">documentation</a></li>
+  <li><code>s3-headers</code>: See <a href="https://pekko.apache.org/api/pekko-connectors/current/org/apache/pekko/stream/connectors/s3/headers/index.html">documentation</a></li>
+  <li><code>pekko.connectors.s3</code>: See <a href="https://pekko.apache.org/docs/pekko-connectors/current/s3.html#configuration">documentation</a></li>
   <li><code>s3-config</code>: Core S3 configuration
     <ul>
       <li><code>data-bucket</code>: The main S3 bucket where data is backed up and where to restore data from</li>
       <li><code>data-bucket-prefix</code>: S3 prefix configuration to be used when searching for the bucket</li>
-      <li><code>error-restart-settings</code>: Specific retry settings when recovering from known errors in S3. See <a href="https://doc.akka.io/api/akka/2.6/akka/stream/RestartSettings.html">apidoc</a></li>
+      <li><code>error-restart-settings</code>: Specific retry settings when recovering from known errors in S3. See <a href="https://pekko.apache.org/api/pekko/current/org/apachepekko/stream/RestartSettings.html">apidoc</a></li>
     </ul>
   </li>
 </ul>

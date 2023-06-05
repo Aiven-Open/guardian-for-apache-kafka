@@ -169,9 +169,9 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <h1><a href="#logging" name="logging" class="anchor"><span class="anchor-link"></span></a>Logging</h1>
 <p>Guardian for Apache Kafka uses <a href="https://logback.qos.ch/index.html">logback</a> to perform logging. This means if you are using the modules as libraries you need to provide a <code>logback.xml</code> in your classpath (typically this is done by putting the <code>logback.xml</code> in your <code>/src/main/resources</code> folder). Note that the Guardian modules do not provide a default <code>logback.xml</code> for deployed artifacts since this is typically the responsibility of an application to configure and provide.</p>
 <p>If you want examples of <code>logback.xml</code> configuration you can have a look at the official <a href="https://logback.qos.ch/manual/configuration.html">logback page</a> but you can also use existing <code>logback.xml</code>&rsquo;s from either the <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/core-cli/src/main/resources/logback.xml">cli</a> or the <a href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/core/src/test/resources/logback.xml">tests</a> as a reference.</p><div class="callout warning "><div class="callout-title">Warning</div>
-<p>As documented at <a href="https://doc.akka.io/docs/akka/2.6/logging.html#logback-configuration">akka logback configuration</a> it is highly recommended to use an <code>AsyncAppender</code> in your configuration as this offsets the logging to a background thread otherwise you will end up blocking the core akka/akka-streams library whenever a log is made.</p></div>
-<h2><a href="#logback-adapter-for-akka-akka-streams" name="logback-adapter-for-akka-akka-streams" class="anchor"><span class="anchor-link"></span></a>Logback adapter for akka/akka-streams</h2>
-<p>By default, akka/akka-streams uses its own asynchronous logger however they provide a <a href="https://doc.akka.io/docs/akka/2.6/logging.html#slf4j">logging adapter</a> which has already been preconfigured for use in Guardian.</p>
+<p>As documented at <a href="https://pekko.apache.org/docs/pekko/current/logging.html#logback-configuration">pekko logback configuration</a> it is highly recommended to use an <code>AsyncAppender</code> in your configuration as this offsets the logging to a background thread otherwise you will end up blocking the core pekko/pekko-streams library whenever a log is made.</p></div>
+<h2><a href="#logback-adapter-for-pekko-pekko-streams" name="logback-adapter-for-pekko-pekko-streams" class="anchor"><span class="anchor-link"></span></a>Logback adapter for pekko/pekko-streams</h2>
+<p>By default, pekko/pekko-streams uses its own asynchronous logger however they provide a <a href="https://pekko.apache.org/docs/pekko/current/logging.html#slf4j">logging adapter</a> which has already been preconfigured for use in Guardian.</p>
 <h2><a href="#cli-application" name="cli-application" class="anchor"><span class="anchor-link"></span></a>CLI/Application</h2>
 <p>Note that unlike the core libraries, the CLI application does provide a default <code>logback.xml</code>. For more details read <a href="../application/logging.html">application logging</a>.</p>
 <div class="source-github">
@@ -190,7 +190,7 @@ The source code for this page can be found <a href="https://github.com/aiven/gua
 <ul>
   <li><a href="../general-architecture/logging.html#logging" class="header">Logging</a>
   <ul>
-    <li><a href="../general-architecture/logging.html#logback-adapter-for-akka-akka-streams" class="header">Logback adapter for akka/akka-streams</a></li>
+    <li><a href="../general-architecture/logging.html#logback-adapter-for-pekko-pekko-streams" class="header">Logback adapter for pekko/pekko-streams</a></li>
     <li><a href="../general-architecture/logging.html#cli-application" class="header">CLI/Application</a></li>
   </ul></li>
 </ul>

@@ -168,11 +168,11 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#s3-testing" name="s3-testing" class="anchor"><span class="anchor-link"></span></a>S3 - Testing</h1>
 <p>For tests that run against the <a href="https://aws.amazon.com/s3/">AWS S3 service</a> you need to provide the relevant credentials to S3. The most typical way to provide these credentials is with the usage of environment variables, e.g.</p>
-<pre class="prettyprint"><code class="language-shell">export ALPAKKA_S3_AWS_CREDENTIALS_PROVIDER=static
-export ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID=&quot;my key&quot;
-export ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY=&quot;my secret&quot;
-export ALPAKKA_S3_REGION_PROVIDER=static
-export ALPAKKA_S3_REGION_DEFAULT_REGION=eu-central-1
+<pre class="prettyprint"><code class="language-shell">export PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_PROVIDER=static
+export PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_ACCESS_KEY_ID=&quot;my key&quot;
+export PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY=&quot;my secret&quot;
+export PEKKO_CONNECTORS_S3_REGION_PROVIDER=static
+export PEKKO_CONNECTORS_S3_REGION_DEFAULT_REGION=eu-central-1
 </code></pre>
 <h2><a href="#utilities" name="utilities" class="anchor"><span class="anchor-link"></span></a>Utilities</h2>
 <p>Guardian provides a utility to help deal with running S3 related tests. Due to the possibility of this tool making unintentional consequences to your S3 account, it needs to be manually run in sbt. To run the tool without any parameters do this</p>

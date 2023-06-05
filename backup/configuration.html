@@ -168,39 +168,39 @@ C16.952,7,17,6.553,17,6c0-0.553-0.048-1-0.6-1H3.6C3.048,5,3,5.447,3,6C3,6.553,3.
 <div class="small-12 large-9 column" id="docs">
 <h1><a href="#configuration" name="configuration" class="anchor"><span class="anchor-link"></span></a>Configuration</h1>
 <h2><a href="#reference" name="reference" class="anchor"><span class="anchor-link"></span></a>Reference</h2>
-<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/core-backup/src/main/resources/reference.conf" target="_blank" title="Go to snippet source">source</a><code class="language-conf">akka.kafka.consumer = {
-    poll-interval = ${?AKKA_KAFKA_CONSUMER_POLL_INTERVAL}
-    poll-timeout = ${?AKKA_KAFKA_CONSUMER_POLL_TIMEOUT}
-    stop-timeout = ${?AKKA_KAFKA_CONSUMER_STOP_TIMEOUT}
-    close-timeout = ${?AKKA_KAFKA_CONSUMER_CLOSE_TIMEOUT}
-    commit-time-warning = ${?AKKA_KAFKA_CONSUMER_COMMIT_TIME_WARNING}
-    commit-refresh-interval = ${?AKKA_KAFKA_CONSUMER_COMMIT_REFRESH_INTERVAL}
-    use-dispatcher = ${?AKKA_KAFKA_CONSUMER_USE_DISPATCHER}
-    wait-close-partition = ${?AKKA_KAFKA_CONSUMER_WAIT_CLOSE_PARTITION}
-    position-timeout = ${?AKKA_KAFKA_CONSUMER_POSITION_TIMEOUT}
-    offset-for-times-timeout = ${?AKKA_KAFKA_OFFSET_FOR_TIMES_TIMEOUT}
-    metadata-request-timeout = ${?AKKA_KAFKA_METADATA_REQUEST_TIMEOUT}
-    eos-draining-check-interval = ${?AKKA_KAFKA_CONSUMER_EOS_DRAINING_CHECK_INTERVAL}
+<pre class="prettyprint"><button class="snippet-button copy-snippet" title="Copy snippet to clipboard">copy</button><a class="snippet-button go-to-source" href="https://github.com/aiven/guardian-for-apache-kafka/tree/main/core-backup/src/main/resources/reference.conf" target="_blank" title="Go to snippet source">source</a><code class="language-conf">pekko.kafka.consumer = {
+    poll-interval = ${?PEKKO_KAFKA_CONSUMER_POLL_INTERVAL}
+    poll-timeout = ${?PEKKO_KAFKA_CONSUMER_POLL_TIMEOUT}
+    stop-timeout = ${?PEKKO_KAFKA_CONSUMER_STOP_TIMEOUT}
+    close-timeout = ${?PEKKO_KAFKA_CONSUMER_CLOSE_TIMEOUT}
+    commit-time-warning = ${?PEKKO_KAFKA_CONSUMER_COMMIT_TIME_WARNING}
+    commit-refresh-interval = ${?PEKKO_KAFKA_CONSUMER_COMMIT_REFRESH_INTERVAL}
+    use-dispatcher = ${?PEKKO_KAFKA_CONSUMER_USE_DISPATCHER}
+    wait-close-partition = ${?PEKKO_KAFKA_CONSUMER_WAIT_CLOSE_PARTITION}
+    position-timeout = ${?PEKKO_KAFKA_CONSUMER_POSITION_TIMEOUT}
+    offset-for-times-timeout = ${?PEKKO_KAFKA_OFFSET_FOR_TIMES_TIMEOUT}
+    metadata-request-timeout = ${?PEKKO_KAFKA_METADATA_REQUEST_TIMEOUT}
+    eos-draining-check-interval = ${?PEKKO_KAFKA_CONSUMER_EOS_DRAINING_CHECK_INTERVAL}
     connection-checker = {
-        enable = ${?AKKA_KAFKA_CONSUMER_CONNECTION_CHECKER_ENABLE}
-        max-retries = ${?AKKA_KAFKA_CONSUMER_CONNECTION_CHECKER_MAX_RETRIES}
-        backoff-factor = ${?AKKA_KAFKA_CONSUMER_CONNECTION_CHECKER_BACKOFF_FACTOR}
-        check-interval = ${?AKKA_KAFKA_CONSUMER_CONNECTION_CHECKER_CHECK_INTERVAL}
+        enable = ${?PEKKO_KAFKA_CONSUMER_CONNECTION_CHECKER_ENABLE}
+        max-retries = ${?PEKKO_KAFKA_CONSUMER_CONNECTION_CHECKER_MAX_RETRIES}
+        backoff-factor = ${?PEKKO_KAFKA_CONSUMER_CONNECTION_CHECKER_BACKOFF_FACTOR}
+        check-interval = ${?PEKKO_KAFKA_CONSUMER_CONNECTION_CHECKER_CHECK_INTERVAL}
     }
-    partition-handler-warning = ${?AKKA_KAFKA_CONSUMER_PARTITION_HANDLER_WARNING}
+    partition-handler-warning = ${?PEKKO_KAFKA_CONSUMER_PARTITION_HANDLER_WARNING}
     offset-reset-protection = {
-        enable = ${?AKKA_KAFKA_CONSUMER_OFFSET_RESET_PROTECTION_ENABLE}
-        offset-threshold = ${?AKKA_KAFKA_CONSUMER_OFFSET_RESET_PROTECTION_OFFSET_THRESHOLD}
-        time-threshold = ${?AKKA_KAFKA_CONSUMER_OFFSET_RESET_PROTECTION_TIME_THRESHOLD}
+        enable = ${?PEKKO_KAFKA_CONSUMER_OFFSET_RESET_PROTECTION_ENABLE}
+        offset-threshold = ${?PEKKO_KAFKA_CONSUMER_OFFSET_RESET_PROTECTION_OFFSET_THRESHOLD}
+        time-threshold = ${?PEKKO_KAFKA_CONSUMER_OFFSET_RESET_PROTECTION_TIME_THRESHOLD}
     }
 }
 
-akka.kafka.committer = {
+pekko.kafka.committer = {
     max-batch = 100000
-    max-batch = ${?AKKA_KAFKA_COMMITTER_MAX_BATCH}
+    max-batch = ${?PEKKO_KAFKA_COMMITTER_MAX_BATCH}
     max-interval = 1 hour
-    max-interval = ${?AKKA_KAFKA_COMMITTER_MAX_INTERVAL}
-    parallelism = ${?AKKA_KAFKA_COMMITTER_PARALLELISM}
+    max-interval = ${?PEKKO_KAFKA_COMMITTER_MAX_INTERVAL}
+    parallelism = ${?PEKKO_KAFKA_COMMITTER_PARALLELISM}
     parallelism = 10000
 }
 
@@ -220,8 +220,8 @@ backup {
 <p>Scala API doc <span class="group-scala"><a href="/guardian-for-apache-kafka/api/0.1.0-SNAPSHOT/io/aiven/guardian/kafka/backup/configs/Backup.html" title="io.aiven.guardian.kafka.backup.configs.Backup"><code>Backup</code></a></span></p>
 <h2><a href="#explanation" name="explanation" class="anchor"><span class="anchor-link"></span></a>Explanation</h2>
 <ul>
-  <li><code>akka.kafka.consumer</code>: See <a href="https://docs.akka.io/docs/alpakka-kafka/4.0/consumer.html#settings">documentation</a></li>
-  <li><code>akka.kafka.consumer.kafka-clients</code>: See <a href="https://kafka.apache.org/34/documentation.html#consumerconfigs">documentation</a></li>
+  <li><code>pekko.kafka.consumer</code>: See <a href="https://pekko.apache.org/docs/pekko-connectors-kafka/current/consumer.html#settings">documentation</a></li>
+  <li><code>pekko.kafka.consumer.kafka-clients</code>: See <a href="https://kafka.apache.org/34/documentation.html#consumerconfigs">documentation</a></li>
   <li><code>backup</code>:
     <ul>
       <li><code>kafka-group-id</code>: The group id for the Kafka consumer that&rsquo;s used in restore tool</li>
