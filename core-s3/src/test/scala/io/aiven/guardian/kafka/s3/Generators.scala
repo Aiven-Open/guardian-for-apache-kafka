@@ -1,7 +1,7 @@
 package io.aiven.guardian.kafka.s3
 
-import akka.stream.RestartSettings
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
+import org.apache.pekko.stream.RestartSettings
 import org.scalacheck.Gen
 
 import scala.annotation.nowarn

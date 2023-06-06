@@ -1,22 +1,12 @@
 package io.aiven.guardian.kafka.s3
 
-import akka.NotUsed
-import akka.actor.Scheduler
-import akka.stream.Attributes
-import akka.stream.alpakka.s3.BucketAccess
-import akka.stream.alpakka.s3.ListBucketResultContents
-import akka.stream.alpakka.s3.S3Attributes
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import akka.testkit.TestKitBase
 import com.softwaremill.diffx.ShowConfig
 import com.typesafe.scalalogging.LazyLogging
-import io.aiven.guardian.akka.AkkaHttpTestKit
 import io.aiven.guardian.kafka.TestUtils
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import io.aiven.guardian.pekko.PekkoHttpTestKit
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.pekko
 import org.scalactic.Prettifier
 import org.scalactic.SizeLimit
 import org.scalatest.Ignore
@@ -35,10 +25,22 @@ import scala.language.postfixOps
 import java.util.Base64
 import java.util.concurrent.ConcurrentLinkedQueue
 
+import pekko.NotUsed
+import pekko.actor.Scheduler
+import pekko.stream.Attributes
+import pekko.stream.connectors.s3.BucketAccess
+import pekko.stream.connectors.s3.ListBucketResultContents
+import pekko.stream.connectors.s3.S3Attributes
+import pekko.stream.connectors.s3.S3Settings
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.Source
+import pekko.testkit.TestKitBase
+
 trait S3Spec
     extends TestKitBase
     with AnyPropSpecLike
-    with AkkaHttpTestKit
+    with PekkoHttpTestKit
     with ScalaCheckPropertyChecks
     with ScalaFutures
     with Config
@@ -132,7 +134,7 @@ trait S3Spec
     try
       enableCleanup match {
         case Some(initialDelay) =>
-          Await.result(akka.pattern.after(initialDelay)(
+          Await.result(pekko.pattern.after(initialDelay)(
                          Future.sequence(bucketsToCleanup.asScala.toList.distinct.map(cleanBucket))
                        ),
                        maxCleanupTimeout
@@ -167,7 +169,7 @@ trait S3Spec
         transformResult
       }
 
-    akka.pattern.retry(attempt, attempts, delay)
+    pekko.pattern.retry(attempt, attempts, delay)
   }
 
   case class DownloadNotReady(downloads: Seq[ListBucketResultContents])

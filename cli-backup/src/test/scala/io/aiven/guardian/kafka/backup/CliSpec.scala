@@ -1,7 +1,5 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.actor.ActorSystem
-import akka.testkit.TestKit
 import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
 import io.aiven.guardian.kafka.backup.configs.Compression
@@ -9,6 +7,7 @@ import io.aiven.guardian.kafka.backup.configs.{Backup => BackupConfig}
 import io.aiven.guardian.kafka.configs.{KafkaCluster => KafkaClusterConfig}
 import io.aiven.guardian.kafka.models.Gzip
 import markatta.futiles.CancellableFuture
+import org.apache.pekko
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.propspec.AnyPropSpecLike
@@ -22,6 +21,9 @@ import scala.language.postfixOps
 
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
+
+import pekko.actor.ActorSystem
+import pekko.testkit.TestKit
 
 @nowarn("msg=method main in class CommandApp is deprecated")
 class CliSpec
@@ -66,7 +68,7 @@ class CliSpec
     def checkUntilMainInitialized(main: io.aiven.guardian.kafka.backup.Entry): Future[(App[_], Promise[Unit])] =
       main.initializedApp.get() match {
         case Some((app, promise)) => Future.successful((app, promise))
-        case None                 => akka.pattern.after(100 millis)(checkUntilMainInitialized(main))
+        case None                 => pekko.pattern.after(100 millis)(checkUntilMainInitialized(main))
       }
 
     val (app, promise) = checkUntilMainInitialized(Main).futureValue

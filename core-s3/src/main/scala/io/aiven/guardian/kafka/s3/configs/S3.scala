@@ -1,6 +1,6 @@
 package io.aiven.guardian.kafka.s3.configs
 
-import akka.stream.RestartSettings
+import org.apache.pekko.stream.RestartSettings
 
 /** S3 specific configuration used when storing Kafka ConsumerRecords to a S3 bucket
   *
@@ -9,7 +9,7 @@ import akka.stream.RestartSettings
   * @param dataBucketPrefix
   *   Prefix for the data bucket (if any)
   * @param errorRestartSettings
-  *   Restart settings that are used whenever an akka-stream encounters an error
+  *   Restart settings that are used whenever an pekko-stream encounters an error
   */
 final case class S3(dataBucket: String, dataBucketPrefix: Option[String], errorRestartSettings: RestartSettings)
 

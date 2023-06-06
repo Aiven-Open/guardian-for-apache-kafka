@@ -13,16 +13,16 @@ from either the @github[cli](/core-cli/src/main/resources/logback.xml) or the
 
 @@@ warning
 
-As documented at @extref:[akka logback configuration](akka-docs:logging.html#logback-configuration) it is highly recommended
+As documented at @extref:[pekko logback configuration](pekko-docs:logging.html#logback-configuration) it is highly recommended
 to use an `AsyncAppender` in your configuration as this offsets the logging to a background thread otherwise you will
-end up blocking the core akka/akka-streams library whenever a log is made.
+end up blocking the core pekko/pekko-streams library whenever a log is made.
 
 @@@
 
-## Logback adapter for akka/akka-streams
+## Logback adapter for pekko/pekko-streams
 
-By default, akka/akka-streams uses its own asynchronous logger however they provide a
-@extref:[logging adapter](akka-docs:logging.html#slf4j) which has already been preconfigured for use in Guardian.
+By default, pekko/pekko-streams uses its own asynchronous logger however they provide a
+@extref:[logging adapter](pekko-docs:logging.html#slf4j) which has already been preconfigured for use in Guardian.
 
 ## CLI/Application
 

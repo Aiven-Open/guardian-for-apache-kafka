@@ -1,18 +1,20 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.Done
-import akka.actor.ActorSystem
-import akka.kafka.ProducerSettings
-import akka.kafka.scaladsl.Producer
-import akka.stream.scaladsl.Sink
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.restore.configs.Restore
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
+import org.apache.pekko
 
 import scala.concurrent.Future
 
 import java.util.Base64
+
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.kafka.ProducerSettings
+import pekko.kafka.scaladsl.Producer
+import pekko.stream.scaladsl.Sink
 
 class KafkaProducer(
     configureProducer: Option[

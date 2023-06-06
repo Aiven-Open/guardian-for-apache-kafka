@@ -58,11 +58,11 @@ jobs:
 
       - name: Build project
         env:
-          ALPAKKA_S3_AWS_CREDENTIALS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          ALPAKKA_S3_REGION_DEFAULT_REGION: us-west-2
-          ALPAKKA_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          ALPAKKA_S3_AWS_CREDENTIALS_PROVIDER: static
-          ALPAKKA_S3_REGION_PROVIDER: static
+          PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_PROVIDER: static
+          PEKKO_CONNECTORS_S3_REGION_DEFAULT_REGION: us-west-2
+          PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          PEKKO_CONNECTORS_S3_REGION_PROVIDER: static
         run: sbt ++${{ matrix.scala }} clean coverage test
 
       - name: Compile docs

@@ -1,17 +1,5 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.Done
-import akka.actor.ActorSystem
-import akka.kafka.CommitDelivery
-import akka.kafka.CommitterSettings
-import akka.kafka.ConsumerMessage.CommittableOffset
-import akka.kafka.ConsumerMessage.CommittableOffsetBatch
-import akka.kafka.ConsumerSettings
-import akka.kafka.Subscriptions
-import akka.kafka.scaladsl.Committer
-import akka.kafka.scaladsl.Consumer
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.SourceWithContext
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.ChronoUnitSlice
@@ -21,6 +9,7 @@ import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
+import org.apache.pekko
 
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -28,9 +17,23 @@ import scala.jdk.DurationConverters._
 
 import java.util.Base64
 
-/** A Kafka Client that uses Alpakka Kafka Consumer under the hood to create a stream of events from a Kafka cluster. To
-  * configure the Alpakka Kafka Consumer use the standard typesafe configuration i.e. akka.kafka.consumer (note that the
-  * `keySerializer` and `valueSerializer` are hardcoded so you cannot override this).
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.kafka.CommitDelivery
+import pekko.kafka.CommitterSettings
+import pekko.kafka.ConsumerMessage.CommittableOffset
+import pekko.kafka.ConsumerMessage.CommittableOffsetBatch
+import pekko.kafka.ConsumerSettings
+import pekko.kafka.Subscriptions
+import pekko.kafka.scaladsl.Committer
+import pekko.kafka.scaladsl.Consumer
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.SourceWithContext
+
+/** A Kafka Client that uses Pekko Connectors Kafka Consumer under the hood to create a stream of events from a Kafka
+  * cluster. To configure the Pekko Connectors Kafka Consumer use the standard typesafe configuration i.e.
+  * pekko.kafka.consumer (note that the `keySerializer` and `valueSerializer` are hardcoded so you cannot override
+  * this).
   * @param configureConsumer
   *   A way to configure the underlying Kafka consumer settings
   * @param configureCommitter
@@ -105,7 +108,7 @@ class KafkaConsumer(
 
   /** @return
     *   The result of this function gets directly passed into the `combine` parameter of
-    *   [[akka.stream.scaladsl.Source.toMat]]
+    *   [[pekko.stream.scaladsl.Source.toMat]]
     */
   override def matCombine: (Consumer.Control, Future[Done]) => Consumer.DrainingControl[Done] =
     Consumer.DrainingControl[Done].apply

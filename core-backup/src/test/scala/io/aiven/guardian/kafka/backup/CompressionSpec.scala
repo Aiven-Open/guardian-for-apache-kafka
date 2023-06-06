@@ -1,14 +1,10 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.Compression
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.SourceWithContext
-import akka.util.ByteString
-import io.aiven.guardian.akka.AkkaStreamTestKit
-import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.backup.configs.{Compression => CompressionModel}
 import io.aiven.guardian.kafka.models.Gzip
+import io.aiven.guardian.pekko.AnyPropTestKit
+import io.aiven.guardian.pekko.PekkoStreamTestKit
+import org.apache.pekko
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -17,16 +13,22 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
+import pekko.actor.ActorSystem
+import pekko.stream.scaladsl.Compression
+import pekko.stream.scaladsl.Source
+import pekko.stream.scaladsl.SourceWithContext
+import pekko.util.ByteString
+
 class CompressionSpec
     extends AnyPropTestKit(ActorSystem("CompressionSpec"))
     with Matchers
     with ScalaFutures
     with ScalaCheckPropertyChecks
-    with AkkaStreamTestKit {
+    with PekkoStreamTestKit {
 
   implicit val ec: ExecutionContext = system.dispatcher
 
-  // Due to akka-streams taking a while to initialize for the first time we need a longer
+  // Due to pekko-streams taking a while to initialize for the first time we need a longer
   // increase in the timeout
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10 seconds, 15 millis)
 

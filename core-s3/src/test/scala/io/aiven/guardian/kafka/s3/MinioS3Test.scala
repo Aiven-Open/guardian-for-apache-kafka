@@ -1,14 +1,16 @@
 package io.aiven.guardian.kafka.s3
 
-import akka.stream.alpakka.s3.AccessStyle
-import akka.stream.alpakka.s3.S3Settings
-import akka.testkit.TestKitBase
 import com.dimafeng.testcontainers.ForAllTestContainer
+import org.apache.pekko
 import org.scalatest.Suite
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.regions.providers.AwsRegionProvider
+
+import pekko.stream.connectors.s3.AccessStyle
+import pekko.stream.connectors.s3.S3Settings
+import pekko.testkit.TestKitBase
 
 trait MinioS3Test extends ForAllTestContainer with TestKitBase { this: Suite =>
   private val S3DummyAccessKey = "DUMMY_ACCESS_KEY"
