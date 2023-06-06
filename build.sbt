@@ -12,7 +12,7 @@ ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/c
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
 
-val pekkoVersion                = "0.0.0+26669-ec5b6764-SNAPSHOT"
+val pekkoVersion                = "0.0.0+26689-15d9a31f-SNAPSHOT"
 val pekkoHttpVersion            = "0.0.0+4411-6fe04045-SNAPSHOT"
 val pekkoConnectorsKafkaVersion = "0.0.0+1738-07a19b8e-SNAPSHOT"
 val kafkaClientsVersion         = "3.4.0"
