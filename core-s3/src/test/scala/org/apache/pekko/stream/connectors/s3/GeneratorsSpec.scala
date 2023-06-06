@@ -1,4 +1,4 @@
-package akka.stream.alpakka.s3
+package org.apache.pekko.stream.connectors.s3
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory

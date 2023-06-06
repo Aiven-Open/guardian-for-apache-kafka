@@ -1,13 +1,7 @@
 package io.aiven.guardian.kafka.compaction
 
-import akka.NotUsed
-import akka.stream.ActorAttributes
-import akka.stream.Materializer
-import akka.stream.javadsl.Flow
-import akka.stream.scaladsl.Source
-import akka.stream.scaladsl.StreamConverters
-import akka.util.ByteString
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.pekko
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
 
@@ -16,6 +10,14 @@ import scala.concurrent.Future
 import scala.concurrent.blocking
 
 import java.sql.Connection
+
+import pekko.NotUsed
+import pekko.stream.ActorAttributes
+import pekko.stream.Materializer
+import pekko.stream.javadsl.Flow
+import pekko.stream.scaladsl.Source
+import pekko.stream.scaladsl.StreamConverters
+import pekko.util.ByteString
 
 /** A Postgres Database backed by JDBC which uses the Postgres COPY command to insert data into the database. Note that
   * since this uses JDBC and CopyManager, its implementation is blocking under the hood.

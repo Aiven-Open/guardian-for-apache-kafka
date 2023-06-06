@@ -1,8 +1,8 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import akka.actor.ActorSystem
-import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.s3.MinioS3Test
+import io.aiven.guardian.pekko.AnyPropTestKit
+import org.apache.pekko.actor.ActorSystem
 
 class MinioBackupClientSpec
     extends AnyPropTestKit(ActorSystem("MinioS3BackupClientSpec"))

@@ -1,14 +1,9 @@
 package io.aiven.guardian.kafka
 package s3
 
-import akka.stream.RestartSettings
-import akka.stream.alpakka.s3.MetaHeaders
-import akka.stream.alpakka.s3.S3Headers
-import akka.stream.alpakka.s3.headers.CannedAcl
-import akka.stream.alpakka.s3.headers.ServerSideEncryption
-import akka.stream.alpakka.s3.headers.StorageClass
 import io.aiven.guardian.kafka.PureConfigUtils._
 import io.aiven.guardian.kafka.s3.configs.S3
+import org.apache.pekko
 import pureconfig.ConfigCursor
 import pureconfig.ConfigReader
 import pureconfig.ConfigReader._
@@ -18,9 +13,16 @@ import pureconfig.error.UserValidationFailed
 import scala.annotation.nowarn
 import scala.concurrent.duration.FiniteDuration
 
+import pekko.stream.RestartSettings
+import pekko.stream.connectors.s3.MetaHeaders
+import pekko.stream.connectors.s3.S3Headers
+import pekko.stream.connectors.s3.headers.CannedAcl
+import pekko.stream.connectors.s3.headers.ServerSideEncryption
+import pekko.stream.connectors.s3.headers.StorageClass
+
 trait Config {
 
-  // TODO Unfortunately the following boilerplate is here because the  S3 Alpakka providers no public constructors
+  // TODO Unfortunately the following boilerplate is here because the S3 Pekko Connectors providers no public constructors
   // for S3Headers apart from the limited S3Headers(). This means we can't use pureconfig.generic.auto._ and hence
   // we have to write this out manually
 

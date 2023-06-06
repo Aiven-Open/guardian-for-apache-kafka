@@ -1,12 +1,14 @@
 package io.aiven.guardian.kafka.compaction
 
-import akka.NotUsed
-import akka.stream.javadsl.Flow
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.pekko
 
 import scala.concurrent.Future
+
+import pekko.NotUsed
+import pekko.stream.javadsl.Flow
+import pekko.stream.scaladsl.Source
+import pekko.util.ByteString
 
 trait DatabaseInterface {
 

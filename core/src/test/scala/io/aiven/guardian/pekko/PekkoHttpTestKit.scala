@@ -1,10 +1,12 @@
-package io.aiven.guardian.akka
+package io.aiven.guardian.pekko
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
+import org.apache.pekko
 import org.scalatest.Suite
 
-trait AkkaHttpTestKit extends AkkaStreamTestKit { this: Suite =>
+import pekko.actor.ActorSystem
+import pekko.http.scaladsl.Http
+
+trait PekkoHttpTestKit extends PekkoStreamTestKit { this: Suite =>
   implicit val system: ActorSystem
 
   override protected def afterAll(): Unit =

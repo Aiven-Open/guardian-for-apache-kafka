@@ -1,9 +1,7 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.Done
-import akka.NotUsed
-import akka.stream.scaladsl._
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.pekko
 
 import scala.collection.immutable
 import scala.concurrent.Future
@@ -13,6 +11,10 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicReference
+
+import pekko.Done
+import pekko.NotUsed
+import pekko.stream.scaladsl._
 
 /** A mocked `KafkaClientInterface` that returns a specific data as its source
   *
@@ -45,7 +47,7 @@ class MockedKafkaConsumerInterface(kafkaData: Source[ReducedConsumerRecord, NotU
   override type Control = Future[NotUsed]
 
   /** The type that represents the result of the `combine` parameter that is supplied to
-    * [[akka.stream.scaladsl.Source.toMat]]
+    * [[pekko.stream.scaladsl.Source.toMat]]
     */
   override type MatCombineResult = Future[NotUsed]
 
@@ -100,7 +102,7 @@ class MockedKafkaConsumerInterface(kafkaData: Source[ReducedConsumerRecord, NotU
 
   /** @return
     *   The result of this function gets directly passed into the `combine` parameter of
-    *   [[akka.stream.scaladsl.Source.toMat]]
+    *   [[pekko.stream.scaladsl.Source.toMat]]
     */
   override def matCombine: (Future[NotUsed], Future[Done]) => Future[NotUsed] = Keep.left
 

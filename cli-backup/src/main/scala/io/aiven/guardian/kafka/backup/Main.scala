@@ -1,7 +1,5 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.kafka.ConsumerSettings
-import akka.stream.RestartSettings
 import cats.implicits._
 import com.monovore.decline._
 import io.aiven.guardian.cli.MainUtils
@@ -12,6 +10,7 @@ import io.aiven.guardian.kafka.backup.configs._
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.s3.configs.S3
+import org.apache.pekko
 import org.slf4j.LoggerFactory
 import pureconfig.ConfigSource
 
@@ -24,6 +23,9 @@ import scala.language.postfixOps
 import java.time.temporal.ChronoUnit
 import java.util.Properties
 import java.util.concurrent.atomic.AtomicReference
+
+import pekko.kafka.ConsumerSettings
+import pekko.stream.RestartSettings
 
 class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]] = new AtomicReference(None))
     extends CommandApp(
@@ -120,7 +122,7 @@ class Entry(val initializedApp: AtomicReference[Option[(App[_], Promise[Unit])]]
                   block.withBootstrapServers(value.toList.mkString(","))
 
               Some(block).validNel
-            case None if Options.checkConfigKeyIsDefined("akka.kafka.consumer.kafka-clients.bootstrap.servers") =>
+            case None if Options.checkConfigKeyIsDefined("pekko.kafka.consumer.kafka-clients.bootstrap.servers") =>
               None.validNel
             case _ => "bootstrap-servers is a mandatory value that needs to be configured".invalidNel
           }
