@@ -1,17 +1,19 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.Done
-import akka.actor.ActorSystem
-import akka.kafka.scaladsl.Consumer
-import akka.stream.ActorAttributes
-import akka.stream.Supervision
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.BackupClientInterface
 import io.aiven.guardian.kafka.backup.KafkaConsumer
 import io.aiven.guardian.kafka.backup.KafkaConsumerInterface
+import org.apache.pekko
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+
+import pekko.Done
+import pekko.actor.ActorSystem
+import pekko.kafka.scaladsl.Consumer
+import pekko.stream.ActorAttributes
+import pekko.stream.Supervision
 
 trait App[T <: KafkaConsumerInterface] extends LazyLogging {
   implicit val kafkaClient: T

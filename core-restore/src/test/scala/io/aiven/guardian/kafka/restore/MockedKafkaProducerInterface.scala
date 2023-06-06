@@ -1,11 +1,14 @@
 package io.aiven.guardian.kafka.restore
-import akka.Done
-import akka.stream.scaladsl.Sink
+
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
+import org.apache.pekko
 
 import scala.concurrent.Future
 
 import java.util.concurrent.ConcurrentLinkedQueue
+
+import pekko.Done
+import pekko.stream.scaladsl.Sink
 
 class MockedKafkaProducerInterface() extends KafkaProducerInterface {
   val producedData: ConcurrentLinkedQueue[ReducedConsumerRecord] = new ConcurrentLinkedQueue[ReducedConsumerRecord]()

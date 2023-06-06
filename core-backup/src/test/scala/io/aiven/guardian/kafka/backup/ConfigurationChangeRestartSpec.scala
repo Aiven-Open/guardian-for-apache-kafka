@@ -1,15 +1,8 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import com.typesafe.scalalogging.StrictLogging
-import io.aiven.guardian.akka.AkkaStreamTestKit
-import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
 import io.aiven.guardian.kafka.TestUtils.waitForStartOfTimeUnit
@@ -19,7 +12,10 @@ import io.aiven.guardian.kafka.codecs.Circe._
 import io.aiven.guardian.kafka.models.BackupObjectMetadata
 import io.aiven.guardian.kafka.models.Gzip
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
-import org.mdedetrich.akka.stream.support.CirceStreamSupport
+import io.aiven.guardian.pekko.AnyPropTestKit
+import io.aiven.guardian.pekko.PekkoStreamTestKit
+import org.apache.pekko
+import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.scalatest.Inspectors
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
@@ -36,9 +32,15 @@ import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.ConcurrentLinkedQueue
 
+import pekko.actor.ActorSystem
+import pekko.stream.scaladsl.Keep
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.Source
+import pekko.util.ByteString
+
 class ConfigurationChangeRestartSpec
     extends AnyPropTestKit(ActorSystem("ConfigurationChangeSpec"))
-    with AkkaStreamTestKit
+    with PekkoStreamTestKit
     with Matchers
     with ScalaFutures
     with ScalaCheckPropertyChecks
@@ -81,14 +83,14 @@ class ConfigurationChangeRestartSpec
       val calculatedFuture = for {
         _ <- waitForStartOfTimeUnit(ChronoUnit.MINUTES)
         _ <- mockOne.backup.run()
-        keysWithGzip <- akka.pattern.after(AkkaStreamInitializationConstant)(
+        keysWithGzip <- pekko.pattern.after(PekkoStreamInitializationConstant)(
                           Future.successful(
                             backupStorage.asScala.map { case (key, _) => key }.toSet
                           )
                         )
         _ <- mockTwo.backup.run()
         keysWithoutGzip <-
-          akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful {
+          pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful {
             val allKeys = backupStorage.asScala.map { case (key, _) => key }.toSet
             allKeys diff keysWithGzip
           })
@@ -144,14 +146,14 @@ class ConfigurationChangeRestartSpec
       val calculatedFuture = for {
         _ <- waitForStartOfTimeUnit(ChronoUnit.MINUTES)
         _ <- mockOne.backup.run()
-        keysWithoutGzip <- akka.pattern.after(AkkaStreamInitializationConstant)(
+        keysWithoutGzip <- pekko.pattern.after(PekkoStreamInitializationConstant)(
                              Future.successful(
                                backupStorage.asScala.map { case (key, _) => key }.toSet
                              )
                            )
         _ <- mockTwo.backup.run()
         keysWithGzip <-
-          akka.pattern.after(AkkaStreamInitializationConstant)(Future.successful {
+          pekko.pattern.after(PekkoStreamInitializationConstant)(Future.successful {
             val allKeys = backupStorage.asScala.map { case (key, _) => key }.toSet
             allKeys diff keysWithoutGzip
           })

@@ -1,11 +1,9 @@
 package io.aiven.guardian.kafka.s3
 
-import akka.stream.alpakka.s3.MetaHeaders
-import akka.stream.alpakka.s3.S3Headers
-import akka.stream.alpakka.s3.headers._
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.kafka.s3.Config._
+import org.apache.pekko
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalatest.matchers.must.Matchers
@@ -13,6 +11,10 @@ import org.scalatest.propspec.AnyPropSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pureconfig.ConfigReader.Result
 import pureconfig.ConfigSource
+
+import pekko.stream.connectors.s3.MetaHeaders
+import pekko.stream.connectors.s3.S3Headers
+import pekko.stream.connectors.s3.headers._
 
 class PureConfigS3HeadersSpec extends AnyPropSpec with Matchers with ScalaCheckPropertyChecks {
   implicit val cannedAclArb: Arbitrary[CannedAcl] = Arbitrary(

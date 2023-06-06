@@ -1,7 +1,5 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.kafka.ProducerSettings
-import akka.stream.RestartSettings
 import cats.data.ValidatedNel
 import com.monovore.decline._
 import com.monovore.decline.time._
@@ -13,6 +11,7 @@ import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.restore.configs.Restore
 import io.aiven.guardian.kafka.s3.configs.S3
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.pekko
 import org.slf4j.LoggerFactory
 import pureconfig.ConfigSource
 
@@ -24,6 +23,9 @@ import scala.language.postfixOps
 import java.time.OffsetDateTime
 import java.util.Properties
 import java.util.concurrent.atomic.AtomicReference
+
+import pekko.kafka.ProducerSettings
+import pekko.stream.RestartSettings
 
 class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReference(None))
     extends CommandApp(
@@ -92,7 +94,7 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
 
               Some(block).validNel
             case None
-                if Options.checkConfigKeyIsDefined("akka.kafka.producer.kafka-clients.bootstrap.servers") || Options
+                if Options.checkConfigKeyIsDefined("pekko.kafka.producer.kafka-clients.bootstrap.servers") || Options
                   .checkConfigKeyIsDefined("kafka-client.bootstrap.servers") =>
               None.validNel
             case _ => "bootstrap-servers is a mandatory value that needs to be configured".invalidNel

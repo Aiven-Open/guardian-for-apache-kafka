@@ -1,9 +1,5 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Keep
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import com.typesafe.scalalogging.LazyLogging
@@ -14,7 +10,8 @@ import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.Generators._
 import io.aiven.guardian.kafka.s3.S3Spec
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
-import org.mdedetrich.akka.stream.support.CirceStreamSupport
+import org.apache.pekko
+import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.must.Matchers
 
@@ -24,6 +21,11 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import java.time.OffsetDateTime
+
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Keep
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.Source
 
 trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with LazyLogging {
 
@@ -50,7 +52,7 @@ trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with 
         val calculatedFuture = for {
           _ <- createBucket(s3Config.dataBucket)
           _ <- backupClient.backup.run()
-          _ <- akka.pattern.after(delay)(Future.successful(()))
+          _ <- pekko.pattern.after(delay)(Future.successful(()))
           bucketContents <-
             S3.listBucket(s3Config.dataBucket, None, s3Headers)
               .withAttributes(s3Attrs)
