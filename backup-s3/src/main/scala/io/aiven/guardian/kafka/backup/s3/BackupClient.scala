@@ -1,25 +1,27 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import akka.Done
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.SinkShape
-import akka.stream.alpakka.s3._
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl._
-import akka.util.ByteString
 import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.backup.BackupClientInterface
 import io.aiven.guardian.kafka.backup.KafkaConsumerInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.models.BackupObjectMetadata
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
+import org.apache.pekko
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 import java.time.Instant
+
+import pekko.Done
+import pekko.NotUsed
+import pekko.actor.ActorSystem
+import pekko.stream.SinkShape
+import pekko.stream.connectors.s3._
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl._
+import pekko.util.ByteString
 
 class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settings])(implicit
     override val kafkaClientInterface: T,
@@ -126,7 +128,7 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
                     maybeParts <- getPartsFromUpload(key, uploadId)
                   } yield maybeParts.map { parts =>
                     val finalParts = parts.lastOption match {
-                      case Some(part) if part.size >= akka.stream.alpakka.s3.scaladsl.S3.MinChunkSize =>
+                      case Some(part) if part.size >= pekko.stream.connectors.s3.scaladsl.S3.MinChunkSize =>
                         parts
                       case _ =>
                         // We drop the last part here since its broken
@@ -199,7 +201,7 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
 
   private[s3] def kafkaBatchSink
       : Sink[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext]), NotUsed] =
-    // See https://doc.akka.io/docs/akka/current/stream/operators/Partition.html for an explanation on Partition
+    // See https://pekko.apache.org/docs/pekko/current/stream/operators/Partition.html for an explanation on Partition
     Sink.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
       val partition = builder.add(

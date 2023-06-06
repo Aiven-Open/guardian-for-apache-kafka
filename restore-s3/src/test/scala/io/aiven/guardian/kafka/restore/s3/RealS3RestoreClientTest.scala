@@ -1,13 +1,5 @@
 package io.aiven.guardian.kafka.restore.s3
 
-import akka.kafka.ConsumerSettings
-import akka.kafka.Subscriptions
-import akka.kafka.scaladsl.Consumer
-import akka.kafka.scaladsl.Consumer.DrainingControl
-import akka.kafka.scaladsl.Producer
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Sink
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.KafkaClusterTest
@@ -25,6 +17,7 @@ import io.aiven.guardian.kafka.s3.Generators.s3ConfigGen
 import io.aiven.guardian.kafka.s3.S3Spec
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
+import org.apache.pekko
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.propspec.AnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -33,6 +26,15 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.language.postfixOps
+
+import pekko.kafka.ConsumerSettings
+import pekko.kafka.Subscriptions
+import pekko.kafka.scaladsl.Consumer
+import pekko.kafka.scaladsl.Consumer.DrainingControl
+import pekko.kafka.scaladsl.Producer
+import pekko.stream.connectors.s3.S3Settings
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Sink
 
 trait RealS3RestoreClientTest
     extends AnyPropSpecLike
@@ -107,7 +109,7 @@ trait RealS3RestoreClientTest
           _ <- createTopics(kafkaDataInChunksWithTimePeriodRenamedTopics.topics)
           _ <- createBucket(s3Config.dataBucket)
           _ = backupClientWrapped.run()
-          _ <- akka.pattern.after(KafkaInitializationTimeoutConstant)(
+          _ <- pekko.pattern.after(KafkaInitializationTimeoutConstant)(
                  baseSource
                    .runWith(Producer.plainSink(producerSettings))
                )
@@ -127,11 +129,11 @@ trait RealS3RestoreClientTest
               .plainSource(restoreResultConsumerTopicSettings, Subscriptions.topics(renamedTopics))
           eventualRestoredTopics = restoreResultConsumerSource.toMat(Sink.collection)(DrainingControl.apply).run()
           _ <- createTopics(renamedTopics)
-          _ <- akka.pattern.after(5 seconds) {
+          _ <- pekko.pattern.after(5 seconds) {
                  val (_, future) = restoreClient.restore.run()
                  future
                }
-          receivedTopics <- akka.pattern.after(1 minute)(eventualRestoredTopics.drainAndShutdown())
+          receivedTopics <- pekko.pattern.after(1 minute)(eventualRestoredTopics.drainAndShutdown())
           asConsumerRecords = receivedTopics.map(KafkaConsumer.consumerRecordToReducedConsumerRecord)
         } yield asConsumerRecords.toList
 

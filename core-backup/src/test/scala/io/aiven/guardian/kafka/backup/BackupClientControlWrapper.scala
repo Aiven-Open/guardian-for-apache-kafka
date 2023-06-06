@@ -1,11 +1,13 @@
 package io.aiven.guardian.kafka.backup
 
-import akka.Done
-import akka.kafka.scaladsl.Consumer
-import akka.stream.Materializer
+import org.apache.pekko
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+
+import pekko.Done
+import pekko.kafka.scaladsl.Consumer
+import pekko.stream.Materializer
 
 /** A wrapper that is designed to make it easier to cleanly shutdown resources in tests
   */

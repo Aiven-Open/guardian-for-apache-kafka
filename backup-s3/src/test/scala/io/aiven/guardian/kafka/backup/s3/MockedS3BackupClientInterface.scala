@@ -1,19 +1,21 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.alpakka.s3.S3Headers
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.scaladsl.Source
 import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
 import io.aiven.guardian.kafka.backup.MockedKafkaConsumerInterface
 import io.aiven.guardian.kafka.backup.configs.Backup
 import io.aiven.guardian.kafka.backup.configs.TimeConfiguration
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
+import org.apache.pekko
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
+
+import pekko.NotUsed
+import pekko.actor.ActorSystem
+import pekko.stream.connectors.s3.S3Headers
+import pekko.stream.connectors.s3.S3Settings
+import pekko.stream.scaladsl.Source
 
 class MockedS3BackupClientInterface(
     kafkaData: Source[ReducedConsumerRecord, NotUsed],

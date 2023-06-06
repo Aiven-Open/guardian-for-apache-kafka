@@ -1,16 +1,18 @@
 package io.aiven.guardian.kafka.s3
 
-import akka.actor.ActorSystem
-import akka.stream.Attributes
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Sink
 import com.typesafe.scalalogging.StrictLogging
 import markatta.futiles.Retry
+import org.apache.pekko
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
+
+import pekko.actor.ActorSystem
+import pekko.stream.Attributes
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Sink
 
 object S3TestUtils extends StrictLogging {
 

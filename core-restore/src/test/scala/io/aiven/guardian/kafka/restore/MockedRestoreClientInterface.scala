@@ -1,13 +1,15 @@
 package io.aiven.guardian.kafka.restore
 
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.Flow
-import akka.util.ByteString
 import io.aiven.guardian.kafka.configs.KafkaCluster
 import io.aiven.guardian.kafka.restore.configs.Restore
+import org.apache.pekko
 
 import scala.concurrent.Future
+
+import pekko.NotUsed
+import pekko.actor.ActorSystem
+import pekko.stream.scaladsl.Flow
+import pekko.util.ByteString
 
 class MockedRestoreClientInterface(backupData: Map[String, ByteString])(implicit
     override val kafkaProducerInterface: MockedKafkaProducerInterface,

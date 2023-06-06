@@ -1,12 +1,6 @@
 package io.aiven.guardian.kafka.backup.s3
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.s3.S3Settings
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
-import io.aiven.guardian.akka.AnyPropTestKit
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.Utils
 import io.aiven.guardian.kafka.backup.MockedBackupClientInterface
@@ -18,7 +12,9 @@ import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.kafka.s3.Generators._
 import io.aiven.guardian.kafka.s3.S3Spec
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
-import org.mdedetrich.akka.stream.support.CirceStreamSupport
+import io.aiven.guardian.pekko.AnyPropTestKit
+import org.apache.pekko
+import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.scalatest.matchers.must.Matchers
 
 import scala.concurrent.ExecutionContext
@@ -26,6 +22,12 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import scala.language.postfixOps
+
+import pekko.actor.ActorSystem
+import pekko.stream.connectors.s3.S3Settings
+import pekko.stream.connectors.s3.scaladsl.S3
+import pekko.stream.scaladsl.Sink
+import pekko.stream.scaladsl.Source
 
 class MockedKafkaClientBackupConsumerSpec
     extends AnyPropTestKit(ActorSystem("MockedKafkaClientBackupClientSpec"))
@@ -70,7 +72,7 @@ class MockedKafkaClientBackupConsumerSpec
       val calculatedFuture = for {
         _ <- createBucket(s3Config.dataBucket)
         _ = backupClient.backup.run()
-        bucketContents <- akka.pattern.after(10 seconds)(
+        bucketContents <- pekko.pattern.after(10 seconds)(
                             S3.listBucket(s3Config.dataBucket, None).withAttributes(s3Attrs).runWith(Sink.seq)
                           )
         keysSorted = bucketContents.map(_.key).sortBy(Utils.keyToOffsetDateTime)
