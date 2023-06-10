@@ -63,7 +63,7 @@ trait RealS3RestoreClientTest
   override lazy val bucketPrefix: Option[String]          = Some("guardian-")
   override lazy val enableCleanup: Option[FiniteDuration] = Some(5 seconds)
 
-  property("Round-trip with backup and restore", RealS3Available) {
+  property("Round-trip with backup and restore") {
     forAll(
       kafkaDataWithMinSizeRenamedTopicsGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
       s3ConfigGen(useVirtualDotHost, bucketPrefix),
