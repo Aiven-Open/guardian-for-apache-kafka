@@ -1,7 +1,7 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
 
-ThisBuild / scalaVersion         := "2.13.11"
+ThisBuild / scalaVersion         := "2.13.10"
 ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
