@@ -1,5 +1,6 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
+import sbtghactions.{Permissions, PermissionScope, PermissionValue}
 
 ThisBuild / scalaVersion         := "2.13.10"
 ThisBuild / organization         := "aiven.io"
@@ -15,7 +16,7 @@ ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
 val pekkoVersion                = "0.0.0+26669-ec5b6764-SNAPSHOT"
 val pekkoHttpVersion            = "0.0.0+4411-6fe04045-SNAPSHOT"
 val pekkoConnectorsKafkaVersion = "0.0.0+1738-07a19b8e-SNAPSHOT"
-val kafkaClientsVersion         = "3.4.0"
+val kafkaClientsVersion         = "3.4.1"
 val pekkoConnectorsVersion      = "0.0.0+85-a82f3c3c-SNAPSHOT"
 val futilesVersion              = "2.0.2"
 val quillJdbcMonixVersion       = "3.7.2"
@@ -436,16 +437,33 @@ ThisBuild / semanticdbVersion := scalafixSemanticdb.revision
 
 ThisBuild / githubWorkflowJavaVersions := List(JavaSpec.temurin("11"))
 
+ThisBuild / githubWorkflowBuildPreamble ++= Seq(
+  WorkflowStep.Use(
+    UseRef.Public("aws-actions", "configure-aws-credentials", "v2"),
+    name = Some("Configure AWS credentials"),
+    params = Map(
+      "role-to-assume"        -> "arn:aws:iam::310017459104:role/aiven-guardian-github-action",
+      "aws-region"            -> "us-west-2",
+      "role-duration-seconds" -> "3600" // 2 hours
+    )
+  )
+)
+
+ThisBuild / githubWorkflowPermissions := Some(
+  Permissions.Specify(
+    Map(
+      PermissionScope.IdToken -> PermissionValue.Write
+    )
+  )
+)
+
 ThisBuild / githubWorkflowBuild := Seq(
   WorkflowStep.Sbt(
     List("clean", "coverage", "test"),
     name = Some("Build project"),
     env = Map(
-      "PEKKO_CONNECTORS_S3_REGION_PROVIDER"                   -> "static",
-      "PEKKO_CONNECTORS_S3_REGION_DEFAULT_REGION"             -> "us-west-2",
-      "PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_PROVIDER"          -> "static",
-      "PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_ACCESS_KEY_ID"     -> "${{ secrets.AWS_ACCESS_KEY }}",
-      "PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_SECRET_ACCESS_KEY" -> "${{ secrets.AWS_SECRET_KEY }}"
+      "PEKKO_CONNECTORS_S3_REGION_PROVIDER"          -> "default",
+      "PEKKO_CONNECTORS_S3_AWS_CREDENTIALS_PROVIDER" -> "default"
     )
   ),
   WorkflowStep.Sbt(List("docs/makeSite"), name = Some("Compile docs"))

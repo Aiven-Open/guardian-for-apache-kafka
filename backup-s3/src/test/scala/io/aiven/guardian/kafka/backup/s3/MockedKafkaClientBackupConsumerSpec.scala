@@ -43,8 +43,7 @@ class MockedKafkaClientBackupConsumerSpec
   override lazy val enableCleanup: Option[FiniteDuration] = Some(5 seconds)
 
   property(
-    "Creating many objects in a small period of time works despite S3's in progress multipart upload eventual consistency issues",
-    RealS3Available
+    "Creating many objects in a small period of time works despite S3's in progress multipart upload eventual consistency issues"
   ) {
     forAll(
       kafkaDataWithTimePeriodsGen(20,
