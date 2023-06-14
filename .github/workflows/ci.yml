@@ -50,7 +50,7 @@ jobs:
         with:
           role-to-assume: 'arn:aws:iam::310017459104:role/aiven-guardian-github-action'
           aws-region: us-west-2
-          role-duration-seconds: 3600
+          role-duration-seconds: 7200
 
       - name: Check that workflows are up to date
         run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
