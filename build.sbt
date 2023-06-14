@@ -444,7 +444,7 @@ ThisBuild / githubWorkflowBuildPreamble ++= Seq(
     params = Map(
       "role-to-assume"        -> "arn:aws:iam::310017459104:role/aiven-guardian-github-action",
       "aws-region"            -> "us-west-2",
-      "role-duration-seconds" -> "3600" // 2 hours
+      "role-duration-seconds" -> "7200" // 4 hours
     )
   )
 )
