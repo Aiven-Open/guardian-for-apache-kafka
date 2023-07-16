@@ -14,7 +14,7 @@ ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
 
 val pekkoVersion                = "0.0.0+26669-ec5b6764-SNAPSHOT"
-val pekkoHttpVersion            = "0.0.0+4411-6fe04045-SNAPSHOT"
+val pekkoHttpVersion            = "0.0.0+4469-fb6a5426-SNAPSHOT"
 val pekkoConnectorsKafkaVersion = "0.0.0+1738-07a19b8e-SNAPSHOT"
 val kafkaClientsVersion         = "3.4.1"
 val pekkoConnectorsVersion      = "0.0.0+85-a82f3c3c-SNAPSHOT"
