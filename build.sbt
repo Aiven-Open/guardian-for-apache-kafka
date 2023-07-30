@@ -33,7 +33,7 @@ val testContainersVersion       = "0.40.16"
 val testContainersJavaVersion   = "1.18.3"
 val scalaCheckVersion           = "1.17.0"
 val scalaCheckOpsVersion        = "2.10.0"
-val enumeratumVersion           = "1.7.2"
+val enumeratumVersion           = "1.7.3"
 val organizeImportsVersion      = "0.6.0"
 
 /** Calculates the scalatest version in a format that is used for `org.scalatestplus` scalacheck artifacts
