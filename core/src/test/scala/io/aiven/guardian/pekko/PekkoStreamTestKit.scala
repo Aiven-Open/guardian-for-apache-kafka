@@ -1,8 +1,12 @@
 package io.aiven.guardian.pekko
 
+import com.typesafe.scalalogging.CanLog
+import com.typesafe.scalalogging.Logger
+import com.typesafe.scalalogging.LoggerTakingImplicit
 import org.apache.pekko
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
+import org.scalatest.TestData
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -21,4 +25,11 @@ trait PekkoStreamTestKit extends TestKitBase with BeforeAndAfterAll { this: Suit
     * wait, make sure you wait at least this period of time for akka-streams to initialize properly.
     */
   val PekkoStreamInitializationConstant: FiniteDuration = 1 second
+
+  private implicit case object CanLogTestData extends CanLog[TestData] {
+    override def logMessage(originalMsg: String, context: TestData): String =
+      s"${context.name}: $originalMsg"
+  }
+
+  lazy val logger: LoggerTakingImplicit[TestData] = Logger.takingImplicit[TestData](getClass.getName)
 }
