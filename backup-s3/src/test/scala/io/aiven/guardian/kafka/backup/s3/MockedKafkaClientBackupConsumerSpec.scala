@@ -15,6 +15,7 @@ import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import io.aiven.guardian.pekko.AnyPropTestKit
 import org.apache.pekko
 import org.mdedetrich.pekko.stream.support.CirceStreamSupport
+import org.scalatest.TestData
 import org.scalatest.matchers.must.Matchers
 
 import scala.concurrent.ExecutionContext
@@ -44,7 +45,7 @@ class MockedKafkaClientBackupConsumerSpec
 
   property(
     "Creating many objects in a small period of time works despite S3's in progress multipart upload eventual consistency issues"
-  ) {
+  ) { implicit td: TestData =>
     forAll(
       kafkaDataWithTimePeriodsGen(20,
                                   20,
