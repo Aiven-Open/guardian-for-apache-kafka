@@ -2,7 +2,6 @@ package io.aiven.guardian.kafka.backup.s3
 
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
-import com.typesafe.scalalogging.LazyLogging
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.backup.configs.PeriodFromFirst
 import io.aiven.guardian.kafka.codecs.Circe._
@@ -13,6 +12,7 @@ import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.apache.pekko
 import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.TestData
 import org.scalatest.matchers.must.Matchers
 
 import scala.concurrent.ExecutionContext
@@ -27,12 +27,12 @@ import pekko.stream.scaladsl.Keep
 import pekko.stream.scaladsl.Sink
 import pekko.stream.scaladsl.Source
 
-trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll with LazyLogging {
+trait BackupClientSpec extends S3Spec with Matchers with BeforeAndAfterAll {
 
   val ThrottleElements: Int          = 100
   val ThrottleAmount: FiniteDuration = 1 millis
 
-  property("backup method completes flow correctly for all valid Kafka events") {
+  property("backup method completes flow correctly for all valid Kafka events") { implicit td: TestData =>
     forAll(kafkaDataWithTimePeriodsGen(), s3ConfigGen(useVirtualDotHost, bucketPrefix)) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod, s3Config: S3Config) =>
         logger.info(s"Data bucket is ${s3Config.dataBucket}")

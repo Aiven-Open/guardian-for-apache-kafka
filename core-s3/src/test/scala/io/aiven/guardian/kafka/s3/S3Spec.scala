@@ -1,16 +1,19 @@
 package io.aiven.guardian.kafka.s3
 
 import com.softwaremill.diffx.ShowConfig
-import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.scalalogging.Logger
 import io.aiven.guardian.kafka.models.ReducedConsumerRecord
 import io.aiven.guardian.pekko.PekkoHttpTestKit
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.pekko
 import org.scalactic.Prettifier
 import org.scalactic.SizeLimit
+import org.scalatest.TestData
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.propspec.AnyPropSpecLike
+import org.scalatest.fixture
+import org.scalatest.propspec.FixtureAnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
@@ -36,12 +39,12 @@ import pekko.testkit.TestKitBase
 
 trait S3Spec
     extends TestKitBase
-    with AnyPropSpecLike
+    with FixtureAnyPropSpecLike
+    with fixture.TestDataFixture
     with PekkoHttpTestKit
     with ScalaCheckPropertyChecks
     with ScalaFutures
-    with Config
-    with LazyLogging {
+    with Config {
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(20 minutes, 100 millis)
@@ -78,16 +81,18 @@ trait S3Spec
     */
   lazy val maxCleanupTimeout: FiniteDuration = 10 minutes
 
-  def createBucket(bucket: String): Future[Unit] =
+  def createBucket(bucket: String)(implicit td: TestData): Future[Unit] =
     for {
       bucketResponse <- S3.checkIfBucketExists(bucket)
       _ <- bucketResponse match {
              case BucketAccess.AccessDenied =>
                throw new RuntimeException(
-                 s"Unable to create bucket: $bucket since it already exists however permissions are inadequate"
+                 s"${td.name}: Unable to create bucket: $bucket since it already exists however permissions are inadequate"
                )
              case BucketAccess.AccessGranted =>
-               logger.info(s"Deleting and recreating bucket: $bucket since it already exists with correct permissions")
+               logger.info(
+                 s"${td.name}: Deleting and recreating bucket: $bucket since it already exists with correct permissions"
+               )
                for {
                  _ <- S3TestUtils.cleanAndDeleteBucket(bucket)
                  _ <- S3.makeBucket(bucket)
@@ -99,26 +104,32 @@ trait S3Spec
             bucketsToCleanup.add(bucket)
     } yield ()
 
-  private def cleanBucket(bucket: String): Future[Unit] = (for {
-    check <- S3.checkIfBucketExists(bucket)
-    _ <- check match {
-           case BucketAccess.AccessDenied =>
-             Future {
-               logger.warn(
-                 s"Cannot delete bucket: $bucket due to having access denied. Please look into this as it can fill up your AWS account"
-               )
-             }
-           case BucketAccess.AccessGranted =>
-             logger.info(s"Cleaning up bucket: $bucket")
-             S3TestUtils.cleanAndDeleteBucket(bucket)
-           case BucketAccess.NotExists =>
-             Future {
-               logger.info(s"Not deleting bucket: $bucket since it no longer exists")
-             }
-         }
+  private def cleanBucket(bucket: String): Future[Unit] = {
+    // The default logger takes an implicit TestData but
+    // having an implicit TestData here doesn't name sense
+    // since this function is run after all tests finish
+    val _logger = Logger(LoggerFactory.getLogger(getClass.getName))
+    (for {
+      check <- S3.checkIfBucketExists(bucket)
+      _ <- check match {
+             case BucketAccess.AccessDenied =>
+               Future {
+                 _logger.warn(
+                   s"Cannot delete bucket: $bucket due to having access denied. Please look into this as it can fill up your AWS account"
+                 )
+               }
+             case BucketAccess.AccessGranted =>
+               _logger.info(s"Cleaning up bucket: $bucket")
+               S3TestUtils.cleanAndDeleteBucket(bucket)
+             case BucketAccess.NotExists =>
+               Future {
+                 _logger.info(s"Not deleting bucket: $bucket since it no longer exists")
+               }
+           }
 
-  } yield ()).recover { case util.control.NonFatal(error) =>
-    logger.error(s"Error deleting bucket: $bucket", error)
+    } yield ()).recover { case util.control.NonFatal(error) =>
+      _logger.error(s"Error deleting bucket: $bucket", error)
+    }
   }
 
   override def afterAll(): Unit =

@@ -32,7 +32,7 @@ class CompressionSpec
   // increase in the timeout
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10 seconds, 15 millis)
 
-  property("GZip compression works with a SourceWithContext/FlowWithContext") {
+  property("GZip compression works with a SourceWithContext/FlowWithContext") { _ =>
     forAll { data: List[String] =>
       val asByteString    = data.map(ByteString.fromString)
       val zippedWithIndex = asByteString.zipWithIndex
