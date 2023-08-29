@@ -2,7 +2,6 @@ package io.aiven.guardian.kafka.backup
 
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
-import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
 import io.aiven.guardian.kafka.TestUtils.waitForStartOfTimeUnit
@@ -43,8 +42,7 @@ class ConfigurationChangeRestartSpec
     with PekkoStreamTestKit
     with Matchers
     with ScalaFutures
-    with ScalaCheckPropertyChecks
-    with StrictLogging {
+    with ScalaCheckPropertyChecks {
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)
@@ -52,7 +50,7 @@ class ConfigurationChangeRestartSpec
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 1)
 
-  property("GZip compression enabled initially and then BackupClient restarted with compression disabled") {
+  property("GZip compression enabled initially and then BackupClient restarted with compression disabled") { _ =>
     implicit val generatorDrivenConfig: PropertyCheckConfiguration =
       PropertyCheckConfiguration(minSuccessful = 1)
 
@@ -118,7 +116,7 @@ class ConfigurationChangeRestartSpec
     }
   }
 
-  property("no compression enabled initially and then BackupClient restarted with GZip compression enabled") {
+  property("no compression enabled initially and then BackupClient restarted with GZip compression enabled") { _ =>
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       val commitStorage = new ConcurrentLinkedDeque[Long]()
       val backupStorage = new ConcurrentLinkedQueue[(String, ByteString)]()

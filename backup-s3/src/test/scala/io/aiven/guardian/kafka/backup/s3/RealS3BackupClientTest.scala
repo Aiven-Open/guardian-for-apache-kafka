@@ -19,7 +19,8 @@ import io.aiven.guardian.kafka.s3.Generators.s3ConfigGen
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.apache.pekko
 import org.mdedetrich.pekko.stream.support.CirceStreamSupport
-import org.scalatest.propspec.AnyPropSpecLike
+import org.scalatest.TestData
+import org.scalatest.propspec.FixtureAnyPropSpecLike
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -35,7 +36,7 @@ import pekko.stream.connectors.s3.scaladsl.S3
 import pekko.stream.scaladsl.Compression
 import pekko.stream.scaladsl.Sink
 
-trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with BackupClientSpec {
+trait RealS3BackupClientTest extends FixtureAnyPropSpecLike with KafkaClusterTest with BackupClientSpec {
   def compression: Option[CompressionConfig]
 
   override lazy val s3Settings: S3Settings = S3Settings()
@@ -96,7 +97,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }).runWith(Sink.seq)
   }
 
-  property("basic flow without interruptions using PeriodFromFirst works correctly") {
+  property("basic flow without interruptions using PeriodFromFirst works correctly") { implicit td: TestData =>
     forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -173,7 +174,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property("suspend/resume using PeriodFromFirst creates separate object after resume point") {
+  property("suspend/resume using PeriodFromFirst creates separate object after resume point") { implicit td: TestData =>
     forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -292,7 +293,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property("suspend/resume for same object using ChronoUnitSlice works correctly") {
+  property("suspend/resume for same object using ChronoUnitSlice works correctly") { implicit td: TestData =>
     forAll(kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -387,7 +388,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property("Backup works with multiple keys") {
+  property("Backup works with multiple keys") { implicit td: TestData =>
     forAll(kafkaDataWithTimePeriodsGen(min = 30000, max = 30000),
            s3ConfigGen(useVirtualDotHost, bucketPrefix),
            kafkaConsumerGroupGen
@@ -467,7 +468,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property("Concurrent backups using real Kafka cluster with a single key") {
+  property("Concurrent backups using real Kafka cluster with a single key") { implicit td: TestData =>
     forAll(
       kafkaDataWithMinByteSizeGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
       s3ConfigGen(useVirtualDotHost, bucketPrefix),
@@ -589,7 +590,7 @@ trait RealS3BackupClientTest extends AnyPropSpecLike with KafkaClusterTest with 
     }
   }
 
-  property("Concurrent backups using real Kafka cluster with a multiple keys") {
+  property("Concurrent backups using real Kafka cluster with a multiple keys") { implicit td: TestData =>
     forAll(
       kafkaDataWithTimePeriodsGen(min = 30000, max = 30000),
       s3ConfigGen(useVirtualDotHost, bucketPrefix),
