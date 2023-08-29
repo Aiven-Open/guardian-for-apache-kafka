@@ -2,7 +2,6 @@ package io.aiven.guardian.kafka.restore
 
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
-import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.ExtensionsMethods._
 import io.aiven.guardian.kafka.Generators._
 import io.aiven.guardian.kafka.Utils
@@ -16,7 +15,7 @@ import org.apache.pekko
 import org.scalatest.Inspectors
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.propspec.AnyPropSpecLike
+import org.scalatest.propspec.FixtureAnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import scala.concurrent.ExecutionContext
@@ -31,19 +30,18 @@ import java.time.temporal.ChronoUnit
 import pekko.stream.scaladsl.Source
 
 trait RestoreClientInterfaceTest
-    extends AnyPropSpecLike
+    extends FixtureAnyPropSpecLike
     with PekkoStreamTestKit
     with Matchers
     with ScalaFutures
-    with ScalaCheckPropertyChecks
-    with StrictLogging {
+    with ScalaCheckPropertyChecks {
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)
 
   def compression: Option[Compression]
 
-  property("Calculating finalKeys contains correct keys with fromWhen filter") {
+  property("Calculating finalKeys contains correct keys with fromWhen filter") { _ =>
     forAll(
       kafkaDataWithTimePeriodsAndPickedRecordGen(padTimestampsMillis =
                                                    Range.inclusive(1, ChronoUnit.HOURS.getDuration.toMillis.toInt),
@@ -84,7 +82,7 @@ trait RestoreClientInterfaceTest
     }
   }
 
-  property("Round-trip with backup and restore") {
+  property("Round-trip with backup and restore") { _ =>
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       implicit val restoreConfig: RestoreConfig                               = RestoreConfig.empty
       implicit val mockedKafkaProducerInterface: MockedKafkaProducerInterface = new MockedKafkaProducerInterface
@@ -111,7 +109,7 @@ trait RestoreClientInterfaceTest
     }
   }
 
-  property("Round-trip with backup and restore works using fromWhen filter") {
+  property("Round-trip with backup and restore works using fromWhen filter") { _ =>
     forAll(
       kafkaDataWithTimePeriodsAndPickedRecordGen(padTimestampsMillis =
                                                    Range.inclusive(1, ChronoUnit.HOURS.getDuration.toMillis.toInt),
