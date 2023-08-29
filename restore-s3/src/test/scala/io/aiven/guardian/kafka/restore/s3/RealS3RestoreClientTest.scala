@@ -18,8 +18,9 @@ import io.aiven.guardian.kafka.s3.S3Spec
 import io.aiven.guardian.kafka.s3.configs.{S3 => S3Config}
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.pekko
+import org.scalatest.TestData
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.propspec.AnyPropSpecLike
+import org.scalatest.propspec.FixtureAnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import scala.concurrent.Future
@@ -37,7 +38,7 @@ import pekko.stream.connectors.s3.scaladsl.S3
 import pekko.stream.scaladsl.Sink
 
 trait RealS3RestoreClientTest
-    extends AnyPropSpecLike
+    extends FixtureAnyPropSpecLike
     with S3Spec
     with Matchers
     with KafkaClusterTest
@@ -63,7 +64,7 @@ trait RealS3RestoreClientTest
   override lazy val bucketPrefix: Option[String]          = Some("guardian-")
   override lazy val enableCleanup: Option[FiniteDuration] = Some(5 seconds)
 
-  property("Round-trip with backup and restore") {
+  property("Round-trip with backup and restore") { implicit td: TestData =>
     forAll(
       kafkaDataWithMinSizeRenamedTopicsGen(S3.MinChunkSize, 2, reducedConsumerRecordsToJson),
       s3ConfigGen(useVirtualDotHost, bucketPrefix),

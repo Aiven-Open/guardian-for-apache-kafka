@@ -9,7 +9,7 @@ persistent/object storages such as S3 and also provides tools for restoring said
 
 ## Documentation
 
-* [Guardian reference](https://aiven.github.io/guardian-for-apache-kafka/) documentation.
+* [Guardian reference](https://aiven-open.github.io/guardian-for-apache-kafka/) documentation.
 
 ## Trademarks
 

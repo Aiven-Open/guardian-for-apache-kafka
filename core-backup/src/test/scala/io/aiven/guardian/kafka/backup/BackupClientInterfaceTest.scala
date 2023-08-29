@@ -2,7 +2,6 @@ package io.aiven.guardian.kafka.backup
 
 import com.softwaremill.diffx.generic.auto._
 import com.softwaremill.diffx.scalatest.DiffMustMatcher._
-import com.typesafe.scalalogging.StrictLogging
 import io.aiven.guardian.kafka.Generators.KafkaDataWithTimePeriod
 import io.aiven.guardian.kafka.Generators.kafkaDataWithTimePeriodsGen
 import io.aiven.guardian.kafka.TestUtils.waitForStartOfTimeUnit
@@ -18,7 +17,7 @@ import org.mdedetrich.pekko.stream.support.CirceStreamSupport
 import org.scalatest.Inspectors
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers
-import org.scalatest.propspec.AnyPropSpecLike
+import org.scalatest.propspec.FixtureAnyPropSpecLike
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.typelevel.jawn.AsyncParser
 
@@ -40,19 +39,18 @@ import pekko.util.ByteString
 final case class Periods(periodsBefore: Long, periodsAfter: Long)
 
 trait BackupClientInterfaceTest
-    extends AnyPropSpecLike
+    extends FixtureAnyPropSpecLike
     with PekkoStreamTestKit
     with Matchers
     with ScalaFutures
-    with ScalaCheckPropertyChecks
-    with StrictLogging {
+    with ScalaCheckPropertyChecks {
 
   implicit val ec: ExecutionContext            = system.dispatcher
   implicit val defaultPatience: PatienceConfig = PatienceConfig(90 seconds, 100 millis)
 
   def compression: Option[CompressionModel]
 
-  property("Ordered Kafka events should produce at least one BackupStreamPosition.Boundary") {
+  property("Ordered Kafka events should produce at least one BackupStreamPosition.Boundary") { _ =>
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       val mock =
         new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
@@ -69,7 +67,7 @@ trait BackupClientInterfaceTest
 
   property(
     "Every ReducedConsumerRecord after a BackupStreamPosition.Boundary should be in the next consecutive time period"
-  ) {
+  ) { _ =>
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       val mock =
         new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
@@ -104,7 +102,7 @@ trait BackupClientInterfaceTest
 
   property(
     "The time difference between two consecutive BackupStreamPosition.Middle's has to be less then the specified time period"
-  ) {
+  ) { _ =>
     forAll(kafkaDataWithTimePeriodsGen()) { (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
       val mock =
         new MockedBackupClientInterfaceWithMockedKafkaData(Source(kafkaDataWithTimePeriod.data),
@@ -128,7 +126,7 @@ trait BackupClientInterfaceTest
     }
   }
 
-  property("the time difference between the first and last timestamp for a given key is less than time period") {
+  property("the time difference between the first and last timestamp for a given key is less than time period") { _ =>
     forAll(kafkaDataWithTimePeriodsGen().filter(_.data.size > 2)) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
         val mock =
@@ -168,7 +166,7 @@ trait BackupClientInterfaceTest
     }
   }
 
-  property("backup method completes flow correctly for all valid Kafka events") {
+  property("backup method completes flow correctly for all valid Kafka events") { _ =>
     forAll(kafkaDataWithTimePeriodsGen().filter(_.data.size > 2)) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
         val mock =
@@ -203,7 +201,7 @@ trait BackupClientInterfaceTest
     }
   }
 
-  property("backup method completes flow correctly for single element") {
+  property("backup method completes flow correctly for single element") { _ =>
     val reducedConsumerRecord = ReducedConsumerRecord("", 0, 1, Some("key"), "value", 1, TimestampType.CREATE_TIME)
 
     val mock = new MockedBackupClientInterfaceWithMockedKafkaData(Source.single(
@@ -237,7 +235,7 @@ trait BackupClientInterfaceTest
     List(reducedConsumerRecord) mustEqual observed
   }
 
-  property("backup method completes flow correctly for two elements") {
+  property("backup method completes flow correctly for two elements") { _ =>
     val reducedConsumerRecords = List(
       ReducedConsumerRecord("", 0, 1, Some("key"), "value1", 1, TimestampType.CREATE_TIME),
       ReducedConsumerRecord("", 0, 2, Some("key"), "value2", 2, TimestampType.CREATE_TIME)
@@ -274,7 +272,7 @@ trait BackupClientInterfaceTest
     reducedConsumerRecords mustEqual observed
   }
 
-  property("backup method correctly terminates every key apart from last") {
+  property("backup method correctly terminates every key apart from last") { _ =>
     forAll(kafkaDataWithTimePeriodsGen().filter(_.data.size > 1)) {
       (kafkaDataWithTimePeriod: KafkaDataWithTimePeriod) =>
         val mock =
@@ -304,7 +302,7 @@ trait BackupClientInterfaceTest
     }
   }
 
-  property("suspend/resume for same object using ChronoUnitSlice works correctly") {
+  property("suspend/resume for same object using ChronoUnitSlice works correctly") { _ =>
     // Since this test needs to wait for the start of the next minute we only want it to
     // succeed once otherwise it runs for a very long time.
     implicit val generatorDrivenConfig: PropertyCheckConfiguration =
