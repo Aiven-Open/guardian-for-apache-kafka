@@ -2,7 +2,9 @@ import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
 import sbtghactions.{Permissions, PermissionScope, PermissionValue}
 
-ThisBuild / scalaVersion         := "2.13.10"
+val scala213 = "2.13.11"
+
+ThisBuild / scalaVersion         := scala213
 ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
@@ -34,7 +36,6 @@ val testContainersJavaVersion   = "1.19.0"
 val scalaCheckVersion           = "1.17.0"
 val scalaCheckOpsVersion        = "2.10.0"
 val enumeratumVersion           = "1.7.2"
-val organizeImportsVersion      = "0.6.0"
 
 /** Calculates the scalatest version in a format that is used for `org.scalatestplus` scalacheck artifacts
   *
@@ -72,7 +73,7 @@ val flagsFor13 = Seq(
 )
 
 val librarySettings = Seq(
-  crossScalaVersions := List("2.13.8"),
+  crossScalaVersions := List(scala213),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n == 13 =>
@@ -424,9 +425,6 @@ ThisBuild / githubWorkflowPublishPreamble := Seq(
 ThisBuild / githubWorkflowBuildPreamble := Seq(
   WorkflowStep.Sbt(List("scalafixAll --check"), name = Some("Linter: Scalafix checks"))
 )
-
-// Configuration needed for Scalafix
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % organizeImportsVersion
 
 ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value
 
