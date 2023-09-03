@@ -2,7 +2,9 @@ import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
 import sbtghactions.{Permissions, PermissionScope, PermissionValue}
 
-ThisBuild / scalaVersion         := "2.13.10"
+val scala213 = "2.13.11"
+
+ThisBuild / scalaVersion         := scala213
 ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
@@ -22,7 +24,7 @@ val futilesVersion              = "2.0.2"
 val quillJdbcMonixVersion       = "3.7.2"
 val postgresqlJdbcVersion       = "42.6.0"
 val scalaLoggingVersion         = "3.9.5"
-val logbackClassicVersion       = "1.4.9"
+val logbackClassicVersion       = "1.4.11"
 val declineVersion              = "2.4.1"
 val pureConfigVersion           = "0.17.4"
 val scalaTestVersion            = "3.2.16"
@@ -30,11 +32,10 @@ val scalaTestScalaCheckVersion  = s"$scalaTestVersion.0"
 val pekkoStreamCirceVersion     = "0.0.0+94-dbf3173f-SNAPSHOT"
 val diffxVersion                = "0.8.3"
 val testContainersVersion       = "0.40.16"
-val testContainersJavaVersion   = "1.18.3"
+val testContainersJavaVersion   = "1.19.0"
 val scalaCheckVersion           = "1.17.0"
 val scalaCheckOpsVersion        = "2.10.0"
 val enumeratumVersion           = "1.7.2"
-val organizeImportsVersion      = "0.6.0"
 
 /** Calculates the scalatest version in a format that is used for `org.scalatestplus` scalacheck artifacts
   *
@@ -72,7 +73,7 @@ val flagsFor13 = Seq(
 )
 
 val librarySettings = Seq(
-  crossScalaVersions := List("2.13.8"),
+  crossScalaVersions := List(scala213),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n == 13 =>
@@ -424,9 +425,6 @@ ThisBuild / githubWorkflowPublishPreamble := Seq(
 ThisBuild / githubWorkflowBuildPreamble := Seq(
   WorkflowStep.Sbt(List("scalafixAll --check"), name = Some("Linter: Scalafix checks"))
 )
-
-// Configuration needed for Scalafix
-ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % organizeImportsVersion
 
 ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value
 
