@@ -1,6 +1,5 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
-import sbtghactions.{Permissions, PermissionScope, PermissionValue}
 
 val scala213 = "2.13.11"
 
