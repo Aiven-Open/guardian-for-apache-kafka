@@ -1,6 +1,5 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
-import sbtghactions.{Permissions, PermissionScope, PermissionValue}
 
 val scala213 = "2.13.11"
 
@@ -9,17 +8,11 @@ ThisBuild / organization         := "aiven.io"
 ThisBuild / organizationName     := "Aiven"
 ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 
-ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
-
-// TODO: Remove when Pekko has a proper release
-ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
-ThisBuild / updateOptions := updateOptions.value.withLatestSnapshots(false)
-
-val pekkoVersion                = "0.0.0+26669-ec5b6764-SNAPSHOT"
-val pekkoHttpVersion            = "0.0.0+4411-6fe04045-SNAPSHOT"
-val pekkoConnectorsKafkaVersion = "0.0.0+1738-07a19b8e-SNAPSHOT"
+val pekkoVersion                = "1.0.1"
+val pekkoHttpVersion            = "1.0.0"
+val pekkoConnectorsKafkaVersion = "1.0.0"
 val kafkaClientsVersion         = "3.4.1"
-val pekkoConnectorsVersion      = "0.0.0+85-a82f3c3c-SNAPSHOT"
+val pekkoConnectorsVersion      = "1.0.0"
 val futilesVersion              = "2.0.2"
 val quillJdbcMonixVersion       = "3.7.2"
 val postgresqlJdbcVersion       = "42.6.0"
@@ -29,7 +22,7 @@ val declineVersion              = "2.4.1"
 val pureConfigVersion           = "0.17.4"
 val scalaTestVersion            = "3.2.16"
 val scalaTestScalaCheckVersion  = s"$scalaTestVersion.0"
-val pekkoStreamCirceVersion     = "0.0.0+94-dbf3173f-SNAPSHOT"
+val pekkoStreamCirceVersion     = "1.0.0"
 val diffxVersion                = "0.8.3"
 val testContainersVersion       = "0.40.16"
 val testContainersJavaVersion   = "1.19.0"
