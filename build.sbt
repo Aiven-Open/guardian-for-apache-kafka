@@ -1,7 +1,7 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
 
-val scala213 = "2.13.11"
+val scala213 = "2.13.12"
 
 ThisBuild / scalaVersion         := scala213
 ThisBuild / organization         := "aiven.io"
@@ -23,7 +23,7 @@ val pureConfigVersion           = "0.17.4"
 val scalaTestVersion            = "3.2.17"
 val scalaTestScalaCheckVersion  = s"$scalaTestVersion.0"
 val pekkoStreamCirceVersion     = "1.0.0"
-val diffxVersion                = "0.8.3"
+val diffxVersion                = "0.9.0"
 val testContainersVersion       = "0.40.16"
 val testContainersJavaVersion   = "1.19.0"
 val scalaCheckVersion           = "1.17.0"

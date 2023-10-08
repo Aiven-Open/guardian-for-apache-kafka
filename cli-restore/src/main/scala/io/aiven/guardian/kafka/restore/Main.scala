@@ -32,12 +32,10 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
       name = "guardian-restore",
       header = "Guardian cli Backup Tool",
       main = {
-        val logClassName: String = getClass.getName
-
-        // This is imported here because otherwise the reference to getClass above is ambiguous
         import io.aiven.guardian.cli.arguments.PropertiesOpt._
         import cats.implicits._
 
+        val logClassName: String = classOf[Entry].getClass.getName
         val fromWhenOpt: Opts[Option[OffsetDateTime]] =
           Opts.option[OffsetDateTime]("from-when", help = "Only restore topics from a given time").orNone
 
@@ -182,4 +180,4 @@ class Entry(val initializedApp: AtomicReference[Option[App]] = new AtomicReferen
       }
     )
 
-object Main extends Entry()
+object Main extends Entry
