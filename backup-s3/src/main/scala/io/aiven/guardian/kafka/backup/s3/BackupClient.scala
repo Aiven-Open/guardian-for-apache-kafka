@@ -15,7 +15,6 @@ import scala.concurrent.Future
 import java.time.Instant
 
 import pekko.Done
-import pekko.NotUsed
 import pekko.actor.ActorSystem
 import pekko.stream.SinkShape
 import pekko.stream.connectors.s3._
@@ -200,30 +199,36 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
       }
 
   private[s3] def kafkaBatchSink
-      : Sink[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext]), NotUsed] =
+      : Sink[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext]), Future[Done]] =
     // See https://pekko.apache.org/docs/pekko/current/stream/operators/Partition.html for an explanation on Partition
-    Sink.fromGraph(GraphDSL.create() { implicit builder =>
-      import GraphDSL.Implicits._
-      val partition = builder.add(
-        new Partition[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])](
-          outputPorts = 2,
-          {
-            case (_: SuccessfulUploadPart, _) => 0
-            case (_: FailedUploadPart, _)     => 1
-          },
-          eagerCancel = true
-        )
-      )
-      partition.out(0) ~> successSink
-        .contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
+    Sink.fromGraph(
+      GraphDSL.createGraph(
+        successSink.contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
           case (response, value) => (response.asInstanceOf[SuccessfulUploadPart], value)
-        }
-      partition.out(1) ~> failureSink
-        .contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
+        },
+        failureSink.contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
           case (response, value) => (response.asInstanceOf[FailedUploadPart], value)
         }
-      SinkShape(partition.in)
-    })
+      ) { (successSinkMat, failureSinkMat) =>
+        implicit val ec: ExecutionContext = ExecutionContext.parasitic
+        Future.sequence(List(successSinkMat, failureSinkMat)).map(_ => Done)
+      } { implicit builder => (_successSink, _failureSink) =>
+        import GraphDSL.Implicits._
+        val partition = builder.add(
+          new Partition[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])](
+            outputPorts = 2,
+            {
+              case (_: SuccessfulUploadPart, _) => 0
+              case (_: FailedUploadPart, _)     => 1
+            },
+            eagerCancel = true
+          )
+        )
+        partition.out(0) ~> _successSink
+        partition.out(1) ~> _failureSink
+        SinkShape(partition.in)
+      }
+    )
 
   override def backupToStorageTerminateSink(
       previousState: PreviousState
