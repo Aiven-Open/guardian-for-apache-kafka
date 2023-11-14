@@ -198,38 +198,6 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
           kafkaClientInterface.batchCursorContext(cursors)
       }
 
-  private[s3] def kafkaBatchSink
-      : Sink[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext]), Future[Done]] =
-    // See https://pekko.apache.org/docs/pekko/current/stream/operators/Partition.html for an explanation on Partition
-    Sink.fromGraph(
-      GraphDSL.createGraph(
-        successSink.contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
-          case (response, value) => (response.asInstanceOf[SuccessfulUploadPart], value)
-        },
-        failureSink.contramap[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])] {
-          case (response, value) => (response.asInstanceOf[FailedUploadPart], value)
-        }
-      ) { (successSinkMat, failureSinkMat) =>
-        implicit val ec: ExecutionContext = ExecutionContext.parasitic
-        Future.sequence(List(successSinkMat, failureSinkMat)).map(_ => Done)
-      } { implicit builder => (_successSink, _failureSink) =>
-        import GraphDSL.Implicits._
-        val partition = builder.add(
-          new Partition[(UploadPartResponse, immutable.Iterable[kafkaClientInterface.CursorContext])](
-            outputPorts = 2,
-            {
-              case (_: SuccessfulUploadPart, _) => 0
-              case (_: FailedUploadPart, _)     => 1
-            },
-            eagerCancel = true
-          )
-        )
-        partition.out(0) ~> _successSink
-        partition.out(1) ~> _failureSink
-        SinkShape(partition.in)
-      }
-    )
-
   override def backupToStorageTerminateSink(
       previousState: PreviousState
   ): Sink[ByteString, Future[BackupResult]] = {
@@ -295,7 +263,7 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
           key,
           state.uploadId,
           state.parts,
-          kafkaBatchSink,
+          kafkaBatchSink[kafkaClientInterface.CursorContext](successSink, failureSink),
           s3Headers = s3Headers,
           chunkingParallelism = 1
         )
@@ -306,7 +274,7 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
         S3.multipartUploadWithHeadersAndContext[kafkaClientInterface.CursorContext](
           s3Config.dataBucket,
           key,
-          kafkaBatchSink,
+          kafkaBatchSink[kafkaClientInterface.CursorContext](successSink, failureSink),
           s3Headers = s3Headers,
           chunkingParallelism = 1
         )
@@ -319,4 +287,38 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
 
 object BackupClient {
   final case class CurrentS3State(uploadId: String, parts: Seq[Part])
+
+  private[s3] def kafkaBatchSink[CursorContext](
+      successSink: Sink[(SuccessfulUploadPart, immutable.Iterable[CursorContext]), Future[Done]],
+      failureSink: Sink[(FailedUploadPart, immutable.Iterable[CursorContext]), Future[Done]]
+  ): Sink[(UploadPartResponse, immutable.Iterable[CursorContext]), Future[Done]] =
+    // See https://pekko.apache.org/docs/pekko/current/stream/operators/Partition.html for an explanation on Partition
+    Sink.fromGraph(
+      GraphDSL.createGraph(
+        successSink.contramap[(UploadPartResponse, immutable.Iterable[CursorContext])] { case (response, value) =>
+          (response.asInstanceOf[SuccessfulUploadPart], value)
+        },
+        failureSink.contramap[(UploadPartResponse, immutable.Iterable[CursorContext])] { case (response, value) =>
+          (response.asInstanceOf[FailedUploadPart], value)
+        }
+      ) { (successSinkMat, failureSinkMat) =>
+        implicit val ec: ExecutionContext = ExecutionContext.parasitic
+        Future.sequence(List(successSinkMat, failureSinkMat)).map(_ => Done)
+      } { implicit builder => (_successSink, _failureSink) =>
+        import GraphDSL.Implicits._
+        val partition = builder.add(
+          new Partition[(UploadPartResponse, immutable.Iterable[CursorContext])](
+            outputPorts = 2,
+            {
+              case (_: SuccessfulUploadPart, _) => 0
+              case (_: FailedUploadPart, _)     => 1
+            },
+            eagerCancel = true
+          )
+        )
+        partition.out(0) ~> _successSink
+        partition.out(1) ~> _failureSink
+        SinkShape(partition.in)
+      }
+    )
 }
