@@ -36,7 +36,7 @@ jobs:
 
       - name: Setup Java (temurin@11)
         if: matrix.java == 'temurin@11'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
@@ -74,7 +74,7 @@ jobs:
         run: tar cf targets.tar target cli-compaction/target compaction-gcs/target backup-s3/target compaction-s3/target docs/target cli-backup/target core-restore/target restore-s3/target core-gcs/target core-compaction/target core-s3/target core-backup/target core-cli/target cli-restore/target core/target restore-gcs/target backup-gcs/target project/target
 
       - name: Upload target directories
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: target-${{ matrix.os }}-${{ matrix.scala }}-${{ matrix.java }}
           path: targets.tar
@@ -97,14 +97,14 @@ jobs:
 
       - name: Setup Java (temurin@11)
         if: matrix.java == 'temurin@11'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
           cache: sbt
 
       - name: Download target directories (2.13.12)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: target-${{ matrix.os }}-2.13.12-${{ matrix.java }}
 
