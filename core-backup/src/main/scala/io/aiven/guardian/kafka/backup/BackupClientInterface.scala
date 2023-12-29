@@ -15,7 +15,6 @@ import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.jdk.DurationConverters._
-import scala.util._
 
 import java.time._
 import java.time.format.DateTimeFormatter
@@ -23,7 +22,6 @@ import java.time.temporal._
 
 import pekko.NotUsed
 import pekko.actor.ActorSystem
-import pekko.stream.SubstreamCancelStrategy
 import pekko.stream.scaladsl._
 import pekko.util.ByteString
 
@@ -418,11 +416,10 @@ trait BackupClientInterface[T <: KafkaConsumerInterface] extends LazyLogging {
   def backup: RunnableGraph[kafkaClientInterface.MatCombineResult] = {
     val withBackupStreamPositions = calculateBackupStreamPositions(sourceWithPeriods(sourceWithFirstRecord))
 
-    val split = withBackupStreamPositions
-      .splitAfter(SubstreamCancelStrategy.propagate) {
-        case End => true
-        case _   => false
-      }
+    val split = withBackupStreamPositions.splitAfter {
+      case End => true
+      case _   => false
+    }
 
     val substreams = split
       .prefixAndTail(2)
@@ -482,7 +479,7 @@ trait BackupClientInterface[T <: KafkaConsumerInterface] extends LazyLogging {
             case (_, start: Start) =>
               implicit val ec: ExecutionContext = system.dispatcher
               logger.debug(s"Calling getCurrentUploadState with key:${start.key}")
-              val f = for {
+              for {
                 uploadStateResult <- getCurrentUploadState(start.key)
                 _ = logger.debug(s"Received $uploadStateResult from getCurrentUploadState with key:${start.key}")
                 _ <- (uploadStateResult.previous, uploadStateResult.current) match {
@@ -493,18 +490,6 @@ trait BackupClientInterface[T <: KafkaConsumerInterface] extends LazyLogging {
                        case _ => Future.successful(None)
                      }
               } yield prepareStartOfStream(uploadStateResult, start)
-
-              // TODO This is temporary until https://github.com/aiven/guardian-for-apache-kafka/issues/221 is resolved.
-              // Since SubFlow currently ignores any given supervision strategy we have to use a
-              // SubstreamCancelStrategy.propagate however the exception message is still hence why we need to manually
-              // log it.
-              f.onComplete {
-                case Failure(e) =>
-                  logger.error("Unhandled exception in stream", e)
-                case Success(_) =>
-              }
-
-              f
             case _ => throw Errors.ExpectedStartOfSource
           },
           empty
