@@ -9,7 +9,7 @@ addSbtPlugin("com.github.sbt"                    % "sbt-site-paradox"         % 
 addSbtPlugin("com.github.sbt"                    % "sbt-native-packager"      % "1.9.16")
 addSbtPlugin("com.github.sbt"                    % "sbt-github-actions"       % "0.22.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-pgp"                  % "2.2.1")
-addSbtPlugin("com.github.sbt"                    % "sbt-release"              % "1.3.0")
+addSbtPlugin("com.github.sbt"                    % "sbt-release"              % "1.4.0")
 addSbtPlugin("ch.epfl.scala"                     % "sbt-scalafix"             % "0.11.1")
 addSbtPlugin("org.scoverage"                     % "sbt-scoverage"            % "2.0.9")
 addSbtPlugin("org.scoverage"                     % "sbt-coveralls"            % "1.3.11")
