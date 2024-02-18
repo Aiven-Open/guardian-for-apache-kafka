@@ -12,7 +12,7 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 
 val pekkoVersion                = "1.1.0-M0+204-d829637e-SNAPSHOT" // Change to 1.1.0 when its released
-val pekkoHttpVersion            = "1.0.0"
+val pekkoHttpVersion            = "1.0.1"
 val pekkoConnectorsKafkaVersion = "1.0.0"
 val kafkaClientsVersion         = "3.6.1"
 val pekkoConnectorsVersion      = "1.0.2"
