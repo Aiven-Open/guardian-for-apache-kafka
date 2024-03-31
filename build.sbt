@@ -1,7 +1,7 @@
 import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import com.lightbend.paradox.apidoc.ApidocPlugin.autoImport.apidocRootPackage
 
-val scala213 = "2.13.12"
+val scala213 = "2.13.13"
 
 ThisBuild / scalaVersion         := scala213
 ThisBuild / organization         := "aiven.io"
