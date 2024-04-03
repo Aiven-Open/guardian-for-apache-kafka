@@ -86,14 +86,14 @@ trait BackupClientInterfaceTest
       if (allBoundariesWithoutMiddles.length > 1) {
         @nowarn("msg=not.*?exhaustive")
         val withBeforeAndAfter =
-          allBoundariesWithoutMiddles.sliding(2).map { case Seq(before, after) => (before, after) }.toList
+          allBoundariesWithoutMiddles.sliding(2).map { case Seq(first, second) => (first, second) }.toList
 
         val initialTime = kafkaDataWithTimePeriod.data.head.timestamp
 
-        Inspectors.forEvery(withBeforeAndAfter) { case (before, after) =>
+        Inspectors.forEvery(withBeforeAndAfter) { case (first, second) =>
           val periodAsMillis = kafkaDataWithTimePeriod.periodSlice.toMillis
-          ((before.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis) mustNot equal(
-            (after.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis
+          ((first.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis) mustNot equal(
+            (second.reducedConsumerRecord.timestamp - initialTime) / periodAsMillis
           )
         }
       }
@@ -113,14 +113,14 @@ trait BackupClientInterfaceTest
 
       val allCoupledMiddles = result
         .sliding(2)
-        .collect { case Seq(before: mock.Element, after: mock.Element) =>
-          (before, after)
+        .collect { case Seq(first: mock.Element, second: mock.Element) =>
+          (first, second)
         }
         .toList
 
-      Inspectors.forEvery(allCoupledMiddles) { case (before, after) =>
-        ChronoUnit.MICROS.between(before.reducedConsumerRecord.toOffsetDateTime,
-                                  after.reducedConsumerRecord.toOffsetDateTime
+      Inspectors.forEvery(allCoupledMiddles) { case (first, second) =>
+        ChronoUnit.MICROS.between(first.reducedConsumerRecord.toOffsetDateTime,
+                                  second.reducedConsumerRecord.toOffsetDateTime
         ) must be < kafkaDataWithTimePeriod.periodSlice.toMicros
       }
     }
