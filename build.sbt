@@ -11,7 +11,7 @@ ThisBuild / organizationHomepage := Some(url("https://aiven.io/"))
 // Remove when Pekko Connectors 1.0.2 is out
 ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 
-val pekkoVersion                = "1.1.0-M0+204-d829637e-SNAPSHOT" // Change to 1.1.0 when its released
+val pekkoVersion                = "1.1.0-M0+412-1f20fa4a-SNAPSHOT" // Change to 1.1.0 when its released
 val pekkoHttpVersion            = "1.0.1"
 val pekkoConnectorsKafkaVersion = "1.0.0"
 val kafkaClientsVersion         = "3.7.0"
