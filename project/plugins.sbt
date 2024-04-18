@@ -6,7 +6,7 @@ addSbtPlugin("com.github.sbt"                    % "sbt-unidoc"               % 
 addSbtPlugin("com.github.sbt"                    % "sbt-ghpages"              % "0.8.0")
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.2")
 addSbtPlugin("com.github.sbt"                    % "sbt-site-paradox"         % "1.7.0")
-addSbtPlugin("com.github.sbt"                    % "sbt-native-packager"      % "1.9.16")
+addSbtPlugin("com.github.sbt"                    % "sbt-native-packager"      % "1.10.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-github-actions"       % "0.23.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-pgp"                  % "2.2.1")
 addSbtPlugin("com.github.sbt"                    % "sbt-release"              % "1.4.0")
