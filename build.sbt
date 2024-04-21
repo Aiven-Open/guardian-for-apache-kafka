@@ -29,7 +29,7 @@ val pekkoStreamCirceVersion     = "1.0.0"
 val diffxVersion                = "0.9.0"
 val testContainersVersion       = "0.40.16"
 val testContainersJavaVersion   = "1.19.7"
-val scalaCheckVersion           = "1.17.1"
+val scalaCheckVersion           = "1.18.0"
 val scalaCheckOpsVersion        = "2.10.0"
 val enumeratumVersion           = "1.7.2"
 
