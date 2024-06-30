@@ -42,6 +42,9 @@ jobs:
           java-version: 11
           cache: sbt
 
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
+
       - name: 'Linter: Scalafix checks'
         run: sbt '++ ${{ matrix.scala }}' 'scalafixAll --check'
 
@@ -102,6 +105,9 @@ jobs:
           distribution: temurin
           java-version: 11
           cache: sbt
+
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
 
       - name: Download target directories (2.13.13)
         uses: actions/download-artifact@v4
