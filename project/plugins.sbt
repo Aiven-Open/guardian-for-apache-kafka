@@ -2,7 +2,7 @@ addSbtPlugin("org.scalameta"                     % "sbt-scalafmt"             % 
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox"              % "0.10.7")
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-apidoc"       % "1.1.0")
 addSbtPlugin("com.lightbend.paradox"             % "sbt-paradox-project-info" % "3.0.1")
-addSbtPlugin("com.github.sbt"                    % "sbt-unidoc"               % "0.5.0")
+addSbtPlugin("com.github.sbt"                    % "sbt-unidoc"               % "0.6.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-ghpages"              % "0.8.0")
 addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % "3.0.2")
 addSbtPlugin("com.github.sbt"                    % "sbt-site-paradox"         % "1.7.0")
