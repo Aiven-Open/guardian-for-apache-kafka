@@ -213,33 +213,33 @@ class BackupClient[T <: KafkaConsumerInterface](maybeS3Settings: Option[S3Settin
         for {
           exists <- checkObjectExists(previousState.previousKey)
         } yield
-        // The backupToStorageTerminateSink gets called in response to finding in progress multipart uploads. If an S3 object exists
-        // the same key that means that in fact the upload has already been completed so in this case lets not do anything
-        if (exists) {
-          logger.debug(
-            s"Previous upload with uploadId: ${previousState.stateDetails.state.uploadId} and key: ${previousState.previousKey} doesn't actually exist, skipping terminating"
-          )
-          Sink.ignore
-        } else {
-          logger.info(
-            s"Terminating and completing previous backup with key: ${previousState.previousKey} and uploadId: ${previousState.stateDetails.state.uploadId}"
-          )
-          val sink = S3
-            .resumeMultipartUploadWithHeaders(
-              s3Config.dataBucket,
-              previousState.previousKey,
-              previousState.stateDetails.state.uploadId,
-              previousState.stateDetails.state.parts,
-              s3Headers = s3Headers,
-              chunkingParallelism = 1
+          // The backupToStorageTerminateSink gets called in response to finding in progress multipart uploads. If an S3 object exists
+          // the same key that means that in fact the upload has already been completed so in this case lets not do anything
+          if (exists) {
+            logger.debug(
+              s"Previous upload with uploadId: ${previousState.stateDetails.state.uploadId} and key: ${previousState.previousKey} doesn't actually exist, skipping terminating"
             )
+            Sink.ignore
+          } else {
+            logger.info(
+              s"Terminating and completing previous backup with key: ${previousState.previousKey} and uploadId: ${previousState.stateDetails.state.uploadId}"
+            )
+            val sink = S3
+              .resumeMultipartUploadWithHeaders(
+                s3Config.dataBucket,
+                previousState.previousKey,
+                previousState.stateDetails.state.uploadId,
+                previousState.stateDetails.state.parts,
+                s3Headers = s3Headers,
+                chunkingParallelism = 1
+              )
 
-          val base =
-            sink.mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
+            val base =
+              sink.mapMaterializedValue(future => future.map(result => Some(result))(ExecutionContext.parasitic))
 
-          maybeS3Settings
-            .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
-        }
+            maybeS3Settings
+              .fold(base)(s3Settings => base.withAttributes(S3Attributes.settings(s3Settings)))
+          }
 
       }
     }
