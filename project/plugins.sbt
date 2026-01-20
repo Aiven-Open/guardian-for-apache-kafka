@@ -8,7 +8,7 @@ addSbtPlugin("com.thoughtworks.sbt-api-mappings" % "sbt-api-mappings"         % 
 addSbtPlugin("com.github.sbt"                    % "sbt-site-paradox"         % "1.7.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-native-packager"      % "1.10.0")
 addSbtPlugin("com.github.sbt"                    % "sbt-github-actions"       % "0.23.0")
-addSbtPlugin("com.github.sbt"                    % "sbt-pgp"                  % "2.2.1")
+addSbtPlugin("com.github.sbt"                    % "sbt-pgp"                  % "2.3.1")
 addSbtPlugin("com.github.sbt"                    % "sbt-release"              % "1.4.0")
 addSbtPlugin("ch.epfl.scala"                     % "sbt-scalafix"             % "0.12.1")
 addSbtPlugin("org.scoverage"                     % "sbt-scoverage"            % "2.0.11")
