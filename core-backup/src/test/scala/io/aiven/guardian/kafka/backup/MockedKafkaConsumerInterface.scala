@@ -76,9 +76,8 @@ class MockedKafkaConsumerInterface(kafkaData: Source[ReducedConsumerRecord, NotU
 
     val finalSource = if (handleOffsets) {
       source.filter { reducedConsumerRecord =>
-        (commitStorage.isEmpty || {
-          reducedConsumerRecord.offset > commitStorage.getLast
-        }) && {
+        (commitStorage.isEmpty ||
+          reducedConsumerRecord.offset > commitStorage.getLast) && {
           (stopAfterDuration, Option(firstReducedConsumerRecord.get())) match {
             case (Some(afterDuration), Some(firstRecord)) =>
               val difference =
