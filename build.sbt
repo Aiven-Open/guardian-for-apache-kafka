@@ -13,7 +13,7 @@ ThisBuild / resolvers += Resolver.ApacheMavenSnapshotsRepo
 
 val pekkoVersion                = "1.1.0-M0+204-d829637e-SNAPSHOT" // Change to 1.1.0 when its released
 val pekkoHttpVersion            = "1.0.1"
-val pekkoConnectorsKafkaVersion = "1.0.0"
+val pekkoConnectorsKafkaVersion = "1.1.0"
 val kafkaClientsVersion         = "3.7.0"
 val pekkoConnectorsVersion      = "1.0.2"
 val futilesVersion              = "2.0.2"
